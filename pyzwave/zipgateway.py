@@ -43,19 +43,20 @@ class ZIPGateway(Adapter):
         zipPkt = Message.decode(pkt)
         if not isinstance(zipPkt, Zip.ZipPacket):
             _LOGGER.warning("Received non Z/IP packet from zipgateway: %s", zipPkt)
-            return
+            return False
         if zipPkt.ackResponse:
             self.ackReceived(zipPkt.seqNo)
-            return
+            return True
         if zipPkt.nackResponse:
             _LOGGER.error("NAck response not implemented")
             # self.nackReceived(zipPkt.seqNo)
-            return
+            return False
         if zipPkt.ackRequest:
             _LOGGER.error("This message needs an ack response. Not implemented")
-            return
+            return False
         if zipPkt.zwCmdIncluded:
             self.commandReceived(zipPkt.command)
+        return True
 
     async def send(self, cmd, sourceEP=0, destEP=0):
         self.seq = (self.seq + 1) & 0xFF
