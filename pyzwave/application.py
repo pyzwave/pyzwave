@@ -19,5 +19,5 @@ class Application:
         pass
 
     async def startup(self):
-        nodes = await self.adapter.getNodeList()
-        _LOGGER.debug("Got nodelist %s", nodes)
+        self._nodes = await self.adapter.getNodeList()
+        _LOGGER.debug("Got nodelist %s", self._nodes)
