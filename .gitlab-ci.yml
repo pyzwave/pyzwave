@@ -7,7 +7,7 @@ black:
   script:
     - apk add -U gcc musl-dev
     - pip install -r requirements-dev.txt
-    - black --check pyzwave
+    - black --check pyzwave tests
 
 unittest:
   image: python:3.6-alpine
