@@ -36,9 +36,9 @@ class Adapter(Listenable):
     async def send(self, cmd, sourceEP=0, destEP=0):
         raise NotImplementedError()
 
-    async def sendAndReceive(self, cmd, waitFor, **kwargs):
-        await self.send(cmd)
-        return await self.waitForMessage(waitFor)
+    async def sendAndReceive(self, cmd, waitFor, timeout=3, **kwargs):
+        await self.send(cmd, **kwargs)
+        return await self.waitForMessage(waitFor, timeout=timeout)
 
     async def waitForAck(self, ackId, timeout=3):
         if ackId in self._ackQueue:
