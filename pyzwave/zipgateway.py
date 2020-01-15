@@ -36,7 +36,7 @@ class ZIPGateway(Adapter):
             )
         except asyncio.TimeoutError:
             # No response
-            return []
+            return {}
         return report.nodes
 
     def onMessage(self, pkt):
