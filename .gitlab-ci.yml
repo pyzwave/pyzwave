@@ -1,0 +1,20 @@
+stages:
+  - test
+
+black:
+  image: python:3.6-alpine
+  stage: test
+  script:
+    - apk add -U gcc musl-dev
+    - pip install -r requirements-dev.txt
+    - black --check pyzwave
+
+unittest:
+  image: python:3.6-alpine
+  stage: test
+  coverage: '/^TOTAL.+?(\d+\%)$/'
+  script:
+    - apk add -U gcc musl-dev
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
+    - python -m pytest --cov=pyzwave --cov-report term-missing
