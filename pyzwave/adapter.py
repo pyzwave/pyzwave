@@ -18,8 +18,9 @@ class Adapter(Listenable):
         event = self._ackQueue.pop(ackId, None)
         if not event:
             _LOGGER.warning("Received ack for command not waiting for")
-            return
+            return False
         event.set()
+        return True
 
     def commandReceived(self, cmd):
         session = self._sessions.pop(cmd.hid(), None)
