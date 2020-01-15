@@ -33,7 +33,7 @@ class Adapter(Listenable):
     async def getNodeList(self):
         raise NotImplementedError()
 
-    async def send(self, cmd, sourceEP=0, destEP=0):
+    async def send(self, cmd, sourceEP=0, destEP=0, timeout=3):
         raise NotImplementedError()
 
     async def sendAndReceive(self, cmd, waitFor, timeout=3, **kwargs):

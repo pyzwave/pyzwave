@@ -58,7 +58,7 @@ class ZIPGateway(Adapter):
             self.commandReceived(zipPkt.command)
         return True
 
-    async def send(self, cmd, sourceEP=0, destEP=0):
+    async def send(self, cmd, sourceEP=0, destEP=0, timeout=3):
         self.seq = (self.seq + 1) & 0xFF
         msg = Zip.ZipPacket.create(command=cmd)
         msg.ackRequest = True
@@ -67,7 +67,7 @@ class ZIPGateway(Adapter):
         msg.destEP = destEP
         self._conn.send(msg.compose())
         try:
-            await self.waitForAck(msg.seqNo)
+            await self.waitForAck(msg.seqNo, timeout=timeout)
         except asyncio.TimeoutError:
             return False
         return True
