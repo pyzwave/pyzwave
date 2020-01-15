@@ -15,6 +15,7 @@ registerCmdClass(COMMAND_CLASS_BASIC, "BASIC")
 class Get(Message):
     NAME = "GET"
 
+
 @ZWaveMessage(COMMAND_CLASS_BASIC, BASIC_REPORT)
 class Report(Message):
     NAME = "REPORT"
