@@ -41,9 +41,6 @@ class ZIPGateway(Adapter):
 
     def onMessage(self, pkt):
         zipPkt = Message.decode(pkt)
-        if not zipPkt:
-            _LOGGER.warning("Could not decode ZIP packet: %s", pkt)
-            return
         if not isinstance(zipPkt, Zip.ZipPacket):
             _LOGGER.warning("Received non Z/IP packet from zipgateway: %s", zipPkt)
             return
