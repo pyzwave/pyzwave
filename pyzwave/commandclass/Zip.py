@@ -49,6 +49,13 @@ class ZipPacket(Message):
     def ackResponse(self) -> bool:
         return bool(self._flags0 & self.ZIP_PACKET_FLAGS0_ACK_RES)
 
+    @ackResponse.setter
+    def ackResponse(self, ackResponse):
+        if ackResponse:
+            self._flags0 |= self.ZIP_PACKET_FLAGS0_ACK_RES
+        else:
+            self._flags0 &= ~self.ZIP_PACKET_FLAGS0_ACK_RES
+
     @property
     def command(self):
         return self._command
@@ -81,6 +88,13 @@ class ZipPacket(Message):
     @property
     def nackResponse(self) -> bool:
         return bool(self._flags0 & self.ZIP_PACKET_FLAGS0_NACK_RES)
+
+    @nackResponse.setter
+    def nackResponse(self, nackResponse):
+        if nackResponse:
+            self._flags0 |= self.ZIP_PACKET_FLAGS0_NACK_RES
+        else:
+            self._flags0 &= ~self.ZIP_PACKET_FLAGS0_NACK_RES
 
     @property
     def seqNo(self):
