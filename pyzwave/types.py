@@ -64,7 +64,7 @@ class uint_t(int_t):
     size = 1
 
     @classmethod
-    def deseralize(cls, stream: BitStreamReader):
+    def deserialize(cls, stream: BitStreamReader):
         return cls.from_bytes(stream.value(cls.size), "little", signed=cls.signed)
 
 

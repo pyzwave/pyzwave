@@ -16,7 +16,7 @@ def test_node_list_report():
     assert isinstance(msg, NetworkManagementProxy.NodeListReport)
     assert msg.seqNo == 2
     assert msg.status == 0
-    assert msg.nodeListControllerID == 1
+    assert msg.nodeListControllerId == 1
     assert msg.nodes == {1, 6}
     # Encoding not implemented since we do not need to send this message
     # assert msg.compose() == pkt
