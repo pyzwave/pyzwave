@@ -64,27 +64,27 @@ def test_onMessage(gateway: ZIPGateway):
 
     assert gateway.onMessage(b"malformed") == False
 
-    ackResponse = Zip.ZipPacket.create()
+    ackResponse = Zip.ZipPacket()
     ackResponse.ackResponse = True
     assert gateway.onMessage(ackResponse.compose()) == True
     gateway.ackReceived.assert_called_once()
 
-    nackResponse = Zip.ZipPacket.create()
+    nackResponse = Zip.ZipPacket()
     nackResponse.nackResponse = True
     assert gateway.onMessage(nackResponse.compose()) == False
 
-    ackRequest = Zip.ZipPacket.create()
+    ackRequest = Zip.ZipPacket()
     ackRequest.ackRequest = True
     assert gateway.onMessage(ackRequest.compose()) == False
 
-    pkt = Zip.ZipPacket.create(command=Basic.Get.create())
+    pkt = Zip.ZipPacket(command=Basic.Get())
     assert gateway.onMessage(pkt.compose()) == True
     gateway.commandReceived.assert_called_once()
 
 
 @pytest.mark.asyncio
 async def test_send(gateway: ZIPGateway):
-    basicGet = Basic.Get.create()
+    basicGet = Basic.Get()
     [res, _] = await asyncio.gather(
         gateway.send(basicGet), runDelayed(gateway.ackReceived, 1)
     )
@@ -93,5 +93,5 @@ async def test_send(gateway: ZIPGateway):
 
 @pytest.mark.asyncio
 async def test_send_timeout(gateway: ZIPGateway):
-    basicGet = Basic.Get.create()
+    basicGet = Basic.Get()
     assert await gateway.send(basicGet, timeout=0) == False

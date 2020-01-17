@@ -15,8 +15,8 @@ registerCmdClass(COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY, "NETWORK_MANAGEMENT_PRO
 class NodeListGet(Message):
     NAME = "NODE_LIST_GET"
 
-    def __init__(self, cmdClass, cmd, seqNo=0):
-        super().__init__(cmdClass, cmd)
+    def __init__(self, seqNo=0):
+        super().__init__()
         self._seqNo = seqNo
 
     def compose(self):
@@ -38,8 +38,8 @@ class NodeListGet(Message):
 class NodeListReport(Message):
     NAME = "NODE_LIST_REPORT"
 
-    def __init__(self, cmdClass, cmd):
-        super().__init__(cmdClass, cmd)
+    def __init__(self):
+        super().__init__()
         self._seqNo = 0
         self._status = 0
         self._nodeListControllerID = 0

@@ -1,28 +1,30 @@
 import struct
+import logging
+
+from pyzwave.types import BitStreamReader, BitStreamWriter
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Message:
     NAME = None
+    attributes = ()
 
-    def __init__(self, cmdClass, cmd):
-        self._cmdClass = cmdClass
-        self._cmd = cmd
-        self._data = None
+    def __init__(self, **kwargs):
+        self._attributes = {}
 
-    @property
-    def cmdClass(self):
-        return self._cmdClass
-
-    @property
-    def cmd(self):
-        return self._cmd
-
-    def compose(self):
-        return self.encode()
-
-    @property
-    def data(self):
-        return self._data
+    def compose(self) -> bytearray:
+        cmdClass, cmd = ZWaveMessage.reverseMapping.get(self.__class__, (None, None))
+        stream = BitStreamWriter()
+        stream.addBytes(cmdClass, 1, False)
+        stream.addBytes(cmd, 1, False)
+        for name, _ in self.attributes:
+            if name not in self._attributes:
+                raise AttributeError(
+                    "Value for attribute {} has not been set".format(name)
+                )
+            self._attributes[name].serialize(stream)
+        return stream
 
     @classmethod
     def encode(cls, *args):
@@ -30,6 +32,8 @@ class Message:
         retval = bytearray(struct.pack("2B", cmdClass, cmd))
         for arg in args:
             if isinstance(arg, bytes):
+                retval.extend(arg)
+            elif isinstance(arg, bytearray):
                 retval.extend(arg)
             elif isinstance(arg, int):
                 retval.append(arg)
@@ -42,26 +46,35 @@ class Message:
         return bytes(retval)
 
     def parse(self, pkt):
-        self._data = pkt
+        stream = BitStreamReader(pkt)
+        for name, attrType in self.attributes:
+            value = attrType.deserialize(stream)
+            # This can be optimized to reduze the second loop inb __setattr__
+            setattr(self, name, value)
+
+    def __getattr__(self, name):
+        return self._attributes.get(name)
+
+    def __setattr__(self, name, value):
+        attributes = getattr(self, "attributes")
+        for msgAttrName, attrType in attributes:
+            if msgAttrName == name:
+                self._attributes[name] = attrType(value)
+                return
+        return super().__setattr__(name, value)
 
     def __repr__(self):
-        cmdClassName = cmdClasses.get(
-            self._cmdClass, "cmdClass 0x{:02X}".format(self._cmdClass)
-        )
-        name = self.NAME or "0x{:02X}".format(self._cmd)
+        cmdClass, cmd = ZWaveMessage.reverseMapping.get(self.__class__, (None, None))
+        cmdClassName = cmdClasses.get(cmdClass, "cmdClass 0x{:02X}".format(cmdClass))
+        name = self.NAME or "0x{:02X}".format(cmd)
         return "<Z-Wave {} cmd {}>".format(cmdClassName, name)
-
-    @classmethod
-    def create(cls, **kwargs):
-        cmdClass, cmd = ZWaveMessage.reverseMapping.get(cls, (None, None))
-        return cls(cmdClass, cmd, **kwargs)
 
     @staticmethod
     def decode(pkt):
         (cmdClass, cmd) = struct.unpack("2b", pkt[0:2])
         hid = cmdClass << 8 | (cmd & 0xFF)
         MsgCls = ZWaveMessage.get(hid, Message)
-        msg = MsgCls(cmdClass, cmd)
+        msg = MsgCls()
         msg.parse(pkt[2:])
         return msg
 

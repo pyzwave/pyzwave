@@ -52,7 +52,7 @@ async def test_getNodeList(adapter: Adapter):
 @pytest.mark.asyncio
 async def test_send(adapter: Adapter):
     with pytest.raises(NotImplementedError):
-        await adapter.send(Basic.Get.create())
+        await adapter.send(Basic.Get())
 
 
 @pytest.mark.asyncio
@@ -62,8 +62,8 @@ async def test_sendAndReceive(adapter: Adapter):
 
     adapter.send = noop  # Throws not implemented as default
     values = await asyncio.gather(
-        adapter.sendAndReceive(Basic.Get.create(), Basic.Report),
-        runDelayed(adapter.commandReceived, Basic.Report.create()),
+        adapter.sendAndReceive(Basic.Get(), Basic.Report),
+        runDelayed(adapter.commandReceived, Basic.Report()),
     )
     assert isinstance(values[0], Basic.Report)
 
@@ -72,7 +72,7 @@ async def test_sendAndReceive(adapter: Adapter):
 async def test_waitForMessage(adapter: Adapter):
     await asyncio.gather(
         adapter.waitForMessage(Basic.Get),
-        runDelayed(adapter.commandReceived, Basic.Get.create()),
+        runDelayed(adapter.commandReceived, Basic.Get()),
     )
 
 

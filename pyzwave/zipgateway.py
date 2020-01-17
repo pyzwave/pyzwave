@@ -29,7 +29,7 @@ class ZIPGateway(Adapter):
 
     async def getNodeList(self):
         self.nm_seq = self.nm_seq + 1
-        cmd = NetworkManagementProxy.NodeListGet.create(seqNo=self.nm_seq)
+        cmd = NetworkManagementProxy.NodeListGet(seqNo=self.nm_seq)
         try:
             report = await self.sendAndReceive(
                 cmd, NetworkManagementProxy.NodeListReport
@@ -60,7 +60,7 @@ class ZIPGateway(Adapter):
 
     async def send(self, cmd, sourceEP=0, destEP=0, timeout=3):
         self.seq = (self.seq + 1) & 0xFF
-        msg = Zip.ZipPacket.create(command=cmd)
+        msg = Zip.ZipPacket(command=cmd)
         msg.ackRequest = True
         msg.seqNo = self.seq
         msg.sourceEP = sourceEP

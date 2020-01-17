@@ -6,6 +6,7 @@ from pyzwave.const.ZW_classcmd import (
     BASIC_REPORT,
 )
 from pyzwave.message import Message
+from pyzwave.types import uint8_t
 from . import ZWaveMessage, registerCmdClass
 
 registerCmdClass(COMMAND_CLASS_BASIC, "BASIC")
@@ -19,3 +20,5 @@ class Get(Message):
 @ZWaveMessage(COMMAND_CLASS_BASIC, BASIC_REPORT)
 class Report(Message):
     NAME = "REPORT"
+
+    attributes = (("value", uint8_t),)

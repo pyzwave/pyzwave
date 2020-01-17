@@ -24,8 +24,8 @@ class ZipPacket(Message):
     ZIP_OPTION_MAINTENANCE_GET = 2
     ZIP_OPTION_MAINTENANCE_REPORT = 3
 
-    def __init__(self, cmdClass, cmd, command=None):
-        super().__init__(cmdClass, cmd)
+    def __init__(self, command=None):
+        super().__init__()
         self._flags0 = 0
         self._flags1 = self.ZIP_PACKET_FLAGS1_SECURE_ORIGIN
         self._seqNo = 0
