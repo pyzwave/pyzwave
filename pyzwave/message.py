@@ -41,7 +41,7 @@ class Message:
                     "Value for attribute '{}' in {} has not been set".format(name, self)
                 )
             if not hasattr(self._attributes[name], "serialize"):
-                raise Exception("Cannot encode", name, self._attributes[name])
+                raise ValueError("Cannot encode", name, self._attributes[name])
             else:
                 self._attributes[name].serialize(stream)
         return stream
