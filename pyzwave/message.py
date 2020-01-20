@@ -48,7 +48,11 @@ class Message:
 
     def parse(self, stream: BitStreamReader):
         for name, attrType in self.attributes:
-            value = attrType.deserialize(stream)
+            serializer = getattr(self, "parse_{}".format(name), None)
+            if serializer:
+                value = serializer(stream)
+            else:
+                value = attrType.deserialize(stream)
             # This can be optimized to reduze the second loop inb __setattr__
             setattr(self, name, value)
 
