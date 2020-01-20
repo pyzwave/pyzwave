@@ -1,3 +1,4 @@
+import ipaddress
 import struct
 
 
@@ -117,3 +118,12 @@ def reserved_t(size):
         sizeBits = size
 
     return reserved_t
+
+
+class IPv6(ipaddress.IPv6Address):
+    def serialize(self, stream: BitStreamWriter):
+        stream.extend(self.packed)
+
+    @classmethod
+    def deserialize(cls, stream: BitStreamReader):
+        return cls(stream.value(16))

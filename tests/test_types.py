@@ -1,6 +1,14 @@
+import ipaddress
 import pytest
 
-from pyzwave.types import BitStreamReader, BitStreamWriter, bits_t, flag_t, uint8_t
+from pyzwave.types import (
+    BitStreamReader,
+    BitStreamWriter,
+    bits_t,
+    flag_t,
+    IPv6,
+    uint8_t,
+)
 
 
 @pytest.fixture
@@ -58,6 +66,25 @@ def test_BitStreamWriter_bytes(streamWriter: BitStreamWriter):
 def test_flags_t():
     assert str(flag_t(True)) == "flags_t(True)"
     assert str(flag_t(False)) == "flags_t(False)"
+
+
+def test_IPv6_t():
+    pkt = b"X\x01\x00\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\xa8\x00\xee\xea\xec\xfa\xf9"
+    stream = BitStreamReader(pkt)
+    assert stream.byte() == 88
+    assert stream.byte() == 1
+    assert stream.bits(5) == 0
+    assert stream.bit() == 0
+    assert stream.bits(2) == 0
+    assert stream.byte() == 6
+    ipv6 = IPv6.deserialize(stream)
+    assert ipv6 == ipaddress.ip_address("::ffff:c0a8:ee")
+    streamWriter = BitStreamWriter()
+    ipv6.serialize(streamWriter)
+    assert (
+        streamWriter
+        == b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\xa8\x00\xee"
+    )
 
 
 def test_uint8_t(streamReader):
