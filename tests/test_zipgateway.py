@@ -151,11 +151,13 @@ def test_onMessage(gateway: ZIPGateway):
 
 @pytest.mark.asyncio
 async def test_send(gateway: ZIPGateway):
+    gateway._conn.send = MagicMock()
     basicGet = Basic.Get()
     [res, _] = await asyncio.gather(
         gateway.send(basicGet), runDelayed(gateway.ackReceived, 1)
     )
     assert res == True
+    gateway._conn.send.assert_called_once_with(b"#\x02\x80\x50\x01\x00\x00 \x02")
 
 
 @pytest.mark.asyncio

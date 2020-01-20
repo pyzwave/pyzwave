@@ -68,7 +68,7 @@ class ZIPGateway(Adapter):
             nackQueueFull=False,
             nackOptionError=False,
             headerExtIncluded=False,
-            zwCmdIncluded=False,
+            zwCmdIncluded=True,
             moreInformation=False,
             secureOrigin=True,
             seqNo=self.seq,
