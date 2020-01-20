@@ -19,11 +19,5 @@ def test_compose_no_attribute():
         Basic.Report().compose()
 
 
-def test_encode_list():
-    # Change when implemented
-    with pytest.raises(ValueError):
-        Basic.Get.encode([1, 2])
-
-
 def test_repr():
     assert str(Basic.Report()) == "<Z-Wave BASIC cmd REPORT>"

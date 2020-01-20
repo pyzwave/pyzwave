@@ -46,25 +46,6 @@ class Message:
                 self._attributes[name].serialize(stream)
         return stream
 
-    @classmethod
-    def encode(cls, *args):
-        cmdClass, cmd = ZWaveMessage.reverseMapping.get(cls, (None, None))
-        retval = bytearray(struct.pack("2B", cmdClass, cmd))
-        for arg in args:
-            if isinstance(arg, bytes):
-                retval.extend(arg)
-            elif isinstance(arg, bytearray):
-                retval.extend(arg)
-            elif isinstance(arg, int):
-                retval.append(arg)
-            else:
-                raise ValueError(
-                    "Cannot encode data of type {} as a Z-Wave message".format(
-                        type(arg)
-                    )
-                )
-        return bytes(retval)
-
     def parse(self, stream: BitStreamReader):
         for name, attrType in self.attributes:
             value = attrType.deserialize(stream)
@@ -93,14 +74,9 @@ class Message:
         name = self.NAME or "0x{:02X}".format(cmd)
         return "<Z-Wave {} cmd {}>".format(cmdClassName, name)
 
-    @staticmethod
-    def decode(pkt):
-        (cmdClass, cmd) = struct.unpack("2b", pkt[0:2])
-        hid = cmdClass << 8 | (cmd & 0xFF)
-        MsgCls = ZWaveMessage.get(hid, Message)
-        msg = MsgCls()
-        msg.parse(BitStreamReader(pkt[2:]))
-        return msg
+    @classmethod
+    def decode(cls, pkt: bytearray):
+        return cls.deserialize(BitStreamReader(pkt))
 
     @staticmethod
     def deserialize(stream: BitStreamReader):
