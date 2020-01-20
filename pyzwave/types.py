@@ -80,6 +80,10 @@ class uint8_t(uint_t):
     size = 1
 
 
+class uint32_t(uint_t):
+    size = 4
+
+
 class BitsBase:
     sizeBits = 1
 
