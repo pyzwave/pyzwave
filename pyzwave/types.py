@@ -41,14 +41,21 @@ class BitStreamWriter(bytearray):
         super().__init__()
         self._start = 0
 
+    def addBits(self, value, size):
+        byte = 0
+        if self._start == 0:
+            # Start new byte
+            self.append(0)
+        else:
+            # Extract the last one
+            byte = self[len(self) - 1]
+        self[len(self) - 1] = byte | (value << 8 - self._start - size)
+        self._start = (self._start + size) % 8
+
     def addBytes(self, value, size, signed):
         newVal = value.to_bytes(size, "little", signed=signed)
         self.extend(newVal)
         self._start = 0
-
-
-class flag_t(type):
-    sizeBits = 1
 
 
 class int_t(int):
@@ -70,3 +77,43 @@ class uint_t(int_t):
 
 class uint8_t(uint_t):
     size = 1
+
+
+class BitsBase:
+    sizeBits = 1
+
+    def __init__(self, value: bool):
+        self._value = bool(value)
+
+    def __eq__(self, other):
+        return self._value.__eq__(other)
+
+    def __repr__(self):
+        return "flags_t({})".format(self._value)
+
+    @classmethod
+    def deserialize(cls, stream: BitStreamReader):
+        return stream.bits(cls.sizeBits)
+
+    def serialize(self, stream: BitStreamWriter):
+        stream.addBits(self._value, self.sizeBits)
+
+
+class flag_t(BitsBase):
+    def __bool__(self):
+        return self._value
+
+
+def bits_t(size):
+    class bits_t(BitsBase):
+        sizeBits = size
+
+    return bits_t
+
+
+def reserved_t(size):
+    class reserved_t(BitsBase):
+        default = 0
+        sizeBits = size
+
+    return reserved_t

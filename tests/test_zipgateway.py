@@ -64,20 +64,82 @@ def test_onMessage(gateway: ZIPGateway):
 
     assert gateway.onMessage(b"malformed") == False
 
-    ackResponse = Zip.ZipPacket()
-    ackResponse.ackResponse = True
+    ackResponse = Zip.ZipPacket(
+        ackRequest=False,
+        ackResponse=True,
+        nackResponse=False,
+        nackWaiting=False,
+        nackQueueFull=False,
+        nackOptionError=False,
+        headerExtIncluded=False,
+        zwCmdIncluded=False,
+        moreInformation=False,
+        secureOrigin=True,
+        seqNo=0,
+        sourceEP=0,
+        destEP=0,
+        command=None,
+    )
     assert gateway.onMessage(ackResponse.compose()) == True
     gateway.ackReceived.assert_called_once()
 
-    nackResponse = Zip.ZipPacket()
-    nackResponse.nackResponse = True
+    nackResponse = Zip.ZipPacket(
+        ackRequest=False,
+        ackResponse=False,
+        nackResponse=True,
+        nackWaiting=False,
+        nackQueueFull=False,
+        nackOptionError=False,
+        headerExtIncluded=False,
+        zwCmdIncluded=False,
+        moreInformation=False,
+        secureOrigin=True,
+        seqNo=0,
+        sourceEP=0,
+        destEP=0,
+        command=None,
+    )
+    msg = Message.decode(nackResponse.compose())
+    assert msg.ackRequest == False
+    assert msg.ackResponse == False
+    assert msg.nackResponse == True
+
     assert gateway.onMessage(nackResponse.compose()) == False
 
-    ackRequest = Zip.ZipPacket()
-    ackRequest.ackRequest = True
+    ackRequest = Zip.ZipPacket(
+        ackRequest=True,
+        ackResponse=False,
+        nackResponse=False,
+        nackWaiting=False,
+        nackQueueFull=False,
+        nackOptionError=False,
+        headerExtIncluded=False,
+        zwCmdIncluded=False,
+        moreInformation=False,
+        secureOrigin=True,
+        seqNo=0,
+        sourceEP=0,
+        destEP=0,
+        command=None,
+    )
     assert gateway.onMessage(ackRequest.compose()) == False
 
-    pkt = Zip.ZipPacket(command=Basic.Get())
+    pkt = Zip.ZipPacket(
+        ackRequest=False,
+        ackResponse=False,
+        nackResponse=False,
+        nackWaiting=False,
+        nackQueueFull=False,
+        nackOptionError=False,
+        headerExtIncluded=False,
+        zwCmdIncluded=True,
+        moreInformation=False,
+        secureOrigin=True,
+        seqNo=0,
+        sourceEP=0,
+        destEP=0,
+        command=Basic.Get(),
+    )
     assert gateway.onMessage(pkt.compose()) == True
     gateway.commandReceived.assert_called_once()
 

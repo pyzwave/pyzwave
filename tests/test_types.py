@@ -28,6 +28,18 @@ def test_BitStreamReader_bytes(streamReader):
     assert streamReader.value(1) == b"\x01"
 
 
+def test_BitStreamWriter_bits(streamWriter: BitStreamWriter):
+    streamWriter.addBits(1, 1)
+    assert streamWriter == b"\x80"
+    streamWriter.addBits(3, 2)
+    assert streamWriter == b"\xE0"
+    streamWriter.addBits(3, 5)
+    assert streamWriter == b"\xE3"
+    # Make sure a new byte is appended
+    streamWriter.addBits(1, 1)
+    assert streamWriter == b"\xE3\x80"
+
+
 def test_BitStreamWriter_bytes(streamWriter: BitStreamWriter):
     streamWriter.addBytes(2, 1, False)
     assert streamWriter == b"\x02"

@@ -60,11 +60,22 @@ class ZIPGateway(Adapter):
 
     async def send(self, cmd, sourceEP=0, destEP=0, timeout=3):
         self.seq = (self.seq + 1) & 0xFF
-        msg = Zip.ZipPacket(command=cmd)
-        msg.ackRequest = True
-        msg.seqNo = self.seq
-        msg.sourceEP = sourceEP
-        msg.destEP = destEP
+        msg = Zip.ZipPacket(
+            ackRequest=True,
+            ackResponse=False,
+            nackResponse=False,
+            nackWaiting=False,
+            nackQueueFull=False,
+            nackOptionError=False,
+            headerExtIncluded=False,
+            zwCmdIncluded=False,
+            moreInformation=False,
+            secureOrigin=True,
+            seqNo=self.seq,
+            sourceEP=sourceEP,
+            destEP=destEP,
+            command=cmd,
+        )
         self._conn.send(msg.compose())
         try:
             await self.waitForAck(msg.seqNo, timeout=timeout)
