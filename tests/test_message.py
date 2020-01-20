@@ -30,5 +30,9 @@ def test_compose_non_serializable():
         msg.compose()
 
 
+def test_compose_type():
+    assert type(Basic.Get().compose()) == bytes
+
+
 def test_repr():
     assert str(Basic.Report()) == "<Z-Wave BASIC cmd REPORT>"

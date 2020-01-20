@@ -23,10 +23,10 @@ class Message:
             else:
                 self._attributes[attrName] = attrType(kwargs[attrName])
 
-    def compose(self) -> bytearray:
+    def compose(self) -> bytes:
         cmdClass, cmd = ZWaveMessage.reverseMapping.get(self.__class__, (None, None))
         if cmdClass is None or cmd is None:
-            # Pure Message object, encode to empty bytearray
+            # Pure Message object, encode to empty bytes
             return b""
         stream = BitStreamWriter()
         stream.addBytes(cmdClass, 1, False)
@@ -44,7 +44,7 @@ class Message:
                 raise ValueError("Cannot encode", name, self._attributes[name])
             else:
                 self._attributes[name].serialize(stream)
-        return stream
+        return bytes(stream)
 
     def parse(self, stream: BitStreamReader):
         for name, attrType in self.attributes:
