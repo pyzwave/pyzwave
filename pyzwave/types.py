@@ -31,7 +31,7 @@ class BitStreamReader:
         return self.value(size, advance=False)
 
     def value(self, size: int, advance: bool = True) -> bytes:
-        startByte = int((self._start + size) / 8)
+        startByte = int(self._start / 8)
         if advance:
             self.advance(size * 8)
         return self._value[startByte : startByte + size]
