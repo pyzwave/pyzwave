@@ -5,10 +5,6 @@ import logging
 
 import socket
 from struct import pack, unpack
-import sys
-
-# We need to mock away dtls since this may segfault if not patched
-sys.modules["dtls"] = __import__("mock_dtls")
 
 from pyzwave.message import Message
 from pyzwave.commandclass import NetworkManagementProxy, Zip

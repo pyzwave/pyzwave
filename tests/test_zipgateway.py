@@ -2,6 +2,11 @@ import asyncio
 import pytest
 from unittest.mock import MagicMock
 
+import sys
+
+# We need to mock away dtls since this may segfault if not patched
+sys.modules["dtls"] = __import__("mock_dtls")
+
 from pyzwave.zipgateway import ZIPGateway
 from pyzwave.message import Message
 from pyzwave.commandclass import Zip, Basic
