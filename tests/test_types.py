@@ -1,6 +1,6 @@
 import pytest
 
-from pyzwave.types import BitStreamReader, BitStreamWriter, uint8_t
+from pyzwave.types import BitStreamReader, BitStreamWriter, bits_t, flag_t, uint8_t
 
 
 @pytest.fixture
@@ -11,6 +11,12 @@ def streamReader():
 @pytest.fixture
 def streamWriter():
     return BitStreamWriter()
+
+
+def test_bits_t():
+    assert bits_t(1).sizeBits == 1
+    assert bits_t(2).sizeBits == 2
+    assert bits_t(4).sizeBits == 4
 
 
 def test_BitStreamReader_bits(streamReader):
@@ -47,6 +53,11 @@ def test_BitStreamWriter_bytes(streamWriter: BitStreamWriter):
     assert streamWriter == b"\x02\x02\x00"
     streamWriter.addBytes(-2, 1, True)
     assert streamWriter == b"\x02\x02\x00\xFE"
+
+
+def test_flags_t():
+    assert str(flag_t(True)) == "flags_t(True)"
+    assert str(flag_t(False)) == "flags_t(False)"
 
 
 def test_uint8_t(streamReader):
