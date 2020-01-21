@@ -33,4 +33,4 @@ def registerCmdClass(cmdClass, name):
 
 
 # pylint: disable=wrong-import-position
-from . import Basic, NetworkManagementProxy, Zip
+from . import Basic, NetworkManagementProxy, Zip, ZipND

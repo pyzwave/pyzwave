@@ -4,7 +4,7 @@ import asyncio
 import logging
 
 from pyzwave.message import Message
-from pyzwave.commandclass import Zip
+from pyzwave.commandclass import Zip, ZipND
 from pyzwave.dtlsconnection import DTLSConnection
 from .adapter import Adapter
 
@@ -28,21 +28,24 @@ class ZIPConnection(Adapter):
     def onMessage(self, pkt):
         """Called when a packed has recevied from the connection"""
         zipPkt = Message.decode(pkt)
-        if not isinstance(zipPkt, Zip.ZipPacket):
-            _LOGGER.warning("Received non Z/IP packet from zipgateway: %s", zipPkt)
+        if isinstance(zipPkt, Zip.ZipPacket):
+            if zipPkt.ackResponse:
+                self.ackReceived(zipPkt.seqNo)
+                return True
+            if zipPkt.nackResponse:
+                _LOGGER.error("NAck response not implemented")
+                # self.nackReceived(zipPkt.seqNo)
+                return False
+            if zipPkt.ackRequest:
+                _LOGGER.error("This message needs an ack response. Not implemented")
+                return False
+            if zipPkt.zwCmdIncluded:
+                self.commandReceived(zipPkt.command)
+        elif isinstance(zipPkt, ZipND.ZipNodeAdvertisement):
+            self.commandReceived(zipPkt)
+        else:
+            _LOGGER.warning("Received unknown Z/IP packet from zipgateway: %s", zipPkt)
             return False
-        if zipPkt.ackResponse:
-            self.ackReceived(zipPkt.seqNo)
-            return True
-        if zipPkt.nackResponse:
-            _LOGGER.error("NAck response not implemented")
-            # self.nackReceived(zipPkt.seqNo)
-            return False
-        if zipPkt.ackRequest:
-            _LOGGER.error("This message needs an ack response. Not implemented")
-            return False
-        if zipPkt.zwCmdIncluded:
-            self.commandReceived(zipPkt.command)
         return True
 
     @property

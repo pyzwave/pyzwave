@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.message import Message
-from pyzwave.commandclass import Zip, Basic
+from pyzwave.commandclass import Basic, Zip, ZipND
 
 # We need to mock away dtls since this may segfault if not patched
 sys.modules["dtls"] = __import__("mock_dtls")
@@ -133,6 +133,11 @@ def test_onMessage(connection: ZIPConnection):
     )
     assert connection.onMessage(pkt.compose()) is True
     connection.commandReceived.assert_called_once()
+
+    pkt = ZipND.ZipNodeAdvertisement(
+        local=False, validity=0, nodeId=6, ipv6=0, homeId=0,
+    )
+    assert connection.onMessage(pkt.compose()) is True
 
 
 def test_psk():

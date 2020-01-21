@@ -5,6 +5,7 @@
 # pylint: disable=protected-access
 
 import asyncio
+import ipaddress
 import sys
 
 import pytest
@@ -52,3 +53,14 @@ async def test_getNodeList_timeout(gateway: ZIPGateway):
     gateway.sendAndReceive = dummySendAndReceive
     nodeList = await gateway.getNodeList()
     assert nodeList == {}
+
+
+@pytest.mark.asyncio
+async def test_ipOfNode(gateway: ZIPGateway):
+    # pylint: disable=line-too-long
+    pkt = b"X\x01\x00\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\xa8\x00\xee\xea\xec\xfa\xf9"
+    zipNodeAdvertisement = Message.decode(pkt)
+    [reply, _] = await asyncio.gather(
+        gateway.ipOfNode(6), runDelayed(gateway.commandReceived, zipNodeAdvertisement)
+    )
+    assert reply == ipaddress.IPv6Address("::ffff:c0a8:ee")
