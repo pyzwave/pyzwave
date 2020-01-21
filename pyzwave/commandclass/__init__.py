@@ -2,7 +2,12 @@ import logging
 
 
 class CommandClassMessageCollection(dict):
+    """
+    Decorator for registering a CommandClass to the system
+    """
+
     def __init__(self):
+        super().__init__()
         self.reverseMapping = {}
 
     def __call__(self, cmdClass, cmd):
@@ -16,10 +21,14 @@ class CommandClassMessageCollection(dict):
 
 
 ZWaveMessage = CommandClassMessageCollection()  # pylint: disable=invalid-name
-cmdClasses = {}
+cmdClasses = {}  # pylint: disable=invalid-name
 
 
 def registerCmdClass(cmdClass, name):
+    """
+    Function for registering the name of a command class to
+    make output prettier
+    """
     cmdClasses[cmdClass] = name
 
 

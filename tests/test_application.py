@@ -1,13 +1,16 @@
-import asyncio
+# pylint: disable=missing-function-docstring
+# pylint: disable=invalid-name
+# pylint: disable=redefined-outer-name
 import pytest
 
-from pyzwave.adapter import Adapter
 from pyzwave.application import Application
+
+from test_adaper import AdapterImpl
 
 
 @pytest.fixture
-def app():
-    return Application(Adapter())
+def app() -> Application:
+    return Application(AdapterImpl())
 
 
 def test_nodes(app: Application):
@@ -17,7 +20,7 @@ def test_nodes(app: Application):
 @pytest.mark.asyncio
 async def test_shutdown(app: Application):
     # Function not yet implemented. Update this function when it is
-    assert await app.shutdown() == None
+    assert await app.shutdown() is None
 
 
 @pytest.mark.asyncio

@@ -1,12 +1,11 @@
+# pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=invalid-name
+# pylint: disable=unidiomatic-typecheck
 import pytest
-import struct
 
 from pyzwave.message import Message
 from pyzwave.commandclass import Basic, ZWaveMessage
-from pyzwave.const.ZW_classcmd import (
-    COMMAND_CLASS_BASIC,
-    BASIC_GET,
-)
 
 
 @pytest.fixture

@@ -1,3 +1,7 @@
+# pylint: disable=missing-function-docstring
+# pylint: disable=invalid-name
+# pylint: disable=redefined-outer-name
+
 import ipaddress
 import pytest
 
@@ -69,6 +73,7 @@ def test_flags_t():
 
 
 def test_IPv6_t():
+    # pylint: disable=line-too-long
     pkt = b"X\x01\x00\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\xa8\x00\xee\xea\xec\xfa\xf9"
     stream = BitStreamReader(pkt)
     assert stream.byte() == 88

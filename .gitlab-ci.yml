@@ -9,6 +9,14 @@ black:
     - pip install -r requirements-dev.txt
     - black --check pyzwave tests
 
+pylint:
+  image: python:3.6-alpine
+  stage: test
+  script:
+    - apk add -U git
+    - pip install pylint
+    - pylint --rcfile=.pylintrc $(git ls-tree --name-only --full-tree -r HEAD | grep '\.py$' | sort | tr '\n' ' ') || RETCODE=1
+
 unittest:
   image: python:3.6-alpine
   stage: test

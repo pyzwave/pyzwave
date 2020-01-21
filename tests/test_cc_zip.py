@@ -1,3 +1,8 @@
+# pylint: disable=missing-function-docstring
+# pylint: disable=invalid-name
+# pylint: disable=unidiomatic-typecheck
+# pylint: disable=singleton-comparison
+
 import pytest
 from pyzwave.commandclass import NetworkManagementProxy, Zip
 from pyzwave.message import Message
@@ -25,6 +30,7 @@ def test_zip_packet_networkmanagementproxt_nodelistget():
 
 
 def test_zip_packet_networkmanagementproxt_nodelistreport():
+    # pylint: disable=line-too-long
     pkt = b"#\x02\x00\xd0`\x00\x00\x05\x84\x02\x04\x00R\x02\x01\x00\x01!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     msg = Message.decode(pkt)
     assert isinstance(msg, Zip.ZipPacket)

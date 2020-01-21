@@ -3,11 +3,8 @@
 import asyncio
 import logging
 
-import socket
-from struct import pack, unpack
-
 from pyzwave.message import Message
-from pyzwave.commandclass import NetworkManagementProxy, Zip
+from pyzwave.commandclass import Zip
 from pyzwave.dtlsconnection import DTLSConnection
 from .adapter import Adapter
 
@@ -15,17 +12,21 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ZIPConnection(Adapter):
-    def __init__(self):
+    """Class for connecting to a zipgateway or zipnode"""
+
+    def __init__(self, address, psk):
         super().__init__()
-        self.nm_seq = 0
-        self.seq = 0
+        self._seq = 0
+        self._address = address
+        self._psk = psk
         self._conn = DTLSConnection()
         self._conn.onMessage(self.onMessage)
 
-    async def connect(self, address, psk):
-        await self._conn.connect(address, psk)
+    async def connect(self):
+        await self._conn.connect(self._address, self._psk)
 
     def onMessage(self, pkt):
+        """Called when a packed has recevied from the connection"""
         zipPkt = Message.decode(pkt)
         if not isinstance(zipPkt, Zip.ZipPacket):
             _LOGGER.warning("Received non Z/IP packet from zipgateway: %s", zipPkt)
@@ -44,8 +45,13 @@ class ZIPConnection(Adapter):
             self.commandReceived(zipPkt.command)
         return True
 
+    @property
+    def psk(self) -> bytes:
+        """The psk used for the connection"""
+        return self._psk
+
     async def send(self, cmd, sourceEP=0, destEP=0, timeout=3):
-        self.seq = (self.seq + 1) & 0xFF
+        self._seq = (self._seq + 1) & 0xFF
         msg = Zip.ZipPacket(
             ackRequest=True,
             ackResponse=False,
@@ -57,7 +63,7 @@ class ZIPConnection(Adapter):
             zwCmdIncluded=True,
             moreInformation=False,
             secureOrigin=True,
-            seqNo=self.seq,
+            seqNo=self._seq,
             sourceEP=sourceEP,
             destEP=destEP,
             command=cmd,

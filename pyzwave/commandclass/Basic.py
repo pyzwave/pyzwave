@@ -1,5 +1,3 @@
-import struct
-
 from pyzwave.const.ZW_classcmd import (
     COMMAND_CLASS_BASIC,
     BASIC_GET,
@@ -14,11 +12,15 @@ registerCmdClass(COMMAND_CLASS_BASIC, "BASIC")
 
 @ZWaveMessage(COMMAND_CLASS_BASIC, BASIC_GET)
 class Get(Message):
+    """Command Class message COMMAND_CLASS_BASIC BASIC_GET"""
+
     NAME = "GET"
 
 
 @ZWaveMessage(COMMAND_CLASS_BASIC, BASIC_REPORT)
 class Report(Message):
+    """Command Class message COMMAND_CLASS_BASIC BASIC_REPORT"""
+
     NAME = "REPORT"
 
     attributes = (("value", uint8_t),)

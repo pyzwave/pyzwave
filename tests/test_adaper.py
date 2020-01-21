@@ -1,14 +1,23 @@
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=invalid-name
+# pylint: disable=redefined-outer-name
+
 import asyncio
 import pytest
 
 from pyzwave.adapter import Adapter
 from pyzwave.commandclass import Basic
-import logging
+
+
+class AdapterImpl(Adapter):
+    async def connect(self):
+        await super().connect()
 
 
 @pytest.fixture
-def adapter():
-    return Adapter()
+def adapter() -> Adapter:
+    return AdapterImpl()
 
 
 async def runDelayed(func, *args):
@@ -34,7 +43,7 @@ async def test_ack_timeout(adapter: Adapter):
 
 
 def test_ack_not_existing(adapter: Adapter):
-    assert adapter.ackReceived(43) == False
+    assert adapter.ackReceived(43) is False
 
 
 @pytest.mark.asyncio
@@ -57,7 +66,7 @@ async def test_send(adapter: Adapter):
 
 @pytest.mark.asyncio
 async def test_sendAndReceive(adapter: Adapter):
-    async def noop(x):
+    async def noop(_):
         pass
 
     adapter.send = noop  # Throws not implemented as default

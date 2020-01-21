@@ -1,19 +1,23 @@
 import ipaddress
-import struct
 
 
 class BitStreamReader:
+    """Class for parsing streams bitwise"""
+
     def __init__(self, value):
         self._start = 0
         self._value = value
 
     def advance(self, length):
+        """Advance the stream length bits"""
         self._start += length
 
     def bit(self, advance: bool = True) -> int:
+        """Return the next bit in the stream"""
         return self.bits(1, advance)
 
     def bits(self, size: int = 8, advance=True) -> int:
+        """Return size number of bits in the stream"""
         startBit = self._start % 8
         byte = (self.peekByte() << startBit) & 0xFF  # Mask off top part of byte
         byte = (byte >> 8 - size) & 0xFF  # Shift down and mask
@@ -22,15 +26,19 @@ class BitStreamReader:
         return byte
 
     def byte(self, advance: bool = True) -> int:
+        """Return one byte from the stream"""
         return int.from_bytes(self.value(1, advance), "little", signed=False)
 
     def peekByte(self) -> int:
+        """Return the next byte from the stream without advancing the stream"""
         return self.byte(advance=False)
 
     def peekValue(self, size: int) -> bytes:
+        """Return the next value from the stream without advancing the stream"""
         return self.value(size, advance=False)
 
     def value(self, size: int, advance: bool = True) -> bytes:
+        """Return the next size number of bytes from the stream"""
         startByte = int(self._start / 8)
         if advance:
             self.advance(size * 8)
@@ -38,11 +46,14 @@ class BitStreamReader:
 
 
 class BitStreamWriter(bytearray):
+    """Class for wringing a butearray bitwise"""
+
     def __init__(self):
         super().__init__()
         self._start = 0
 
     def addBits(self, value, size):
+        """Add size number of bits to the stream"""
         byte = 0
         if self._start == 0:
             # Start new byte
@@ -54,37 +65,50 @@ class BitStreamWriter(bytearray):
         self._start = (self._start + size) % 8
 
     def addBytes(self, value, size, signed):
+        """Add size number of bytes to the stream"""
         newVal = value.to_bytes(size, "little", signed=signed)
         self.extend(newVal)
         self._start = 0
 
 
-class int_t(int):
+class int_t(int):  # pylint: disable=invalid-name
+    """Base class for any int like type"""
+
     signed = True
     size = 0
 
     def serialize(self, stream: BitStreamWriter):
+        """Serialize into stream"""
         stream.addBytes(self, self.size, self.signed)
 
 
-class uint_t(int_t):
+class uint_t(int_t):  # pylint: disable=invalid-name
+    """Base class for any unsigned int like type"""
+
     signed = False
     size = 1
 
     @classmethod
     def deserialize(cls, stream: BitStreamReader):
+        """Deserialize unsigned value from stream"""
         return cls.from_bytes(stream.value(cls.size), "little", signed=cls.signed)
 
 
-class uint8_t(uint_t):
+class uint8_t(uint_t):  # pylint: disable=invalid-name
+    """Unsigned byte"""
+
     size = 1
 
 
-class uint32_t(uint_t):
+class uint32_t(uint_t):  # pylint: disable=invalid-name
+    """Unsigned 32 bits value"""
+
     size = 4
 
 
 class BitsBase:
+    """Base type for bit values"""
+
     sizeBits = 1
 
     def __init__(self, value: bool):
@@ -98,26 +122,38 @@ class BitsBase:
 
     @classmethod
     def deserialize(cls, stream: BitStreamReader):
+        """Deserialize bits from stream"""
         return stream.bits(cls.sizeBits)
 
     def serialize(self, stream: BitStreamWriter):
+        """Serialize bits into stream"""
         stream.addBits(self._value, self.sizeBits)
 
 
-class flag_t(BitsBase):
+class flag_t(BitsBase):  # pylint: disable=invalid-name
+    """Type represeting one bit"""
+
     def __bool__(self):
         return self._value
 
 
-def bits_t(size):
-    class bits_t(BitsBase):
+def bits_t(size):  # pylint: disable=invalid-name
+    """Return the type for size number of bits"""
+    # pylint: disable=redefined-outer-name
+    class bits_t(BitsBase):  # pylint: disable=invalid-name
+        """Type represting arbitrary bits"""
+
         sizeBits = size
 
     return bits_t
 
 
-def reserved_t(size):
-    class reserved_t(BitsBase):
+def reserved_t(size):  # pylint: disable=invalid-name
+    """Return the type for bits that are reserved and must not be used"""
+    # pylint: disable=redefined-outer-name
+    class reserved_t(BitsBase):  # pylint: disable=invalid-name
+        """Type for when the bits are reserved and must not be used"""
+
         default = 0
         sizeBits = size
 
@@ -125,9 +161,13 @@ def reserved_t(size):
 
 
 class IPv6(ipaddress.IPv6Address):
+    """Type for a IPv6 address"""
+
     def serialize(self, stream: BitStreamWriter):
+        """Serialize the IPv6 address"""
         stream.extend(self.packed)
 
     @classmethod
     def deserialize(cls, stream: BitStreamReader):
+        """Deserialize an IPv6 address"""
         return cls(stream.value(16))

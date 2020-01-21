@@ -1,44 +1,40 @@
-import asyncio
-import pytest
-from unittest.mock import MagicMock
+# pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=invalid-name
+# pylint: disable=redefined-outer-name
+# pylint: disable=protected-access
 
+import asyncio
 import sys
+
+import pytest
+
 
 # We need to mock away dtls since this may segfault if not patched
 sys.modules["dtls"] = __import__("mock_dtls")
 
+# pylint: disable=wrong-import-position
 from pyzwave.zipgateway import ZIPGateway
 from pyzwave.message import Message
-from pyzwave.commandclass import Zip, Basic
 
-
-async def runDelayed(func, *args):
-    await asyncio.sleep(0)  # Make sure we wait before sending
-    return func(*args)
-
-
-class DummyConnection:
-    async def connect(self, address, psk):
-        pass
-
-    def send(self, msg):
-        pass
+from test_zipconnection import DummyConnection, runDelayed
 
 
 @pytest.fixture
 def gateway():
-    gateway = ZIPGateway()
+    gateway = ZIPGateway(None, None)
     gateway._conn = DummyConnection()
     return gateway
 
 
 @pytest.mark.asyncio
 async def test_getNodeList(gateway: ZIPGateway):
+    # pylint: disable=line-too-long
     nodeListReport = Message.decode(
         b"R\x02\x02\x00\x01!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     )
 
-    async def dummySend(msg):
+    async def dummySend(_msg):
         pass
 
     gateway.send = dummySend

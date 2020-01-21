@@ -19,7 +19,6 @@ from ctypes import (
 )
 
 import dtls
-import _ssl
 
 
 dtls.do_patch()
@@ -35,6 +34,8 @@ CLIENTCBFUNC = CFUNCTYPE(None, c_void_p, c_int, c_int)
 
 
 class DTLSConnection(threading.Thread):
+    """Connection object to create a DTLS connection using PSK"""
+
     def __init__(self):
         super().__init__(name="Z-Wave DTLS connection")
         self._address = None
@@ -43,20 +44,22 @@ class DTLSConnection(threading.Thread):
         self._sock = None
         self._connectionEvent = asyncio.Event()
         self._loop = asyncio.get_event_loop()
+        self._onMessage = None
         self.setDaemon(True)
 
         self.clientPskCbWrapper = CLIENTPSKFUNC(self.clientPskCb)
         self.clientCbWrapper = CLIENTCBFUNC(self.clientCb)
 
     async def connect(self, address, psk):
+        """Connect to remote using psk"""
         self._address = address
         self._psk = psk
         self._connectionEvent.clear()
         self.start()
         await self._connectionEvent.wait()
 
-    def run(self):
-        self._sock = self.createDtlsPskSock(self._address, self._psk)
+    def run(self):  # pylint: disable=missing-function-docstring
+        self._sock = self.createDtlsPskSock()
         self._loop.call_soon_threadsafe(self._connectionEvent.set)
         self._running = True
         while self._running:
@@ -71,39 +74,44 @@ class DTLSConnection(threading.Thread):
                 break
 
     def send(self, msg):
+        """Send bytes to socket"""
         if not self._sock:
             _LOGGER.error("Could not send, not yet connected!")
             return
         self._sock.send(msg)
 
     def onMessage(self, cbfn):
+        """Set the callback function to use when data has arrived"""
         self._onMessage = cbfn
 
     def stop(self):
+        """Stop the thread"""
         self._running = False
 
-    def clientPskCb(self, ssl, hint, identity, max_idenity_len, cpsk, max_psk_len):
+    def clientPskCb(self, _ssl, _hint, identity, _maxIdenityLen, cpsk, _maxPskLen):
+        """Callback function used by ssl to get the DTSL psk"""
         (iden, pypsk) = (
             "Client_identity",
             self._psk,
         )
-        l = len(pypsk)
-        memmove(cpsk, pypsk, l)
+        length = len(pypsk)
+        memmove(cpsk, pypsk, length)
         if iden:
             memmove(identity, iden.encode("utf-8"), len(iden))
         else:
             memset(identity, 0, 1)
-        return l
+        return length
 
-    def clientCb(self, ssl, where, ret):
+    def clientCb(self, _ssl, where, ret):  # pylint: disable=missing-function-docstring
 
+        # pylint: disable=protected-access
         if where & SSL_CB_ALERT and self._sock._connected:
 
             print("Client Alert", where, ret, self._sock._connected)
             # sock.unwrap();
             self._sock._connected = True
 
-            self._sock._sslobj = _ssl.sslwrap(
+            self._sock._sslobj = _ssl.sslwrap(  # pylint: disable=no-member
                 self._sock._sock,
                 False,
                 None,
@@ -121,7 +129,8 @@ class DTLSConnection(threading.Thread):
             # 	pass
             # sock.shutdown(socket.SHUT_WR)
 
-    def createDtlsPskSock(self, address, psk):
+    def createDtlsPskSock(self):
+        """Create a new socket and configure it for DTLS PSK"""
         sock = ssl.wrap_socket(
             socket.socket(socket.AF_INET, socket.SOCK_DGRAM),
             do_handshake_on_connect=False,
@@ -129,7 +138,7 @@ class DTLSConnection(threading.Thread):
         )
         # sock.setblocking(True)
         # sock.settimeout(20.0)
-        sock.connect((address, 41230))
+        sock.connect((self._address, 41230))
 
         # Using ctypes we interface with the function SSL_set_psk_client_callback from OpenSSL
         proto = (
@@ -137,23 +146,23 @@ class DTLSConnection(threading.Thread):
             dtls.openssl.libssl,
             ((None, "ret"), (dtls.openssl.SSL, "ctx"), (c_void_p, "psk_client_cb")),
         )
-        dtls.openssl._make_function(*proto)
+        dtls.openssl._make_function(*proto)  # pylint: disable=protected-access
 
         proto = (
             "SSL_set_info_callback",
             dtls.openssl.libssl,
             ((None, "ret"), (dtls.openssl.SSL, "ctx"), (c_void_p, "callback")),
         )
-        dtls.openssl._make_function(*proto)
+        dtls.openssl._make_function(*proto)  # pylint: disable=protected-access
 
-        # pylint: disable=no-member
+        # pylint: disable=no-member,protected-access
         dtls.openssl.SSL_set_psk_client_callback(
             sock._sslobj._ssl.value, self.clientPskCbWrapper
         )
 
         dtls.openssl.SSL_set_info_callback(
             sock._sslobj._ssl.value, self.clientCbWrapper
-        )
+        )  # pylint: disable=protected-access
 
         sock.do_handshake()
         return sock

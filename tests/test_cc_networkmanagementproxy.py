@@ -1,3 +1,6 @@
+# pylint: disable=missing-function-docstring
+# pylint: disable=invalid-name
+
 from pyzwave.commandclass import NetworkManagementProxy
 from pyzwave.message import Message
 
@@ -11,6 +14,7 @@ def test_node_list_get():
 
 
 def test_node_list_report():
+    # pylint: disable=line-too-long
     pkt = b"R\x02\x02\x00\x01!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     msg = Message.decode(pkt)
     assert isinstance(msg, NetworkManagementProxy.NodeListReport)

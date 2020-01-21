@@ -1,11 +1,8 @@
-import struct
-
 from pyzwave.const.ZW_classcmd import COMMAND_CLASS_ZIP, COMMAND_ZIP_PACKET
 from pyzwave.message import Message
 from pyzwave.types import (
     BitStreamReader,
     BitStreamWriter,
-    bits_t,
     flag_t,
     reserved_t,
     uint8_t,
@@ -16,22 +13,28 @@ registerCmdClass(COMMAND_CLASS_ZIP, "ZIP")
 
 
 class HeaderExtension(dict):
+    """
+    Decoder type for header extensions in Command Class message ZIP_PACKET
+    """
+
     default = {}
 
     def serialize(self, stream: BitStreamWriter):
-        pass
+        """Serialize header extension into stream"""
 
     @classmethod
     def deserialize(cls, stream: BitStreamReader):
+        """Deserialize header extension from stream"""
         retval = {}
         extLength = stream.byte() - 1
         val = stream.value(extLength)
-        for optionType, optionValue in cls.tlvIterator(val):
+        for _optionType, _optionValue in cls.tlvIterator(val):
             pass
         return retval
 
     @staticmethod
     def tlvIterator(pkt):
+        """Parse tlv from bytearray"""
         i = 0
         while i < len(pkt):
             tlvType = pkt[i]
@@ -45,6 +48,10 @@ class HeaderExtension(dict):
 
 @ZWaveMessage(COMMAND_CLASS_ZIP, COMMAND_ZIP_PACKET)
 class ZipPacket(Message):
+    """
+    Command Class message COMMAND_CLASS_ZIP COMMAND_ZIP_PACKET
+    """
+
     NAME = "ZIP_PACKET"
 
     attributes = (
@@ -73,7 +80,10 @@ class ZipPacket(Message):
     ZIP_OPTION_MAINTENANCE_GET = 2
     ZIP_OPTION_MAINTENANCE_REPORT = 3
 
-    def parse_headerExtension(self, stream: BitStreamReader):
+    def parse_headerExtension(
+        self, stream: BitStreamReader
+    ):  # pylint: disable=invalid-name
+        """Parse header extension if supplied"""
         if not self.headerExtIncluded:
             return {}
         return HeaderExtension.deserialize(stream)

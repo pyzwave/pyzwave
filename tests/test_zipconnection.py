@@ -1,15 +1,22 @@
+# pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=invalid-name
+# pylint: disable=redefined-outer-name
+# pylint: disable=protected-access
+# pylint: disable=singleton-comparison
+
 import asyncio
-import pytest
+import sys
 from unittest.mock import MagicMock
 
-import sys
+import pytest
+
+from pyzwave.message import Message
+from pyzwave.commandclass import Zip, Basic
 
 # We need to mock away dtls since this may segfault if not patched
 sys.modules["dtls"] = __import__("mock_dtls")
-
-from pyzwave.zipconnection import ZIPConnection
-from pyzwave.message import Message
-from pyzwave.commandclass import Zip, Basic
+from pyzwave.zipconnection import ZIPConnection  # pylint: disable=wrong-import-position
 
 
 async def runDelayed(func, *args):
@@ -27,21 +34,21 @@ class DummyConnection:
 
 @pytest.fixture
 def connection() -> ZIPConnection:
-    connection = ZIPConnection()
+    connection = ZIPConnection(None, None)
     connection._conn = DummyConnection()
     return connection
 
 
 @pytest.mark.asyncio
 async def test_connect(connection: ZIPConnection):
-    await connection.connect("127.0.0.1", "123456789")
+    await connection.connect()
 
 
 def test_onMessage(connection: ZIPConnection):
     connection.ackReceived = MagicMock()
     connection.commandReceived = MagicMock()
 
-    assert connection.onMessage(b"malformed") == False
+    assert connection.onMessage(b"malformed") is False
 
     ackResponse = Zip.ZipPacket(
         ackRequest=False,
@@ -59,7 +66,7 @@ def test_onMessage(connection: ZIPConnection):
         destEP=0,
         command=None,
     )
-    assert connection.onMessage(ackResponse.compose()) == True
+    assert connection.onMessage(ackResponse.compose()) is True
     connection.ackReceived.assert_called_once()
 
     nackResponse = Zip.ZipPacket(
@@ -83,7 +90,7 @@ def test_onMessage(connection: ZIPConnection):
     assert msg.ackResponse == False
     assert msg.nackResponse == True
 
-    assert connection.onMessage(nackResponse.compose()) == False
+    assert connection.onMessage(nackResponse.compose()) is False
 
     ackRequest = Zip.ZipPacket(
         ackRequest=True,
@@ -101,7 +108,7 @@ def test_onMessage(connection: ZIPConnection):
         destEP=0,
         command=None,
     )
-    assert connection.onMessage(ackRequest.compose()) == False
+    assert connection.onMessage(ackRequest.compose()) is False
 
     pkt = Zip.ZipPacket(
         ackRequest=False,
@@ -119,8 +126,14 @@ def test_onMessage(connection: ZIPConnection):
         destEP=0,
         command=Basic.Get(),
     )
-    assert connection.onMessage(pkt.compose()) == True
+    assert connection.onMessage(pkt.compose()) is True
     connection.commandReceived.assert_called_once()
+
+
+def test_psk():
+    psk = b"Foobar"
+    connection = ZIPConnection(None, psk)
+    assert connection.psk == psk
 
 
 @pytest.mark.asyncio
@@ -130,11 +143,11 @@ async def test_send(connection: ZIPConnection):
     [res, _] = await asyncio.gather(
         connection.send(basicGet), runDelayed(connection.ackReceived, 1)
     )
-    assert res == True
+    assert res is True
     connection._conn.send.assert_called_once_with(b"#\x02\x80\x50\x01\x00\x00 \x02")
 
 
 @pytest.mark.asyncio
 async def test_send_timeout(connection: ZIPConnection):
     basicGet = Basic.Get()
-    assert await connection.send(basicGet, timeout=0) == False
+    assert await connection.send(basicGet, timeout=0) is False

@@ -4,17 +4,21 @@ import asyncio
 import logging
 
 from .util import Listenable
+from .message import Message
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class Adapter(Listenable):
+    """Abstract class for implementing communication with a Z-Wave chip"""
+
     def __init__(self):
         super().__init__()
         self._ackQueue = {}
         self._sessions = {}
 
-    def ackReceived(self, ackId):
+    def ackReceived(self, ackId: int):
+        """Call this method when an ack message has been received"""
         event = self._ackQueue.pop(ackId, None)
         if not event:
             _LOGGER.warning("Received ack for command not waiting for")
@@ -22,25 +26,35 @@ class Adapter(Listenable):
         event.set()
         return True
 
-    def commandReceived(self, cmd):
+    def commandReceived(self, cmd: Message):
+        """Call this method when a command has been received"""
         session = self._sessions.pop(cmd.hid(), None)
         if session:
             session.set_result(cmd)
 
     async def connect(self):
+        """Connect the adapter. Must be implemented by subclass"""
         raise NotImplementedError()
 
-    async def getNodeList(self):
+    async def getNodeList(self) -> set:
+        """Return a list of nodes included in the network"""
         raise NotImplementedError()
 
-    async def send(self, cmd, sourceEP=0, destEP=0, timeout=3):
+    async def send(
+        self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
+    ) -> bool:
+        """Send message to Z-Wave chip. Must be implemented in subclass"""
         raise NotImplementedError()
 
-    async def sendAndReceive(self, cmd, waitFor, timeout=3, **kwargs):
+    async def sendAndReceive(
+        self, cmd: Message, waitFor: Message, timeout: int = 3, **kwargs
+    ) -> Message:
+        """Send a message and wait for the response"""
         await self.send(cmd, **kwargs)
         return await self.waitForMessage(waitFor, timeout=timeout)
 
-    async def waitForAck(self, ackId, timeout=3):
+    async def waitForAck(self, ackId: int, timeout: int = 3):
+        """Async method for waiting for the adapter to receive a specific ack id"""
         if ackId in self._ackQueue:
             raise Exception("Duplicate ackid used!")
         event = asyncio.Event()
@@ -52,7 +66,8 @@ class Adapter(Listenable):
             del self._ackQueue[ackId]
             raise
 
-    async def waitForMessage(self, msgType, timeout=3):
+    async def waitForMessage(self, msgType: Message, timeout: int = 3) -> Message:
+        """Async method for waiting for a specific message to arrive from the adapter."""
         hid = msgType.hid()
         session = self._sessions.get(hid, None)
         if not session:

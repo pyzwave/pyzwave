@@ -1,3 +1,6 @@
+# pylint: disable=missing-function-docstring
+# pylint: disable=invalid-name
+
 from pyzwave.commandclass import Basic
 from pyzwave.message import Message
 

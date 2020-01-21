@@ -1,10 +1,16 @@
-import asyncio
-import pytest
-from unittest.mock import MagicMock
-
-from pyzwave.util import Listenable
+# pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=invalid-name
+# pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
+# pylint: disable=no-self-use
 
 import logging
+from unittest.mock import MagicMock
+
+import pytest
+
+from pyzwave.util import Listenable
 
 
 class Speaker(Listenable):
