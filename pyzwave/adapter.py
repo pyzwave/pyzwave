@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import abc
 import asyncio
 import logging
 
@@ -9,7 +10,7 @@ from .message import Message
 _LOGGER = logging.getLogger(__name__)
 
 
-class Adapter(Listenable):
+class Adapter(Listenable, metaclass=abc.ABCMeta):
     """Abstract class for implementing communication with a Z-Wave chip"""
 
     def __init__(self):
@@ -32,14 +33,17 @@ class Adapter(Listenable):
         if session:
             session.set_result(cmd)
 
+    @abc.abstractmethod
     async def connect(self):
         """Connect the adapter. Must be implemented by subclass"""
         raise NotImplementedError()
 
+    @abc.abstractmethod
     async def getNodeList(self) -> set:
         """Return a list of nodes included in the network"""
         raise NotImplementedError()
 
+    @abc.abstractmethod
     async def send(
         self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
     ) -> bool:

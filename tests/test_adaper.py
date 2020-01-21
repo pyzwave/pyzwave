@@ -8,11 +8,20 @@ import pytest
 
 from pyzwave.adapter import Adapter
 from pyzwave.commandclass import Basic
+from pyzwave.message import Message
 
 
 class AdapterImpl(Adapter):
     async def connect(self):
         await super().connect()
+
+    async def getNodeList(self) -> set:
+        await super().getNodeList()
+
+    async def send(
+        self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
+    ) -> bool:
+        return await super().send(cmd, sourceEP, destEP, timeout)
 
 
 @pytest.fixture

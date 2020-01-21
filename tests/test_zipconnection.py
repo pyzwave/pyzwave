@@ -19,6 +19,11 @@ sys.modules["dtls"] = __import__("mock_dtls")
 from pyzwave.zipconnection import ZIPConnection  # pylint: disable=wrong-import-position
 
 
+class ZIPConnectionImpl(ZIPConnection):
+    async def getNodeList(self) -> set:
+        await super().getNodeList()
+
+
 async def runDelayed(func, *args):
     await asyncio.sleep(0)  # Make sure we wait before sending
     return func(*args)
@@ -34,7 +39,7 @@ class DummyConnection:
 
 @pytest.fixture
 def connection() -> ZIPConnection:
-    connection = ZIPConnection(None, None)
+    connection = ZIPConnectionImpl(None, None)
     connection._conn = DummyConnection()
     return connection
 
@@ -132,7 +137,7 @@ def test_onMessage(connection: ZIPConnection):
 
 def test_psk():
     psk = b"Foobar"
-    connection = ZIPConnection(None, psk)
+    connection = ZIPConnectionImpl(None, psk)
     assert connection.psk == psk
 
 
