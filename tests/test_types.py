@@ -26,9 +26,17 @@ def streamWriter():
 
 
 def test_bits_t():
-    assert bits_t(1).sizeBits == 1
-    assert bits_t(2).sizeBits == 2
-    assert bits_t(4).sizeBits == 4
+    bits1_t = bits_t(1)
+    assert bits1_t.sizeBits == 1
+    assert repr(bits1_t(1)) == "bits_t(1)"
+
+    bits2_t = bits_t(2)
+    assert bits2_t.sizeBits == 2
+    assert repr(bits2_t(2)) == "bits_t(10)"
+
+    bits4_t = bits_t(4)
+    assert bits4_t.sizeBits == 4
+    assert repr(bits4_t(3)) == "bits_t(0011)"
 
 
 def test_BitStreamReader_bits(streamReader):
@@ -68,8 +76,8 @@ def test_BitStreamWriter_bytes(streamWriter: BitStreamWriter):
 
 
 def test_flags_t():
-    assert str(flag_t(True)) == "flags_t(True)"
-    assert str(flag_t(False)) == "flags_t(False)"
+    assert str(flag_t(True)) == "flag_t(True)"
+    assert str(flag_t(False)) == "flag_t(False)"
 
 
 def test_IPv6_t():

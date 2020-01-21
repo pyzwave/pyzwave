@@ -111,14 +111,14 @@ class BitsBase:
 
     sizeBits = 1
 
-    def __init__(self, value: bool):
-        self._value = bool(value)
+    def __init__(self, value: int):
+        self._value = int(value)
 
     def __eq__(self, other):
         return self._value.__eq__(other)
 
     def __repr__(self):
-        return "flags_t({})".format(self._value)
+        return "bits_t({0:0{1}b})".format(self._value, self.sizeBits)
 
     @classmethod
     def deserialize(cls, stream: BitStreamReader):
@@ -133,8 +133,14 @@ class BitsBase:
 class flag_t(BitsBase):  # pylint: disable=invalid-name
     """Type represeting one bit"""
 
+    def __init__(self, value: int):
+        super().__init__(int(value) & 1)
+
     def __bool__(self):
-        return self._value
+        return bool(self._value)
+
+    def __repr__(self):
+        return "flag_t({})".format(bool(self))
 
 
 def bits_t(size):  # pylint: disable=invalid-name
