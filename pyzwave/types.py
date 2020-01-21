@@ -64,9 +64,9 @@ class BitStreamWriter(bytearray):
         self[len(self) - 1] = byte | (value << 8 - self._start - size)
         self._start = (self._start + size) % 8
 
-    def addBytes(self, value, size, signed):
+    def addBytes(self, value, size, signed, endian="little"):
         """Add size number of bytes to the stream"""
-        newVal = value.to_bytes(size, "little", signed=signed)
+        newVal = value.to_bytes(size, endian, signed=signed)
         self.extend(newVal)
         self._start = 0
 
@@ -74,12 +74,13 @@ class BitStreamWriter(bytearray):
 class int_t(int):  # pylint: disable=invalid-name
     """Base class for any int like type"""
 
+    endian = "little"
     signed = True
     size = 0
 
     def serialize(self, stream: BitStreamWriter):
         """Serialize into stream"""
-        stream.addBytes(self, self.size, self.signed)
+        stream.addBytes(self, self.size, self.signed, self.endian)
 
 
 class uint_t(int_t):  # pylint: disable=invalid-name
@@ -91,7 +92,7 @@ class uint_t(int_t):  # pylint: disable=invalid-name
     @classmethod
     def deserialize(cls, stream: BitStreamReader):
         """Deserialize unsigned value from stream"""
-        return cls.from_bytes(stream.value(cls.size), "little", signed=cls.signed)
+        return cls.from_bytes(stream.value(cls.size), cls.endian, signed=cls.signed)
 
 
 class uint8_t(uint_t):  # pylint: disable=invalid-name
