@@ -178,3 +178,12 @@ class IPv6(ipaddress.IPv6Address):
     def deserialize(cls, stream: BitStreamReader):
         """Deserialize an IPv6 address"""
         return cls(stream.value(16))
+
+
+class HomeID(uint32_t):
+    """Type for Z-Wave Home ID"""
+
+    endian = "big"
+
+    def __str__(self):
+        return "{:X}".format(self)

@@ -10,6 +10,7 @@ from pyzwave.types import (
     BitStreamWriter,
     bits_t,
     flag_t,
+    HomeID,
     IPv6,
     uint8_t,
 )
@@ -78,6 +79,11 @@ def test_BitStreamWriter_bytes(streamWriter: BitStreamWriter):
 def test_flags_t():
     assert str(flag_t(True)) == "flag_t(True)"
     assert str(flag_t(False)) == "flag_t(False)"
+
+
+def test_HomeID():
+    homeID = HomeID.deserialize(BitStreamReader(b"\xea\xec\xfa\xf9"))
+    assert str(homeID) == "EAECFAF9"
 
 
 def test_IPv6_t():
