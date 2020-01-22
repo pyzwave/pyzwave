@@ -56,7 +56,7 @@ class ZIPConnection(Adapter):
         """The psk used for the connection"""
         return self._psk
 
-    async def send(self, cmd, sourceEP=0, destEP=0, timeout=3):
+    async def send(self, cmd, sourceEP=0, destEP=0, timeout=3) -> bool:
         self._seq = (self._seq + 1) & 0xFF
         msg = Zip.ZipPacket(
             ackRequest=True,
