@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from typing import Dict
+
+from pyzwave.node import Node
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -16,7 +19,7 @@ class Application:
         self._nodes = {}
 
     @property
-    def nodes(self):
+    def nodes(self) -> Dict[int, Node]:
         """All nodes in the network"""
         return self._nodes
 
@@ -25,5 +28,5 @@ class Application:
 
     async def startup(self):
         """Start and initialize the application and the adapter"""
-        self._nodes = await self.adapter.getNodeList()
-        _LOGGER.debug("Got nodelist %s", self._nodes)
+        for nodeId in await self.adapter.getNodeList():
+            self._nodes[nodeId] = Node(nodeId, self.adapter)

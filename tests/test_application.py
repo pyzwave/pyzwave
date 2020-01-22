@@ -30,4 +30,4 @@ async def test_startup(app: Application):
 
     app.adapter.getNodeList = getNodeList
     await app.startup()
-    assert app.nodes == [1, 2, 3]
+    assert app.nodes.keys() == {1, 2, 3}
