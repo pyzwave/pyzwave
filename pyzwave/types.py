@@ -64,7 +64,7 @@ class BitStreamWriter(bytearray):
         self[len(self) - 1] = byte | (value << 8 - self._start - size)
         self._start = (self._start + size) % 8
 
-    def addBytes(self, value, size, signed, endian="little"):
+    def addBytes(self, value, size, signed, endian="big"):
         """Add size number of bytes to the stream"""
         newVal = value.to_bytes(size, endian, signed=signed)
         self.extend(newVal)
@@ -74,7 +74,7 @@ class BitStreamWriter(bytearray):
 class int_t(int):  # pylint: disable=invalid-name
     """Base class for any int like type"""
 
-    endian = "little"
+    endian = "big"
     signed = True
     size = 0
 
@@ -182,8 +182,6 @@ class IPv6(ipaddress.IPv6Address):
 
 class HomeID(uint32_t):
     """Type for Z-Wave Home ID"""
-
-    endian = "big"
 
     def __str__(self):
         return "{:X}".format(self)

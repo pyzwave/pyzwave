@@ -71,9 +71,9 @@ def test_BitStreamWriter_bytes(streamWriter: BitStreamWriter):
     streamWriter.addBytes(2, 1, False)
     assert streamWriter == b"\x02"
     streamWriter.addBytes(2, 2, False)
-    assert streamWriter == b"\x02\x02\x00"
+    assert streamWriter == b"\x02\x00\x02"
     streamWriter.addBytes(-2, 1, True)
-    assert streamWriter == b"\x02\x02\x00\xFE"
+    assert streamWriter == b"\x02\x00\x02\xFE"
 
 
 def test_flags_t():
