@@ -49,6 +49,12 @@ async def test_connect(connection: ZIPConnection):
     await connection.connect()
 
 
+@pytest.mark.asyncio
+async def test_getNodeList(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.getNodeList()
+
+
 def test_onMessage(connection: ZIPConnection):
     connection.ackReceived = MagicMock()
     connection.commandReceived = MagicMock()

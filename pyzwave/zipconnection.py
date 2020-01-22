@@ -25,6 +25,9 @@ class ZIPConnection(Adapter):
     async def connect(self):
         await self._conn.connect(self._address, self._psk)
 
+    async def getNodeList(self) -> set:
+        raise NotImplementedError()
+
     def onMessage(self, pkt):
         """Called when a packed has recevied from the connection"""
         zipPkt = Message.decode(pkt)
