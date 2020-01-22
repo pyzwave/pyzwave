@@ -87,6 +87,12 @@ async def test_sendAndReceive(adapter: Adapter):
 
 
 @pytest.mark.asyncio
+async def test_sendToNode(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.sendToNode(6, Basic.Get())
+
+
+@pytest.mark.asyncio
 async def test_waitForMessage(adapter: Adapter):
     await asyncio.gather(
         adapter.waitForMessage(Basic.Get),

@@ -50,6 +50,10 @@ class Adapter(Listenable, metaclass=abc.ABCMeta):
         """Send message to Z-Wave chip. Must be implemented in subclass"""
         raise NotImplementedError()
 
+    async def sendToNode(self, nodeId: int, cmd: Message, **kwargs) -> bool:
+        """Send message to node. Must be implemented in subclass"""
+        raise NotImplementedError()
+
     async def sendAndReceive(
         self, cmd: Message, waitFor: Message, timeout: int = 3, **kwargs
     ) -> Message:

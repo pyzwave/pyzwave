@@ -3,6 +3,7 @@
 # pylint: disable=invalid-name
 # pylint: disable=redefined-outer-name
 # pylint: disable=protected-access
+# pylint: disable=singleton-comparison
 
 import asyncio
 import ipaddress
@@ -18,9 +19,10 @@ sys.modules["dtls"] = __import__("mock_dtls")
 # pylint: disable=wrong-import-position
 from pyzwave.zipgateway import ZIPGateway
 from pyzwave.message import Message
+from pyzwave.commandclass import Basic
 import pyzwave.zipconnection
 
-from test_zipconnection import DummyConnection, runDelayed
+from test_zipconnection import DummyConnection, runDelayed, ZIPConnectionImpl
 
 
 class DummyDTLSConnection:
@@ -38,6 +40,8 @@ pyzwave.zipconnection.DTLSConnection = DummyDTLSConnection
 def gateway():
     gateway = ZIPGateway(None, None)
     gateway._conn = DummyConnection()
+    gateway._connections[6] = ZIPConnectionImpl(None, None)
+    gateway._connections[6]._conn.send = MagicMock()
     return gateway
 
 
@@ -88,3 +92,12 @@ async def test_ipOfNode(gateway: ZIPGateway):
         gateway.ipOfNode(6), runDelayed(gateway.commandReceived, zipNodeAdvertisement)
     )
     assert reply == ipaddress.IPv6Address("::ffff:c0a8:ee")
+
+
+@pytest.mark.asyncio
+async def test_sendToNode(gateway: ZIPGateway):
+    connection = await gateway.connectToNode(6)
+    [res, _] = await asyncio.gather(
+        gateway.sendToNode(6, Basic.Get()), runDelayed(connection.ackReceived, 1)
+    )
+    assert res == True

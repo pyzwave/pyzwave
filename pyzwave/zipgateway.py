@@ -3,6 +3,7 @@
 import asyncio
 import logging
 
+from pyzwave.message import Message
 from pyzwave.commandclass import NetworkManagementProxy, ZipND
 from pyzwave.zipconnection import ZIPConnection
 
@@ -41,6 +42,10 @@ class ZIPGateway(ZIPConnection):
             # No response
             return {}
         return report.nodes
+
+    async def sendToNode(self, nodeId: int, cmd: Message, **kwargs) -> bool:
+        conn = await self.connectToNode(nodeId)
+        return await conn.send(cmd, **kwargs)
 
     async def ipOfNode(self, nodeId):
         """Returns the IPv6 address of the node"""
