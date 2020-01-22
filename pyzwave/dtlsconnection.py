@@ -56,7 +56,7 @@ class DTLSConnection(threading.Thread):
         self._psk = psk
         self._connectionEvent.clear()
         self.start()
-        await self._connectionEvent.wait()
+        await asyncio.wait_for(self._connectionEvent.wait(), timeout=10)
 
     def run(self):  # pylint: disable=missing-function-docstring
         self._sock = self.createDtlsPskSock()
