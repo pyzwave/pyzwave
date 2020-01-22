@@ -14,7 +14,21 @@ class ZIPGateway(ZIPConnection):
 
     def __init__(self, address, psk):
         super().__init__(address, psk)
+        self._connections = {}
         self._nmSeq = 0
+
+    async def connectToNode(self, nodeId) -> ZIPConnection:
+        """Returns a connection to the node"""
+        if nodeId in self._connections:
+            return self._connections[nodeId]
+
+        ipv6 = await self.ipOfNode(nodeId)
+
+        connection = ZIPConnection(ipv6.compressed, self.psk)
+        connection.addListener(self)
+        await connection.connect()
+        self._connections[nodeId] = connection
+        return connection
 
     async def getNodeList(self) -> set:
         self._nmSeq = self._nmSeq + 1

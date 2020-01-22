@@ -7,6 +7,7 @@
 import asyncio
 import ipaddress
 import sys
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -17,8 +18,20 @@ sys.modules["dtls"] = __import__("mock_dtls")
 # pylint: disable=wrong-import-position
 from pyzwave.zipgateway import ZIPGateway
 from pyzwave.message import Message
+import pyzwave.zipconnection
 
 from test_zipconnection import DummyConnection, runDelayed
+
+
+class DummyDTLSConnection:
+    async def connect(self, address, psk):
+        pass
+
+    def onMessage(self, func):
+        pass
+
+
+pyzwave.zipconnection.DTLSConnection = DummyDTLSConnection
 
 
 @pytest.fixture
@@ -26,6 +39,17 @@ def gateway():
     gateway = ZIPGateway(None, None)
     gateway._conn = DummyConnection()
     return gateway
+
+
+@pytest.mark.asyncio
+async def test_connectoToNode(gateway: ZIPGateway):
+    async def ipOfNode(_nodeId):
+        return ipaddress.IPv6Address("::ffff:c0a8:ee")
+
+    gateway.ipOfNode = ipOfNode
+    assert 2 not in gateway._connections
+    assert await gateway.connectToNode(2)
+    assert 2 in gateway._connections
 
 
 @pytest.mark.asyncio
