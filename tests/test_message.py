@@ -33,5 +33,32 @@ def test_compose_type():
     assert type(Basic.Get().compose()) == bytes
 
 
+def test_debugString():
+    assert (Basic.Report().debugString()) == "BASIC.REPORT:\n"
+    assert (Basic.Report(value=0xFF).debugString()) == "BASIC.REPORT:\n\tvalue = 255"
+    msg = Message.decode(b"#\x02\x80P\x01\x03\x00 \x02")
+    assert (
+        msg.debugString()
+        == "ZIP.ZIP_PACKET:\n\
+	ackRequest = flag_t(True)\n\
+	ackResponse = flag_t(False)\n\
+	nackResponse = flag_t(False)\n\
+	nackWaiting = flag_t(False)\n\
+	nackQueueFull = flag_t(False)\n\
+	nackOptionError = flag_t(False)\n\
+	_ = bits_t(00)\n\
+	headerExtIncluded = flag_t(False)\n\
+	zwCmdIncluded = flag_t(True)\n\
+	moreInformation = flag_t(False)\n\
+	secureOrigin = flag_t(True)\n\
+	_ = bits_t(00)\n\
+	seqNo = 1\n\
+	sourceEP = 3\n\
+	destEP = 0\n\
+	headerExtension = {}\n\
+	command = BASIC.GET:\n"
+    )
+
+
 def test_repr():
     assert str(Basic.Report()) == "<Z-Wave BASIC cmd REPORT>"

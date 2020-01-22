@@ -47,6 +47,26 @@ class Message:
             self._attributes[name].serialize(stream)
         return bytes(stream)
 
+    def debugString(self, indent=0):
+        """
+        Convert all attributes in this message to a human readable string used for debug output.
+        """
+        cmdClass, cmd = ZWaveMessage.reverseMapping.get(self.__class__, (0, 0))
+
+        attrs = []
+        for name, _ in self.attributes:
+            if name not in self._attributes:
+                continue
+            if hasattr(self._attributes[name], "debugString"):
+                value = self._attributes[name].debugString(indent + 1)
+            else:
+                value = str(self._attributes[name])
+            attrs.append("{}{} = {}".format("\t" * (indent + 1), name, value))
+
+        cmdClassName = cmdClasses.get(cmdClass, "cmdClass 0x{:02X}".format(cmdClass))
+        name = self.NAME or "0x{:02X}".format(cmd)
+        return "{}.{}:\n{}".format(cmdClassName, name, "\n".join(attrs))
+
     def parse(self, stream: BitStreamReader):
         """Populate the attributes from a raw bitstream."""
         for name, attrType in self.attributes:
