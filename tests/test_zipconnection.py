@@ -57,10 +57,12 @@ async def test_getNodeList(connection: ZIPConnection):
 
 
 def test_onMessage(connection: ZIPConnection):
+    assert connection.onMessage(b"malformed") is False
+
+
+def test_onMessage_Zip(connection: ZIPConnection):
     connection.ackReceived = MagicMock()
     connection.commandReceived = MagicMock()
-
-    assert connection.onMessage(b"malformed") is False
 
     ackResponse = Zip.ZipPacket(
         ackRequest=False,
@@ -141,6 +143,8 @@ def test_onMessage(connection: ZIPConnection):
     assert connection.onMessage(pkt.compose()) is True
     connection.commandReceived.assert_called_once()
 
+
+def test_onMessage_ZipND(connection: ZIPConnection):
     pkt = ZipND.ZipNodeAdvertisement(
         local=False, validity=0, nodeId=6, ipv6=0, homeId=0,
     )
