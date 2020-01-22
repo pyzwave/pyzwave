@@ -1,4 +1,8 @@
-from pyzwave.const.ZW_classcmd import COMMAND_CLASS_ZIP, COMMAND_ZIP_PACKET
+from pyzwave.const.ZW_classcmd import (
+    COMMAND_CLASS_ZIP,
+    COMMAND_ZIP_PACKET,
+    COMMAND_ZIP_KEEP_ALIVE,
+)
 from pyzwave.message import Message
 from pyzwave.types import (
     BitStreamReader,
@@ -44,6 +48,21 @@ class HeaderExtension(dict):
             yield (tlvType, tlvValue)
         if i != len(pkt):
             raise ValueError("BAD TLV")
+
+
+@ZWaveMessage(COMMAND_CLASS_ZIP, COMMAND_ZIP_KEEP_ALIVE)
+class ZipKeepAlive(Message):
+    """
+    Command Class message COMMAND_CLASS_ZIP COMMAND_ZIP_KEEP_ALIVE
+    """
+
+    NAME = "ZIP_KEEP_ALIVE"
+
+    attributes = (
+        ("ackRequest", flag_t),
+        ("ackResponse", flag_t),
+        ("_", reserved_t(6)),
+    )
 
 
 @ZWaveMessage(COMMAND_CLASS_ZIP, COMMAND_ZIP_PACKET)

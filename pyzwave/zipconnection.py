@@ -18,15 +18,23 @@ class ZIPConnection(Adapter):
         super().__init__()
         self._seq = 0
         self._address = address
+        self._keepAlive = None
         self._psk = psk
         self._conn = DTLSConnection()
         self._conn.onMessage(self.onMessage)
 
     async def connect(self):
         await self._conn.connect(self._address, self._psk)
+        self.resetKeepAlive()
 
     async def getNodeList(self) -> set:
         raise NotImplementedError()
+
+    def keepAlive(self):
+        """Send a keepalive message"""
+        msg = Zip.ZipKeepAlive(ackRequest=True, ackResponse=False,)
+        self._conn.send(msg.compose())
+        self.resetKeepAlive()
 
     def onMessage(self, pkt):
         """Called when a packed has recevied from the connection"""
@@ -44,6 +52,12 @@ class ZIPConnection(Adapter):
                 return False
             if zipPkt.zwCmdIncluded:
                 self.commandReceived(zipPkt.command)
+        elif isinstance(zipPkt, Zip.ZipKeepAlive):
+            if zipPkt.ackResponse:
+                # Ignore a response
+                return True
+            _LOGGER.error("This message needs an ack response. Not implemented")
+            return False
         elif isinstance(zipPkt, ZipND.ZipNodeAdvertisement):
             self.commandReceived(zipPkt)
         else:
@@ -55,6 +69,13 @@ class ZIPConnection(Adapter):
     def psk(self) -> bytes:
         """The psk used for the connection"""
         return self._psk
+
+    def resetKeepAlive(self):
+        """Reset the keepalive timeout"""
+        if self._keepAlive:
+            # Timer running, reset it
+            self._keepAlive.cancel()
+        self._keepAlive = asyncio.get_event_loop().call_later(25, self.keepAlive)
 
     async def send(self, cmd, sourceEP=0, destEP=0, timeout=3) -> bool:
         self._seq = (self._seq + 1) & 0xFF
@@ -75,6 +96,7 @@ class ZIPConnection(Adapter):
             command=cmd,
         )
         self._conn.send(msg.compose())
+        self.resetKeepAlive()
         try:
             await self.waitForAck(msg.seqNo, timeout=timeout)
         except asyncio.TimeoutError:

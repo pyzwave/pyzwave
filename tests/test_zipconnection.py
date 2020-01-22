@@ -7,7 +7,7 @@
 
 import asyncio
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -41,6 +41,7 @@ class DummyConnection:
 def connection() -> ZIPConnection:
     connection = ZIPConnectionImpl(None, None)
     connection._conn = DummyConnection()
+    connection._conn.send = MagicMock()
     return connection
 
 
@@ -145,11 +146,33 @@ def test_onMessage(connection: ZIPConnection):
     )
     assert connection.onMessage(pkt.compose()) is True
 
+    pkt = Zip.ZipKeepAlive(ackRequest=True, ackResponse=False)
+    assert connection.onMessage(pkt.compose()) is False
+
+    pkt = Zip.ZipKeepAlive(ackRequest=False, ackResponse=True)
+    assert connection.onMessage(pkt.compose()) is True
+
+
+def test_keepAlive(connection: ZIPConnection):
+    connection.keepAlive()
+    connection._conn.send.assert_called_with(b"#\x03\x80")
+
 
 def test_psk():
     psk = b"Foobar"
     connection = ZIPConnectionImpl(None, psk)
     assert connection.psk == psk
+
+
+def test_resetKeepAlive(connection: ZIPConnection):
+    with patch.object(asyncio.TimerHandle, "cancel"):
+        assert connection._keepAlive is None
+        connection.resetKeepAlive()
+        assert connection._keepAlive is not None
+        timer = connection._keepAlive
+        connection.resetKeepAlive()
+        timer.cancel.assert_called_once()
+        assert connection._keepAlive != timer
 
 
 @pytest.mark.asyncio
