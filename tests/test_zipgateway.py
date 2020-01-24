@@ -101,3 +101,9 @@ async def test_sendToNode(gateway: ZIPGateway):
         gateway.sendToNode(6, Basic.Get()), runDelayed(connection.ackReceived, 1)
     )
     assert res == True
+
+
+@pytest.mark.asyncio
+async def test_setNodeInfo(gateway: ZIPGateway):
+    with pytest.raises(NotImplementedError):
+        await gateway.setNodeInfo(0, 0, [])

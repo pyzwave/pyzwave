@@ -194,3 +194,9 @@ async def test_send(connection: ZIPConnection):
 async def test_send_timeout(connection: ZIPConnection):
     basicGet = Basic.Get()
     assert await connection.send(basicGet, timeout=0) is False
+
+
+@pytest.mark.asyncio
+async def test_setNodeInfo(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.setNodeInfo(0, 0, [])

@@ -53,3 +53,6 @@ class ZIPGateway(ZIPConnection):
         self._conn.send(msg.compose())
         response = await self.waitForMessage(ZipND.ZipNodeAdvertisement, timeout=3)
         return response.ipv6
+
+    async def setNodeInfo(self, generic, specific, cmdClasses):
+        raise NotImplementedError()

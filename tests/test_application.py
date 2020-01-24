@@ -17,6 +17,11 @@ def test_nodes(app: Application):
     assert app.nodes == {}
 
 
+def test_setNodeInfo(app: Application):
+    # Not implemented yet
+    app.setNodeInfo(0, 0, [])
+
+
 @pytest.mark.asyncio
 async def test_shutdown(app: Application):
     # Function not yet implemented. Update this function when it is

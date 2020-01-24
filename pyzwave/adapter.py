@@ -61,6 +61,15 @@ class Adapter(Listenable, metaclass=abc.ABCMeta):
         await self.send(cmd, **kwargs)
         return await self.waitForMessage(waitFor, timeout=timeout)
 
+    @abc.abstractmethod
+    async def setNodeInfo(self, generic, specific, cmdClasses):
+        """
+        Set the application NIF (Node Information Frame). This method
+        should not be called directly. Use the corresponding function
+        in Application instead.
+        """
+        raise NotImplementedError()
+
     async def waitForAck(self, ackId: int, timeout: int = 3):
         """Async method for waiting for the adapter to receive a specific ack id"""
         if ackId in self._ackQueue:

@@ -23,6 +23,9 @@ class AdapterImpl(Adapter):
     ) -> bool:
         return await super().send(cmd, sourceEP, destEP, timeout)
 
+    async def setNodeInfo(self, generic, specific, cmdClasses):
+        await super().setNodeInfo(generic, specific, cmdClasses)
+
 
 @pytest.fixture
 def adapter() -> Adapter:
@@ -90,6 +93,12 @@ async def test_sendAndReceive(adapter: Adapter):
 async def test_sendToNode(adapter: Adapter):
     with pytest.raises(NotImplementedError):
         await adapter.sendToNode(6, Basic.Get())
+
+
+@pytest.mark.asyncio
+async def test_setNodeInfo(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.setNodeInfo(0, 0, [])
 
 
 @pytest.mark.asyncio

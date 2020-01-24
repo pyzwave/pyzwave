@@ -102,3 +102,6 @@ class ZIPConnection(Adapter):
         except asyncio.TimeoutError:
             return False
         return True
+
+    async def setNodeInfo(self, generic, specific, cmdClasses):
+        raise NotImplementedError()
