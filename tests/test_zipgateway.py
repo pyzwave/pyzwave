@@ -90,6 +90,12 @@ async def test_getNodeList(gateway: ZIPGateway):
 
 
 @pytest.mark.asyncio
+async def test_getNodeList_cached(gateway: ZIPGateway):
+    gateway._nodes = {1: {}, 2: {}}
+    assert await gateway.getNodeList() == {1, 2}
+
+
+@pytest.mark.asyncio
 async def test_getNodeList_timeout(gateway: ZIPGateway):
     async def dummySendAndReceive(msg, waitFor):
         raise asyncio.TimeoutError()

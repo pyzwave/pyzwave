@@ -16,6 +16,7 @@ class ZIPGateway(ZIPConnection):
     def __init__(self, address, psk):
         super().__init__(address, psk)
         self._connections = {}
+        self._nodes = {}
         self._nmSeq = 0
 
     async def connect(self):
@@ -36,6 +37,9 @@ class ZIPGateway(ZIPConnection):
         return connection
 
     async def getNodeList(self) -> set:
+        if self._nodes:
+            # Return cached list
+            return set(self._nodes.keys())
         self._nmSeq = self._nmSeq + 1
         cmd = NetworkManagementProxy.NodeListGet(seqNo=self._nmSeq)
         try:
