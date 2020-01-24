@@ -55,6 +55,12 @@ def test_BitStreamReader_bytes(streamReader):
     assert streamReader.value(1) == b"\x01"
 
 
+def test_BitStreamReader_remaining(streamReader: BitStreamReader):
+    assert streamReader.remaining(advance=False) == b"\x02\x01\xcb@"
+    assert streamReader.value(1) == b"\x02"
+    assert streamReader.remaining() == b"\x01\xcb@"
+
+
 def test_BitStreamWriter_bits(streamWriter: BitStreamWriter):
     streamWriter.addBits(1, 1)
     assert streamWriter == b"\x80"

@@ -37,6 +37,13 @@ class BitStreamReader:
         """Return the next value from the stream without advancing the stream"""
         return self.value(size, advance=False)
 
+    def remaining(self, advance: bool = True) -> bytes:
+        """Return all the remaining bytes in the stream"""
+        startByte = int(self._start / 8)
+        if advance:
+            self.advance(len(self._value) * 8)
+        return self._value[startByte:]
+
     def value(self, size: int, advance: bool = True) -> bytes:
         """Return the next size number of bytes from the stream"""
         startByte = int(self._start / 8)
