@@ -15,7 +15,6 @@ from ctypes import (
     CFUNCTYPE,
     POINTER,
     memmove,
-    memset,
 )
 
 import dtls
@@ -106,17 +105,11 @@ class DTLSConnection(threading.Thread):
         self._running = False
 
     def clientPskCb(self, _ssl, _hint, identity, _maxIdenityLen, cpsk, _maxPskLen):
-        """Callback function used by ssl to get the DTSL psk"""
-        (iden, pypsk) = (
-            "Client_identity",
-            self._psk,
-        )
-        length = len(pypsk)
-        memmove(cpsk, pypsk, length)
-        if iden:
-            memmove(identity, iden.encode("utf-8"), len(iden))
-        else:
-            memset(identity, 0, 1)
+        """Callback function used by ssl to get the DTLS psk"""
+        length = len(self._psk)
+        memmove(cpsk, self._psk, length)
+        iden = "Client_identity"
+        memmove(identity, iden.encode("utf-8"), len(iden))
         return length
 
     def serverPskCb(self, _ssl, _identity, cpsk, _maxPskLen):
