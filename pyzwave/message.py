@@ -82,6 +82,9 @@ class Message:
         """Write the message as binary into the bitstream. See compose()"""
         stream.extend(self.compose())
 
+    def __eq__(self, other):
+        return self.compose() == other.compose()
+
     def __getattr__(self, name):
         return self._attributes.get(name)
 

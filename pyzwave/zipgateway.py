@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import ipaddress
 import logging
 
 from pyzwave.message import Message
 from pyzwave.commandclass import NetworkManagementProxy, ZipGateway, ZipND
+from pyzwave.connection import Connection
 from pyzwave.zipconnection import ZIPConnection
 
 _LOGGER = logging.getLogger(__name__)
@@ -15,6 +17,8 @@ class ZIPGateway(ZIPConnection):
 
     def __init__(self, address, psk):
         super().__init__(address, psk)
+        self._unsolicitedConnection = Connection()
+        self._unsolicitedConnection.onMessage(self.onUnsolicitedMessage)
         self._connections = {}
         self._nodes = {}
         self._nmSeq = 0
@@ -22,6 +26,7 @@ class ZIPGateway(ZIPConnection):
     async def connect(self):
         await super().connect()
         await self.setGatewayMode(1)
+        await self.setupUnsolicitedConnection()
 
     async def connectToNode(self, nodeId) -> ZIPConnection:
         """Returns a connection to the node"""
@@ -62,6 +67,25 @@ class ZIPGateway(ZIPConnection):
         response = await self.waitForMessage(ZipND.ZipNodeAdvertisement, timeout=3)
         return response.ipv6
 
+    def onUnsolicitedMessage(self, pkt, address):
+        """
+        Called when an unsolicited message is received.
+        We do not know the node id the message is from. Only the ip address.
+        """
+        zipPkt = Message.decode(pkt)
+        sourceIp = ipaddress.IPv6Address(address[0])
+        # Find the node this was from
+        for nodeId, node in self._nodes.items():
+            if node.get("ip") == sourceIp:
+                flags = 0  # Set flags such as encapsulation type
+                self.speak("messageReceived", nodeId, zipPkt.command, flags)
+                return True
+        _LOGGER.warning(
+            "Got message from unknown sender %s: %s", sourceIp, zipPkt.command
+        )
+        _LOGGER.debug(zipPkt.debugString())
+        return False
+
     async def setGatewayMode(self, mode: int, timeout: int = 3) -> bool:
         try:
             report = await self.sendAndReceive(
@@ -78,3 +102,20 @@ class ZIPGateway(ZIPConnection):
 
     async def setNodeInfo(self, generic, specific, cmdClasses):
         raise NotImplementedError()
+
+    async def setupUnsolicitedConnection(self):
+        """
+        Setup for listening for unsolicited connections. This function must not be called
+        explicitly. It is called by the connect() method automatically
+        """
+        await self._unsolicitedConnection.listen(self.psk, 4123)
+        await self.send(
+            ZipGateway.UnsolicitedDestinationSet(
+                unsolicitedIPv6Destination=ipaddress.IPv6Address("::ffff:c0a8:31"),
+                port=4123,
+            )
+        )
+        # Retrieve node list, and get ip-addresses
+        for nodeId in await self.getNodeList():
+            if not self._nodes[nodeId].get("ip"):
+                self._nodes[nodeId] = {"ip": await self.ipOfNode(nodeId)}

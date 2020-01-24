@@ -4,6 +4,7 @@
 # pylint: disable=redefined-outer-name
 # pylint: disable=protected-access
 # pylint: disable=singleton-comparison
+# pylint: disable=attribute-defined-outside-init
 
 import asyncio
 import ipaddress
@@ -19,7 +20,8 @@ sys.modules["dtls"] = __import__("mock_dtls")
 # pylint: disable=wrong-import-position
 from pyzwave.zipgateway import ZIPGateway
 from pyzwave.message import Message
-from pyzwave.commandclass import Basic, ZipGateway
+from pyzwave.commandclass import Basic, SwitchBinary, ZipGateway, ZipND
+from pyzwave.types import IPv6
 import pyzwave.zipconnection
 
 from test_zipconnection import DummyConnection, runDelayed, ZIPConnectionImpl
@@ -43,17 +45,32 @@ class ZIPGatewayTester(ZIPGateway):
         return
 
 
+class Listener:
+    pass
+
+
 @pytest.fixture
 def gateway():
     gateway = ZIPGatewayTester(None, None)
+    gateway.listener = Listener
+    gateway.listener.messageReceived = MagicMock()
+    gateway.addListener(gateway.listener)
+    gateway._unsolicitedConnection = DummyConnection()
     gateway._conn = DummyConnection()
     gateway._connections[6] = ZIPConnectionImpl(None, None)
     gateway._connections[6]._conn.send = MagicMock()
     return gateway
 
 
+async def ipOfNode(_nodeId):
+    return ipaddress.IPv6Address("::ffff:c0a8:ee")
+
+
 @pytest.mark.asyncio
 async def test_connect(gateway: ZIPGateway):
+    gateway._nodes = {1: {}, 2: {}}
+    gateway.ipOfNode = ipOfNode
+
     async def runScript():
         await asyncio.sleep(0)
         gateway.commandReceived(ZipGateway.GatewayModeReport(mode=2))
@@ -63,9 +80,6 @@ async def test_connect(gateway: ZIPGateway):
 
 @pytest.mark.asyncio
 async def test_connectToNode(gateway: ZIPGateway):
-    async def ipOfNode(_nodeId):
-        return ipaddress.IPv6Address("::ffff:c0a8:ee")
-
     gateway.ipOfNode = ipOfNode
     assert 2 not in gateway._connections
     assert await gateway.connectToNode(2)
@@ -116,6 +130,23 @@ async def test_ipOfNode(gateway: ZIPGateway):
     assert reply == ipaddress.IPv6Address("::ffff:c0a8:ee")
 
 
+def test_onUnsolicitedMessage(gateway: ZIPGateway):
+    ip = ipaddress.IPv6Address("::ffff:c0a8:ee")
+    gateway._nodes = {7: {"ip": ip}}
+    pkt = b"#\x02\x00\xc0\xf9\x00\x00\x05\x84\x02\x00\x00%\x03\x00"
+    assert gateway.onUnsolicitedMessage(pkt, (ip,)) is True
+    gateway.listener.messageReceived.assert_called_once_with(
+        gateway, 7, SwitchBinary.Report(value=0), 0
+    )
+
+
+def test_onUnsolicitedMessage_unknownNode(gateway: ZIPGateway):
+    ip = ipaddress.IPv6Address("::ffff:c0a8:ee")
+    pkt = b"#\x02\x00\xc0\xf9\x00\x00\x05\x84\x02\x00\x00%\x03\x00"
+    assert gateway.onUnsolicitedMessage(pkt, (ip,)) is False
+    gateway.listener.messageReceived.assert_not_called()
+
+
 @pytest.mark.asyncio
 async def test_sendToNode(gateway: ZIPGateway):
     connection = await gateway.connectToNode(6)
@@ -144,3 +175,22 @@ async def test_setGatewayMode_timeout(gateway: ZIPGateway):
 async def test_setNodeInfo(gateway: ZIPGateway):
     with pytest.raises(NotImplementedError):
         await gateway.setNodeInfo(0, 0, [])
+
+
+@pytest.mark.asyncio
+async def test_setupUnsolicitedConnection(gateway: ZIPGateway):
+    gateway._nodes = {1: {}}
+    await asyncio.gather(
+        gateway.setupUnsolicitedConnection(),
+        runDelayed(
+            gateway.commandReceived,
+            ZipND.ZipNodeAdvertisement(
+                local=False,
+                validity=0,
+                nodeId=1,
+                ipv6=ipaddress.IPv6Address("2001:db8::1"),
+                homeId=0x12345678,
+            ),
+        ),
+    )
+    assert gateway._nodes == {1: {"ip": IPv6("2001:db8::1")}}

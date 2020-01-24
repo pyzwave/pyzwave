@@ -33,6 +33,9 @@ class DummyConnection:
     async def connect(self, address, psk):
         pass
 
+    async def listen(self, psk, port):
+        pass
+
     def send(self, msg):
         pass
 
