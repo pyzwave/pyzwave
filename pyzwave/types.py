@@ -108,6 +108,12 @@ class uint8_t(uint_t):  # pylint: disable=invalid-name
     size = 1
 
 
+class uint16_t(uint_t):  # pylint: disable=invalid-name
+    """Unsigned word"""
+
+    size = 2
+
+
 class uint32_t(uint_t):  # pylint: disable=invalid-name
     """Unsigned 32 bits value"""
 
