@@ -9,6 +9,7 @@ from pyzwave.types import (
     BitStreamReader,
     BitStreamWriter,
     bits_t,
+    bytes_t,
     flag_t,
     HomeID,
     IPv6,
@@ -80,6 +81,14 @@ def test_BitStreamWriter_bytes(streamWriter: BitStreamWriter):
     assert streamWriter == b"\x02\x00\x02"
     streamWriter.addBytes(-2, 1, True)
     assert streamWriter == b"\x02\x00\x02\xFE"
+
+
+def test_bytes_t(streamReader: BitStreamReader):
+    pkt = b"\x02\x01\xcb@"
+    assert bytes_t.deserialize(streamReader) == pkt
+    writer = BitStreamWriter()
+    bytes_t(pkt).serialize(writer)
+    assert writer == pkt
 
 
 def test_flags_t():

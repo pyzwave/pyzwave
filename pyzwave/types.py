@@ -144,6 +144,19 @@ class BitsBase:
         stream.addBits(self._value, self.sizeBits)
 
 
+class bytes_t(bytes):  # pylint: disable=invalid-name
+    """Variable size bytes"""
+
+    def serialize(self, stream: BitStreamWriter):
+        """Serialize into stream"""
+        stream.extend(self)
+
+    @classmethod
+    def deserialize(cls, stream: BitStreamReader):
+        """Deserialize bytes from stream"""
+        return stream.remaining()
+
+
 class flag_t(BitsBase):  # pylint: disable=invalid-name
     """Type represeting one bit"""
 
