@@ -4,7 +4,7 @@ import asyncio
 import logging
 
 from pyzwave.message import Message
-from pyzwave.commandclass import NetworkManagementProxy, ZipND
+from pyzwave.commandclass import NetworkManagementProxy, ZipGateway, ZipND
 from pyzwave.zipconnection import ZIPConnection
 
 _LOGGER = logging.getLogger(__name__)
@@ -17,6 +17,10 @@ class ZIPGateway(ZIPConnection):
         super().__init__(address, psk)
         self._connections = {}
         self._nmSeq = 0
+
+    async def connect(self):
+        await super().connect()
+        await self.setGatewayMode(1)
 
     async def connectToNode(self, nodeId) -> ZIPConnection:
         """Returns a connection to the node"""
@@ -53,6 +57,20 @@ class ZIPGateway(ZIPConnection):
         self._conn.send(msg.compose())
         response = await self.waitForMessage(ZipND.ZipNodeAdvertisement, timeout=3)
         return response.ipv6
+
+    async def setGatewayMode(self, mode: int, timeout: int = 3) -> bool:
+        try:
+            report = await self.sendAndReceive(
+                ZipGateway.GatewayModeGet(),
+                ZipGateway.GatewayModeReport,
+                timeout=timeout,
+            )
+            if report.mode != mode:
+                await self.send(ZipGateway.GatewayModeSet(mode=mode))
+        except asyncio.TimeoutError:
+            _LOGGER.error("Got timeout waiting for gateway mode report")
+            return False
+        return True
 
     async def setNodeInfo(self, generic, specific, cmdClasses):
         raise NotImplementedError()

@@ -19,7 +19,7 @@ sys.modules["dtls"] = __import__("mock_dtls")
 # pylint: disable=wrong-import-position
 from pyzwave.zipgateway import ZIPGateway
 from pyzwave.message import Message
-from pyzwave.commandclass import Basic
+from pyzwave.commandclass import Basic, ZipGateway
 import pyzwave.zipconnection
 
 from test_zipconnection import DummyConnection, runDelayed, ZIPConnectionImpl
@@ -37,9 +37,15 @@ pyzwave.zipconnection.DTLSConnection = DummyDTLSConnection
 pyzwave.zipconnection.Connection = DummyDTLSConnection
 
 
+class ZIPGatewayTester(ZIPGateway):
+    async def waitForAck(self, ackId: int, timeout: int = 3):
+        # Auto ack all messages during testing
+        return
+
+
 @pytest.fixture
 def gateway():
-    gateway = ZIPGateway(None, None)
+    gateway = ZIPGatewayTester(None, None)
     gateway._conn = DummyConnection()
     gateway._connections[6] = ZIPConnectionImpl(None, None)
     gateway._connections[6]._conn.send = MagicMock()
@@ -47,7 +53,16 @@ def gateway():
 
 
 @pytest.mark.asyncio
-async def test_connectoToNode(gateway: ZIPGateway):
+async def test_connect(gateway: ZIPGateway):
+    async def runScript():
+        await asyncio.sleep(0)
+        gateway.commandReceived(ZipGateway.GatewayModeReport(mode=2))
+
+    values = await asyncio.gather(gateway.connect(), runScript())
+
+
+@pytest.mark.asyncio
+async def test_connectToNode(gateway: ZIPGateway):
     async def ipOfNode(_nodeId):
         return ipaddress.IPv6Address("::ffff:c0a8:ee")
 
@@ -102,6 +117,21 @@ async def test_sendToNode(gateway: ZIPGateway):
         gateway.sendToNode(6, Basic.Get()), runDelayed(connection.ackReceived, 1)
     )
     assert res == True
+
+
+@pytest.mark.asyncio
+async def test_setGatewayMode(gateway: ZIPGateway):
+    async def runScript():
+        await asyncio.sleep(0)
+        gateway.commandReceived(ZipGateway.GatewayModeReport(mode=2))
+
+    (retval, _) = await asyncio.gather(gateway.setGatewayMode(1), runScript())
+    assert retval is True
+
+
+@pytest.mark.asyncio
+async def test_setGatewayMode_timeout(gateway: ZIPGateway):
+    assert await gateway.setGatewayMode(1, timeout=0) == False
 
 
 @pytest.mark.asyncio
