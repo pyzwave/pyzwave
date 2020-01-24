@@ -34,6 +34,7 @@ class DummyDTLSConnection:
 
 
 pyzwave.zipconnection.DTLSConnection = DummyDTLSConnection
+pyzwave.zipconnection.Connection = DummyDTLSConnection
 
 
 @pytest.fixture

@@ -5,7 +5,7 @@ import logging
 
 from pyzwave.message import Message
 from pyzwave.commandclass import Zip, ZipND
-from pyzwave.dtlsconnection import DTLSConnection
+from pyzwave.connection import Connection
 from .adapter import Adapter
 
 _LOGGER = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class ZIPConnection(Adapter):
         self._address = address
         self._keepAlive = None
         self._psk = psk
-        self._conn = DTLSConnection()
+        self._conn = Connection()
         self._conn.onMessage(self.onMessage)
 
     async def connect(self):
