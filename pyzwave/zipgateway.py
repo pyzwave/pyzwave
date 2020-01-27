@@ -53,7 +53,8 @@ class ZIPGateway(ZIPConnection):
             )
         except asyncio.TimeoutError:
             # No response
-            return {}
+            return set()
+        self._nodes = {x: {} for x in report.nodes}
         return report.nodes
 
     async def ipOfNode(self, nodeId):
@@ -87,6 +88,7 @@ class ZIPGateway(ZIPConnection):
         return await conn.send(cmd, **kwargs)
 
     async def setGatewayMode(self, mode: int, timeout: int = 3) -> bool:
+        """Set gateway to standalone or portal mode"""
         try:
             report = await self.sendAndReceive(
                 ZipGateway.GatewayModeGet(),

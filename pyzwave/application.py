@@ -30,6 +30,18 @@ class Application:
         self._typeInfo = (generic, specific)
         self._cmdClasses = cmdClasses
 
+    def messageReceived(self, _sender, nodeId: int, message: Message, flags: int):
+        """Called when a message is received from a node"""
+        node = self._nodes.get(nodeId)
+        if not node:
+            # Unknown node. Should not happen
+            _LOGGER.warning(
+                "Received message from unknown node %s: %s", nodeId, message
+            )
+            return False
+        _reply = node.messageReceived(message)
+        return True
+
     @property
     def nodes(self) -> Dict[int, Node]:
         """All nodes in the network"""

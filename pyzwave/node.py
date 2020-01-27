@@ -10,13 +10,15 @@ class Node:
 
     def __init__(self, nodeId: int, adapter: Adapter):
         self._adapter = adapter
-        #        self.adapter.addListener(self)
         self._nodeId = nodeId
 
     @property
     def adapter(self) -> Adapter:
         """The adapter"""
         return self._adapter
+
+    def messageReceived(self, message: Message) -> Message:
+        pass
 
     @property
     def nodeId(self) -> int:

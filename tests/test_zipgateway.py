@@ -101,6 +101,7 @@ async def test_getNodeList(gateway: ZIPGateway):
         gateway.getNodeList(), runDelayed(gateway.commandReceived, nodeListReport)
     )
     assert nodeList == {1, 6}
+    assert gateway._nodes == {1: {}, 6: {}}
 
 
 @pytest.mark.asyncio
@@ -116,7 +117,7 @@ async def test_getNodeList_timeout(gateway: ZIPGateway):
 
     gateway.sendAndReceive = dummySendAndReceive
     nodeList = await gateway.getNodeList()
-    assert nodeList == {}
+    assert nodeList == set()
 
 
 @pytest.mark.asyncio

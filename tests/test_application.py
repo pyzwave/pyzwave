@@ -1,20 +1,31 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=invalid-name
 # pylint: disable=redefined-outer-name
+# pylint: disable=protected-access
 import pytest
 
 from pyzwave.application import Application
+from pyzwave.commandclass import Basic
+from pyzwave.node import Node
 
 from test_adaper import AdapterImpl
 
 
 @pytest.fixture
 def app() -> Application:
-    return Application(AdapterImpl())
+    adapter = AdapterImpl()
+    app = Application(adapter)
+    app._nodes = {3: Node(3, adapter)}
+    return app
+
+
+def test_messageReceived(app: Application):
+    assert app.messageReceived(None, 4, Basic.Report(value=0), 0) is False
+    assert app.messageReceived(None, 3, Basic.Report(value=0), 0) is True
 
 
 def test_nodes(app: Application):
-    assert app.nodes == {}
+    assert app.nodes.keys() == {3}
 
 
 def test_setNodeInfo(app: Application):
