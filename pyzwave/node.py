@@ -18,7 +18,7 @@ class Node:
         return self._adapter
 
     def messageReceived(self, message: Message) -> Message:
-        pass
+        """Called when a message is received directed to this node"""
 
     @property
     def nodeId(self) -> int:

@@ -158,7 +158,7 @@ class DTLSConnection(threading.Thread):
                 ciphers="PSK",
             )
             sock.bind(("::", 4123,))
-            ret = sock.listen(5)
+            sock.listen(5)
             # sock.settimeout(5.0)
 
             proto = (

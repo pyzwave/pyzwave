@@ -22,7 +22,7 @@ class ZipClientProtocol:
         """Called when a new udp packet has arrived"""
         self.onMessage(data, addr)
 
-    def error_received(self, exc):  # pylint: disable=invalid-name
+    def error_received(self, exc):  # pylint: disable=invalid-name,no-self-use
         """Called when error happens"""
         _LOGGER.error("Error received: %s", exc)
 
