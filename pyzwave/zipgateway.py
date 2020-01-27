@@ -56,10 +56,6 @@ class ZIPGateway(ZIPConnection):
             return {}
         return report.nodes
 
-    async def sendToNode(self, nodeId: int, cmd: Message, **kwargs) -> bool:
-        conn = await self.connectToNode(nodeId)
-        return await conn.send(cmd, **kwargs)
-
     async def ipOfNode(self, nodeId):
         """Returns the IPv6 address of the node"""
         msg = ZipND.ZipInvNodeSolicitation(local=False, nodeId=nodeId)
@@ -85,6 +81,10 @@ class ZIPGateway(ZIPConnection):
         )
         _LOGGER.debug(zipPkt.debugString())
         return False
+
+    async def sendToNode(self, nodeId: int, cmd: Message, **kwargs) -> bool:
+        conn = await self.connectToNode(nodeId)
+        return await conn.send(cmd, **kwargs)
 
     async def setGatewayMode(self, mode: int, timeout: int = 3) -> bool:
         try:
