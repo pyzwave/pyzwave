@@ -2,13 +2,14 @@
 import logging
 
 from pyzwave.adapter import Adapter
+from pyzwave.commandclass import CommandClass
 from pyzwave.message import Message
-from pyzwave.util import MessageWaiter
+from pyzwave.util import Listenable, MessageWaiter
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class Node(MessageWaiter):
+class Node(Listenable, MessageWaiter):
     """
     Base class for a Z-Wave node
     """
@@ -17,12 +18,41 @@ class Node(MessageWaiter):
         super().__init__()
         self._adapter = adapter
         self._basicDeviceClass = 0
+        self._controlled = {}
+        self._dirty = False  # Flag is this node need to be saved to persistant storage
         self._flirs = False
         self._genericDeviceClass = 0
         self._isFailed = False
         self._listening = False
         self._nodeId = nodeId
         self._specificDeviceClass = 0
+        self._supported = {}
+        i = 0
+        supported = True
+        securityS0 = False
+        while i < len(cmdClasses):
+            cmdClass = cmdClasses[i]
+            if cmdClass == 0xF1 and cmdClasses[i + 1] == 0x00:
+                # Security Scheme 0 Mark
+                securityS0 = True
+                supported = True
+                i += 2
+                continue
+            if cmdClass == 0xEF:
+                # Support/Control mark
+                supported = False
+                i += 1
+                continue
+            clsObject = CommandClass.load(cmdClass, securityS0, self)
+            if supported:
+                self._supported[cmdClass] = clsObject
+                clsObject.addListener(self)
+            else:
+                self._controlled[cmdClass] = clsObject
+            # _LOGGER.info(
+            #     "Load command class for %X %s", cmdClass, clsObject,
+            # )
+            i += 1
 
     @property
     def adapter(self) -> Adapter:
@@ -37,6 +67,10 @@ class Node(MessageWaiter):
     @basicDeviceClass.setter
     def basicDeviceClass(self, basicDeviceClass: int):
         self._basicDeviceClass = basicDeviceClass
+
+    def commandClassUpdated(self, _commandClass: CommandClass):
+        """Called by the command classes if their data is updated"""
+        self._dirty = True
 
     @property
     def flirs(self) -> bool:
@@ -55,6 +89,14 @@ class Node(MessageWaiter):
     @genericDeviceClass.setter
     def genericDeviceClass(self, genericDeviceClass: int):
         self._genericDeviceClass = genericDeviceClass
+
+    async def interview(self):
+        """(Re)interview this node"""
+        for _, cmdClass in self._supported.items():
+            await cmdClass.interview()
+        if self._dirty:
+            self.speak("nodeUpdated")
+            self._dirty = False
 
     @property
     def isFailed(self) -> bool:
@@ -103,3 +145,8 @@ class Node(MessageWaiter):
     @specificDeviceClass.setter
     def specificDeviceClass(self, specificDeviceClass: int):
         self._specificDeviceClass = specificDeviceClass
+
+    @property
+    def supported(self) -> dict:
+        """Return a dict of command classes this node supports"""
+        return self._supported

@@ -9,11 +9,22 @@ from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.adapter import Adapter
-from pyzwave.commandclass import Basic
+from pyzwave.commandclass import Basic, SwitchBinary, Version
 from pyzwave.node import Node
 from test_zipconnection import ZIPConnectionImpl
 
 from test_adaper import runDelayed
+from test_commandclass import MockNode
+
+
+@pytest.fixture
+def mocknode() -> Node:
+    cmdClasses = [Basic.COMMAND_CLASS_BASIC, Version.COMMAND_CLASS_VERSION]
+    cmdClasses.extend([0xF1, 0x00])  # Security Scheme 0 Mark
+    cmdClasses.append(SwitchBinary.COMMAND_CLASS_SWITCH_BINARY)
+    cmdClasses.append(0xEF)  # Support/Control mark
+    cmdClasses.append(SwitchBinary.COMMAND_CLASS_SWITCH_BINARY)
+    return MockNode(cmdClasses)
 
 
 @pytest.fixture
@@ -46,6 +57,17 @@ def test_genericdeviceclass(node: Node):
     assert node.genericDeviceClass == 0
     node.genericDeviceClass = 2
     assert node.genericDeviceClass == 2
+
+
+@pytest.mark.asyncio
+async def test_interview(mocknode: Node):
+    mocknode.queue(
+        Version.VersionCommandClassReport(
+            requestedCommandClass=Version.COMMAND_CLASS_VERSION, commandClassVersion=4,
+        )
+    )
+    await mocknode.interview()
+    assert mocknode.supported[Version.COMMAND_CLASS_VERSION].version == 4
 
 
 def test_isFailed(node: Node):
