@@ -7,13 +7,18 @@ import asyncio
 import pytest
 
 from pyzwave.adapter import Adapter
-from pyzwave.commandclass import Basic
+from pyzwave.commandclass import Basic, NetworkManagementProxy
 from pyzwave.message import Message
 
 
 class AdapterImpl(Adapter):
     async def connect(self):
         await super().connect()
+
+    async def getNodeInfo(
+        self, nodeId: int
+    ) -> NetworkManagementProxy.NodeInfoCachedReport:
+        return await super().getNodeInfo(nodeId)
 
     async def getNodeList(self) -> set:
         await super().getNodeList()
@@ -62,6 +67,12 @@ def test_ack_not_existing(adapter: Adapter):
 async def test_connect(adapter: Adapter):
     with pytest.raises(NotImplementedError):
         await adapter.connect()
+
+
+@pytest.mark.asyncio
+async def test_getNodeInfo(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.getNodeInfo(1)
 
 
 @pytest.mark.asyncio

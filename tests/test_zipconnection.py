@@ -54,6 +54,12 @@ async def test_connect(connection: ZIPConnection):
 
 
 @pytest.mark.asyncio
+async def test_getNodeInfo(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.getNodeInfo(1)
+
+
+@pytest.mark.asyncio
 async def test_getNodeList(connection: ZIPConnection):
     with pytest.raises(NotImplementedError):
         await connection.getNodeList()

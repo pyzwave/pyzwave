@@ -4,7 +4,7 @@ import asyncio
 import logging
 
 from pyzwave.message import Message
-from pyzwave.commandclass import Zip, ZipND
+from pyzwave.commandclass import NetworkManagementProxy, Zip, ZipND
 from pyzwave.connection import Connection
 from .adapter import Adapter
 
@@ -28,6 +28,11 @@ class ZIPConnection(Adapter):
         self.resetKeepAlive()
 
     async def getNodeList(self) -> set:
+        raise NotImplementedError()
+
+    async def getNodeInfo(
+        self, nodeId: int
+    ) -> NetworkManagementProxy.NodeInfoCachedReport:
         raise NotImplementedError()
 
     def keepAlive(self):

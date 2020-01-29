@@ -57,6 +57,21 @@ class ZIPGateway(ZIPConnection):
         self._nodes = {x: {} for x in report.nodes}
         return report.nodes
 
+    async def getNodeInfo(
+        self, nodeId: int
+    ) -> NetworkManagementProxy.NodeInfoCachedReport:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementProxy.NodeInfoCachedGet(
+            seqNo=self._nmSeq, maxAge=15, nodeID=nodeId
+        )
+        try:
+            report = await self.sendAndReceive(
+                cmd, NetworkManagementProxy.NodeInfoCachedReport
+            )
+        except asyncio.TimeoutError:
+            return NetworkManagementProxy.NodeInfoCachedReport()
+        return report
+
     async def ipOfNode(self, nodeId):
         """Returns the IPv6 address of the node"""
         msg = ZipND.ZipInvNodeSolicitation(local=False, nodeId=nodeId)

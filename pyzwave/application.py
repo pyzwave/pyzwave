@@ -53,4 +53,12 @@ class Application:
     async def startup(self):
         """Start and initialize the application and the adapter"""
         for nodeId in await self.adapter.getNodeList():
-            self._nodes[nodeId] = Node(nodeId, self.adapter)
+            nodeInfo = await self.adapter.getNodeInfo(nodeId)
+            node = Node(nodeId, self.adapter, [x for x in nodeInfo.commandClass])
+            node.basicDeviceClass = nodeInfo.basicDeviceClass
+            # node.flirs = ?
+            node.genericDeviceClass = nodeInfo.genericDeviceClass
+            # node.isFailed = ?
+            node.listening = nodeInfo.listening
+            node.specificDeviceClass = nodeInfo.specificDeviceClass
+            self._nodes[nodeId] = node

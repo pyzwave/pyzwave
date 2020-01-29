@@ -5,7 +5,7 @@
 import pytest
 
 from pyzwave.application import Application
-from pyzwave.commandclass import Basic
+from pyzwave.commandclass import Basic, NetworkManagementProxy
 from pyzwave.node import Node
 
 from test_adaper import AdapterImpl
@@ -15,7 +15,7 @@ from test_adaper import AdapterImpl
 def app() -> Application:
     adapter = AdapterImpl()
     app = Application(adapter)
-    app._nodes = {3: Node(3, adapter)}
+    app._nodes = {3: Node(3, adapter, [])}
     return app
 
 
@@ -41,9 +41,13 @@ async def test_shutdown(app: Application):
 
 @pytest.mark.asyncio
 async def test_startup(app: Application):
+    async def getNodeInfo(_):
+        return NetworkManagementProxy.NodeInfoCachedReport(commandClass=b"")
+
     async def getNodeList():
         return [1, 2, 3]
 
+    app.adapter.getNodeInfo = getNodeInfo
     app.adapter.getNodeList = getNodeList
     await app.startup()
     assert app.nodes.keys() == {1, 2, 3}

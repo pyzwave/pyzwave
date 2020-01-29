@@ -20,7 +20,13 @@ sys.modules["dtls"] = __import__("mock_dtls")
 # pylint: disable=wrong-import-position
 from pyzwave.zipgateway import ZIPGateway
 from pyzwave.message import Message
-from pyzwave.commandclass import Basic, SwitchBinary, ZipGateway, ZipND
+from pyzwave.commandclass import (
+    Basic,
+    SwitchBinary,
+    NetworkManagementProxy,
+    ZipGateway,
+    ZipND,
+)
 from pyzwave.types import IPv6
 import pyzwave.zipconnection
 
@@ -66,6 +72,10 @@ async def ipOfNode(_nodeId):
     return ipaddress.IPv6Address("::ffff:c0a8:ee")
 
 
+async def sendAndReceiveTimeout(msg, waitFor):
+    raise asyncio.TimeoutError()
+
+
 @pytest.mark.asyncio
 async def test_connect(gateway: ZIPGateway):
     gateway._nodes = {1: {}, 2: {}}
@@ -84,6 +94,32 @@ async def test_connectToNode(gateway: ZIPGateway):
     assert 2 not in gateway._connections
     assert await gateway.connectToNode(2)
     assert 2 in gateway._connections
+
+
+@pytest.mark.asyncio
+async def test_getNodeInfo(gateway: ZIPGateway):
+    # pylint: disable=line-too-long
+    cachedNodeInfoReport = Message.decode(
+        b"R\x04\x03\x1b\x9c\x9c\x00\x04\x10\x01^%'\x85\\pru\x86ZYszh#"
+    )
+
+    async def dummySend(_msg):
+        pass
+
+    gateway.send = dummySend
+    [nodeInfo, _] = await asyncio.gather(
+        gateway.getNodeInfo(1),
+        runDelayed(gateway.commandReceived, cachedNodeInfoReport),
+    )
+    assert isinstance(nodeInfo, NetworkManagementProxy.NodeInfoCachedReport)
+    assert nodeInfo == cachedNodeInfoReport
+
+
+@pytest.mark.asyncio
+async def test_getNodeInfo_timeout(gateway: ZIPGateway):
+    gateway.sendAndReceive = sendAndReceiveTimeout
+    nodeInfo = await gateway.getNodeInfo(1)
+    assert isinstance(nodeInfo, NetworkManagementProxy.NodeInfoCachedReport)
 
 
 @pytest.mark.asyncio
@@ -112,10 +148,7 @@ async def test_getNodeList_cached(gateway: ZIPGateway):
 
 @pytest.mark.asyncio
 async def test_getNodeList_timeout(gateway: ZIPGateway):
-    async def dummySendAndReceive(msg, waitFor):
-        raise asyncio.TimeoutError()
-
-    gateway.sendAndReceive = dummySendAndReceive
+    gateway.sendAndReceive = sendAndReceiveTimeout
     nodeList = await gateway.getNodeList()
     assert nodeList == set()
 

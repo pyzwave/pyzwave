@@ -4,6 +4,7 @@ import abc
 import asyncio
 import logging
 
+from pyzwave.commandclass import NetworkManagementProxy
 from .util import Listenable, MessageWaiter
 from .message import Message
 
@@ -34,6 +35,13 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def connect(self):
         """Connect the adapter. Must be implemented by subclass"""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def getNodeInfo(
+        self, nodeId: int
+    ) -> NetworkManagementProxy.NodeInfoCachedReport:
+        """Return the node info from this node. Possibly cached"""
         raise NotImplementedError()
 
     @abc.abstractmethod
