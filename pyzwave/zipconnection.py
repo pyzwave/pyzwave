@@ -21,7 +21,7 @@ class ZIPConnection(Adapter):
         self._keepAlive = None
         self._psk = psk
         self._conn = Connection()
-        self._conn.onMessage(self.onMessage)
+        self._conn.onMessage(self.onPacket)
 
     async def connect(self):
         await self._conn.connect(self._address, self._psk)
@@ -36,7 +36,7 @@ class ZIPConnection(Adapter):
         self._conn.send(msg.compose())
         self.resetKeepAlive()
 
-    def onMessage(self, pkt):
+    def onPacket(self, pkt):
         """Called when a packed has recevied from the connection"""
         zipPkt = Message.decode(pkt)
         if isinstance(zipPkt, Zip.ZipPacket):

@@ -59,11 +59,11 @@ async def test_getNodeList(connection: ZIPConnection):
         await connection.getNodeList()
 
 
-def test_onMessage(connection: ZIPConnection):
-    assert connection.onMessage(b"malformed") is False
+def test_onPacket(connection: ZIPConnection):
+    assert connection.onPacket(b"malformed") is False
 
 
-def test_onMessage_Zip(connection: ZIPConnection):
+def test_onPacket_Zip(connection: ZIPConnection):
     connection.ackReceived = MagicMock()
     connection.commandReceived = MagicMock()
 
@@ -83,7 +83,7 @@ def test_onMessage_Zip(connection: ZIPConnection):
         destEP=0,
         command=None,
     )
-    assert connection.onMessage(ackResponse.compose()) is True
+    assert connection.onPacket(ackResponse.compose()) is True
     connection.ackReceived.assert_called_once()
 
     nackResponse = Zip.ZipPacket(
@@ -107,7 +107,7 @@ def test_onMessage_Zip(connection: ZIPConnection):
     assert msg.ackResponse == False
     assert msg.nackResponse == True
 
-    assert connection.onMessage(nackResponse.compose()) is False
+    assert connection.onPacket(nackResponse.compose()) is False
 
     ackRequest = Zip.ZipPacket(
         ackRequest=True,
@@ -125,7 +125,7 @@ def test_onMessage_Zip(connection: ZIPConnection):
         destEP=0,
         command=None,
     )
-    assert connection.onMessage(ackRequest.compose()) is False
+    assert connection.onPacket(ackRequest.compose()) is False
 
     pkt = Zip.ZipPacket(
         ackRequest=False,
@@ -143,21 +143,21 @@ def test_onMessage_Zip(connection: ZIPConnection):
         destEP=0,
         command=Basic.Get(),
     )
-    assert connection.onMessage(pkt.compose()) is True
+    assert connection.onPacket(pkt.compose()) is True
     connection.commandReceived.assert_called_once()
 
 
-def test_onMessage_ZipND(connection: ZIPConnection):
+def test_onPacket_ZipND(connection: ZIPConnection):
     pkt = ZipND.ZipNodeAdvertisement(
         local=False, validity=0, nodeId=6, ipv6=0, homeId=0,
     )
-    assert connection.onMessage(pkt.compose()) is True
+    assert connection.onPacket(pkt.compose()) is True
 
     pkt = Zip.ZipKeepAlive(ackRequest=True, ackResponse=False)
-    assert connection.onMessage(pkt.compose()) is False
+    assert connection.onPacket(pkt.compose()) is False
 
     pkt = Zip.ZipKeepAlive(ackRequest=False, ackResponse=True)
-    assert connection.onMessage(pkt.compose()) is True
+    assert connection.onPacket(pkt.compose()) is True
 
 
 def test_keepAlive(connection: ZIPConnection):

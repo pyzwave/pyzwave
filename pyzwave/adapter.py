@@ -4,19 +4,18 @@ import abc
 import asyncio
 import logging
 
-from .util import Listenable
+from .util import Listenable, MessageWaiter
 from .message import Message
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class Adapter(Listenable, metaclass=abc.ABCMeta):
+class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     """Abstract class for implementing communication with a Z-Wave chip"""
 
     def __init__(self):
         super().__init__()
         self._ackQueue = {}
-        self._sessions = {}
 
     def ackReceived(self, ackId: int):
         """Call this method when an ack message has been received"""
@@ -29,9 +28,8 @@ class Adapter(Listenable, metaclass=abc.ABCMeta):
 
     def commandReceived(self, cmd: Message):
         """Call this method when a command has been received"""
-        session = self._sessions.pop(cmd.hid(), None)
-        if session:
-            session.set_result(cmd)
+        if not self.messageReceived(cmd):
+            self.speak("onMessageReceived", cmd)
 
     @abc.abstractmethod
     async def connect(self):
@@ -82,17 +80,3 @@ class Adapter(Listenable, metaclass=abc.ABCMeta):
             _LOGGER.warning("Timeout waiting for response")
             del self._ackQueue[ackId]
             raise
-
-    async def waitForMessage(self, msgType: Message, timeout: int = 3) -> Message:
-        """Async method for waiting for a specific message to arrive from the adapter."""
-        hid = msgType.hid()
-        session = self._sessions.get(hid, None)
-        if not session:
-            session = asyncio.get_event_loop().create_future()
-            self._sessions[hid] = session
-        try:
-            await asyncio.wait_for(session, timeout)
-        except asyncio.TimeoutError:
-            _LOGGER.warning("Timeout waiting for message")
-            raise
-        return session.result()
