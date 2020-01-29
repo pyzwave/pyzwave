@@ -79,6 +79,16 @@ class ZIPGateway(ZIPConnection):
         response = await self.waitForMessage(ZipND.ZipNodeAdvertisement, timeout=3)
         return response.ipv6
 
+    def onMessageReceived(self, connection: ZIPConnection, message: Message):
+        """Called when a message is received from any node connection. Not unsolicited."""
+        for nodeId, nodeConnection in self._connections.items():
+            if connection != nodeConnection:
+                continue
+            flags = 0  # Set flags such as encapsulation type
+            self.speak("messageReceived", nodeId, message, flags)
+            return
+        _LOGGER.warning("Got message from unknown sender %s: %s", connection, message)
+
     def onUnsolicitedMessage(self, pkt, address):
         """
         Called when an unsolicited message is received.

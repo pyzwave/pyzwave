@@ -13,6 +13,8 @@ from pyzwave.commandclass import Basic
 from pyzwave.node import Node
 from test_zipconnection import ZIPConnectionImpl
 
+from test_adaper import runDelayed
+
 
 @pytest.fixture
 def node() -> Node:
@@ -67,6 +69,19 @@ async def test_send(node: Node):
     msg = Basic.Get()
     assert await node.send(msg) is True
     node._adapter.sendToNode.assert_called_with(2, msg, sourceEP=0, destEP=0, timeout=3)
+
+
+@pytest.mark.asyncio
+async def test_sendAndReceive(node: Node):
+    async def noop(_):
+        pass
+
+    node.send = noop
+    values = await asyncio.gather(
+        node.sendAndReceive(Basic.Get(), Basic.Report),
+        runDelayed(node.messageReceived, Basic.Report()),
+    )
+    assert isinstance(values[0], Basic.Report)
 
 
 def test_specificdeviceclass(node: Node):

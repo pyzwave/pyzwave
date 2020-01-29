@@ -1,14 +1,20 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from pyzwave.adapter import Adapter
 from pyzwave.message import Message
+from pyzwave.util import MessageWaiter
+
+_LOGGER = logging.getLogger(__name__)
 
 
-class Node:
+class Node(MessageWaiter):
     """
     Base class for a Z-Wave node
     """
 
     def __init__(self, nodeId: int, adapter: Adapter, cmdClasses: list):
+        super().__init__()
         self._adapter = adapter
         self._basicDeviceClass = 0
         self._flirs = False
@@ -73,9 +79,6 @@ class Node:
         """The node id"""
         return self._nodeId
 
-    def messageReceived(self, message: Message) -> Message:
-        """Called when a message is received directed to this node"""
-
     async def send(
         self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
     ) -> bool:
@@ -83,6 +86,14 @@ class Node:
         return await self._adapter.sendToNode(
             self._nodeId, cmd, sourceEP=sourceEP, destEP=destEP, timeout=timeout
         )
+
+    async def sendAndReceive(
+        self, cmd: Message, waitFor: Message, timeout: int = 3, **kwargs
+    ) -> Message:
+        """Send a message and wait for the response"""
+        self.addWaitingSession(waitFor)
+        await self.send(cmd, **kwargs)
+        return await self.waitForMessage(waitFor, timeout=timeout)
 
     @property
     def specificDeviceClass(self) -> int:

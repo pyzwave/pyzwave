@@ -3,22 +3,25 @@
 import logging
 from typing import Dict
 
+from pyzwave.adapter import Adapter
 from pyzwave.message import Message
 from pyzwave.node import Node
 from pyzwave.const.ZW_classcmd import (
     GENERIC_TYPE_STATIC_CONTROLLER,
     SPECIFIC_TYPE_GATEWAY,
 )
+from pyzwave.util import Listenable
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class Application:
+class Application(Listenable):
     """
     Base class for managing the Z-Wave system
     """
 
-    def __init__(self, adapter):
+    def __init__(self, adapter: Adapter):
+        super().__init__()
         self.adapter = adapter
         self.adapter.addListener(self)
         self._typeInfo = (GENERIC_TYPE_STATIC_CONTROLLER, SPECIFIC_TYPE_GATEWAY)

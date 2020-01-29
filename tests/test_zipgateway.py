@@ -164,6 +164,20 @@ async def test_ipOfNode(gateway: ZIPGateway):
     assert reply == ipaddress.IPv6Address("::ffff:c0a8:ee")
 
 
+def test_onMessageReceived(gateway: ZIPGateway):
+    connection = DummyConnection()
+    msg = Basic.Get()
+    gateway._connections = {2: connection}
+    gateway.onMessageReceived(connection, msg)
+    gateway.listener.messageReceived.assert_called_once_with(gateway, 2, msg, 0)
+
+
+def test_onMessageReceived_noNode(gateway: ZIPGateway):
+    gateway._connections = {2: DummyConnection()}
+    gateway.onMessageReceived(DummyConnection(), Basic.Get())
+    gateway.listener.messageReceived.assert_not_called()
+
+
 def test_onUnsolicitedMessage(gateway: ZIPGateway):
     ip = ipaddress.IPv6Address("::ffff:c0a8:ee")
     gateway._nodes = {7: {"ip": ip}}
