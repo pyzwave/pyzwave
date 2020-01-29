@@ -75,7 +75,7 @@ async def test_connect(gateway: ZIPGateway):
         await asyncio.sleep(0)
         gateway.commandReceived(ZipGateway.GatewayModeReport(mode=2))
 
-    values = await asyncio.gather(gateway.connect(), runScript())
+    await asyncio.gather(gateway.connect(), runScript())
 
 
 @pytest.mark.asyncio

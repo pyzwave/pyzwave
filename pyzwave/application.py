@@ -30,7 +30,7 @@ class Application:
         self._typeInfo = (generic, specific)
         self._cmdClasses = cmdClasses
 
-    def messageReceived(self, _sender, nodeId: int, message: Message, flags: int):
+    def messageReceived(self, _sender, nodeId: int, message: Message, _flags: int):
         """Called when a message is received from a node"""
         node = self._nodes.get(nodeId)
         if not node:
