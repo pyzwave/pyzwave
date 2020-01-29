@@ -96,6 +96,9 @@ class uint_t(int_t):  # pylint: disable=invalid-name
     signed = False
     size = 1
 
+    def __repr__(self):
+        return "0x{0:0{1}X} ({0})".format(self, self.size)
+
     @classmethod
     def deserialize(cls, stream: BitStreamReader):
         """Deserialize unsigned value from stream"""

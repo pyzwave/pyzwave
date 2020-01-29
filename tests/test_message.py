@@ -35,7 +35,9 @@ def test_compose_type():
 
 def test_debugString():
     assert (Basic.Report().debugString()) == "BASIC.REPORT:\n"
-    assert (Basic.Report(value=0xFF).debugString()) == "BASIC.REPORT:\n\tvalue = 255"
+    assert (
+        Basic.Report(value=0xFF).debugString()
+    ) == "BASIC.REPORT:\n\tvalue = 0xFF (255)"
     msg = Message.decode(b"#\x02\x80P\x01\x03\x00 \x02")
     assert (
         msg.debugString()
@@ -52,9 +54,9 @@ def test_debugString():
 	moreInformation = flag_t(False)\n\
 	secureOrigin = flag_t(True)\n\
 	_ = bits_t(00)\n\
-	seqNo = 1\n\
-	sourceEP = 3\n\
-	destEP = 0\n\
+	seqNo = 0x1 (1)\n\
+	sourceEP = 0x3 (3)\n\
+	destEP = 0x0 (0)\n\
 	headerExtension = {}\n\
 	command = BASIC.GET:\n"
     )

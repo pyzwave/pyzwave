@@ -60,7 +60,7 @@ class Message:
             if hasattr(self._attributes[name], "debugString"):
                 value = self._attributes[name].debugString(indent + 1)
             else:
-                value = str(self._attributes[name])
+                value = repr(self._attributes[name])
             attrs.append("{}{} = {}".format("\t" * (indent + 1), name, value))
 
         cmdClassName = cmdClasses.get(cmdClass, "cmdClass 0x{:02X}".format(cmdClass))
