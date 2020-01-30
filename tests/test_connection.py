@@ -19,6 +19,10 @@ class DummySock:
 @pytest.fixture
 def connection() -> Connection:
     connection = Connection()
+    sock = DummySock()
+    sock.close = MagicMock()
+    sock.sendto = MagicMock()
+    connection._sock = sock
     return connection
 
 
@@ -28,7 +32,13 @@ async def test_run(connection: Connection):
         event.set_result(True)
 
     sockClose = asyncio.Future()
-    connection._sock = DummySock()
-    connection._sock.close = MagicMock()
     await asyncio.gather(connection.run(sockClose), setEvent(sockClose))
     connection._sock.close.assert_called_once()
+
+
+def test_send(connection: Connection):
+    pkt = b"\xde\xad\xbe\xef"
+    assert connection.send(pkt) is True
+    connection._sock.sendto.assert_called_once_with(pkt)
+    connection._sock = None
+    assert connection.send(pkt) is False

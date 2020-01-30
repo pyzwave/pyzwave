@@ -74,12 +74,13 @@ class Connection:
         finally:
             self._sock.close()
 
-    def send(self, msg):
+    def send(self, msg) -> bool:
         """Send bytes to socket"""
         if not self._sock:
             _LOGGER.error("Could not send, not yet connected!")
-            return
+            return False
         self._sock.sendto(msg)
+        return True
 
     def onMessage(self, cbfn):
         """Set the callback function to use when data has arrived"""
