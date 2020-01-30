@@ -3,6 +3,7 @@
 # pylint: disable=invalid-name
 # pylint: disable=redefined-outer-name
 # pylint: disable=protected-access
+# pylint: disable=attribute-defined-outside-init
 
 import asyncio
 from unittest.mock import MagicMock
