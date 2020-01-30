@@ -1,5 +1,7 @@
 from pyzwave.const.ZW_classcmd import (
     COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY,
+    COMMAND_FAILED_NODE_LIST_GET,
+    COMMAND_FAILED_NODE_LIST_REPORT,
     NODE_INFO_CACHED_GET,
     NODE_INFO_CACHED_REPORT,
     NODE_LIST_GET,
@@ -25,6 +27,29 @@ class NodeList(set):
                 if nodeByte & (1 << j):
                     nodeList.add(i * 8 + j + 1)
         return nodeList
+
+
+@ZWaveMessage(COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY, COMMAND_FAILED_NODE_LIST_GET)
+class FailedNodeListGet(Message):
+    """Command Class message COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY COMMAND_FAILED_NODE_LIST_GET"""
+
+    NAME = "COMMAND_FAILED_NODE_LIST_GET"
+
+    attributes = (("seqNo", uint8_t),)
+
+
+@ZWaveMessage(COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY, COMMAND_FAILED_NODE_LIST_REPORT)
+class FailedNodeListReport(Message):
+    """
+    Command Class message COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY COMMAND_FAILED_NODE_LIST_REPORT
+    """
+
+    NAME = "COMMAND_FAILED_NODE_LIST_REPORT"
+
+    attributes = (
+        ("seqNo", uint8_t),
+        ("failedNodeList", NodeList),
+    )
 
 
 @ZWaveMessage(COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY, NODE_INFO_CACHED_GET)

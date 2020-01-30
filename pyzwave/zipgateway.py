@@ -41,6 +41,17 @@ class ZIPGateway(ZIPConnection):
         self._connections[nodeId] = connection
         return connection
 
+    async def getFailedNodeList(self) -> list:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementProxy.FailedNodeListGet(seqNo=self._nmSeq,)
+        try:
+            report = await self.sendAndReceive(
+                cmd, NetworkManagementProxy.FailedNodeListReport
+            )
+        except asyncio.TimeoutError:
+            return set()
+        return report.failedNodeList
+
     async def getNodeList(self) -> set:
         if self._nodes:
             # Return cached list

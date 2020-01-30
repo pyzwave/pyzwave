@@ -41,12 +41,16 @@ async def test_shutdown(app: Application):
 
 @pytest.mark.asyncio
 async def test_startup(app: Application):
+    async def getFailedNodeList():
+        return [2]
+
     async def getNodeInfo(_):
         return NetworkManagementProxy.NodeInfoCachedReport(commandClass=b"")
 
     async def getNodeList():
         return [1, 2, 3]
 
+    app.adapter.getFailedNodeList = getFailedNodeList
     app.adapter.getNodeInfo = getNodeInfo
     app.adapter.getNodeList = getNodeList
     await app.startup()

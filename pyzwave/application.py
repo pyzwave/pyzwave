@@ -65,3 +65,6 @@ class Application(Listenable):
             node.listening = nodeInfo.listening
             node.specificDeviceClass = nodeInfo.specificDeviceClass
             self._nodes[nodeId] = node
+
+        for nodeId in await self.adapter.getFailedNodeList():
+            _LOGGER.warning("FAILED node %s", nodeId)

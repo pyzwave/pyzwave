@@ -38,6 +38,11 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
+    async def getFailedNodeList(self) -> list:
+        """Return a list of failing nodes"""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     async def getNodeInfo(
         self, nodeId: int
     ) -> NetworkManagementProxy.NodeInfoCachedReport:

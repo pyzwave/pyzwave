@@ -97,6 +97,31 @@ async def test_connectToNode(gateway: ZIPGateway):
 
 
 @pytest.mark.asyncio
+async def test_getFailedNodeList(gateway: ZIPGateway):
+    # pylint: disable=line-too-long
+    failedNodeListReport = Message.decode(
+        b"R\x0C\x02!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    )
+
+    async def dummySend(_msg):
+        pass
+
+    gateway.send = dummySend
+    [nodeList, _] = await asyncio.gather(
+        gateway.getFailedNodeList(),
+        runDelayed(gateway.commandReceived, failedNodeListReport),
+    )
+    assert nodeList == {1, 6}
+
+
+@pytest.mark.asyncio
+async def test_getFailedNodeList_timeout(gateway: ZIPGateway):
+    gateway.sendAndReceive = sendAndReceiveTimeout
+    nodeList = await gateway.getFailedNodeList()
+    assert nodeList == set()
+
+
+@pytest.mark.asyncio
 async def test_getNodeInfo(gateway: ZIPGateway):
     # pylint: disable=line-too-long
     cachedNodeInfoReport = Message.decode(

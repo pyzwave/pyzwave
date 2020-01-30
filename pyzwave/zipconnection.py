@@ -27,6 +27,9 @@ class ZIPConnection(Adapter):
         await self._conn.connect(self._address, self._psk)
         self.resetKeepAlive()
 
+    async def getFailedNodeList(self) -> list:
+        raise NotImplementedError()
+
     async def getNodeList(self) -> set:
         raise NotImplementedError()
 

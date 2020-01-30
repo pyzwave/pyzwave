@@ -15,6 +15,9 @@ class AdapterImpl(Adapter):
     async def connect(self):
         await super().connect()
 
+    async def getFailedNodeList(self) -> list:
+        return await super().getFailedNodeList()
+
     async def getNodeInfo(
         self, nodeId: int
     ) -> NetworkManagementProxy.NodeInfoCachedReport:
@@ -67,6 +70,12 @@ def test_ack_not_existing(adapter: Adapter):
 async def test_connect(adapter: Adapter):
     with pytest.raises(NotImplementedError):
         await adapter.connect()
+
+
+@pytest.mark.asyncio
+async def test_getFailedNodeList(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.getFailedNodeList()
 
 
 @pytest.mark.asyncio
