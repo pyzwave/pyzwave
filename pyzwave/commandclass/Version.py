@@ -6,7 +6,8 @@ from pyzwave.const.ZW_classcmd import (
 
 from pyzwave.message import Message
 from pyzwave.types import uint8_t
-from . import CommandClass, ZWaveMessage, ZWaveCommandClass
+from . import ZWaveMessage, ZWaveCommandClass
+from .CommandClass import CommandClass
 
 
 @ZWaveCommandClass(COMMAND_CLASS_VERSION)
