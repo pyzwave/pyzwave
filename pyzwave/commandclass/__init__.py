@@ -60,6 +60,7 @@ def registerCmdClass(cmdClass, name):
 # pylint: disable=wrong-import-position
 from . import (
     Basic,
+    ManufacturerSpecific,
     NetworkManagementProxy,
     SwitchBinary,
     Version,
