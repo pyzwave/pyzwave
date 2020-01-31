@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import asyncio
 import logging
 
 from pyzwave.adapter import Adapter
@@ -93,7 +94,10 @@ class Node(Listenable, MessageWaiter):
     async def interview(self):
         """(Re)interview this node"""
         for _, cmdClass in self._supported.items():
-            await cmdClass.interview()
+            try:
+                await cmdClass.interview()
+            except asyncio.TimeoutError:
+                _LOGGER.warning("Timeout interviewing %s", cmdClass.NAME)
         if self._dirty:
             self.speak("nodeUpdated")
             self._dirty = False

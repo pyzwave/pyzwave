@@ -79,6 +79,16 @@ async def test_interview(mocknode: Node):
     assert mocknode.supported[Version.COMMAND_CLASS_VERSION].version == 4
 
 
+@pytest.mark.asyncio
+async def test_interview_timeout(mocknode: Node):
+    async def interview():
+        raise asyncio.TimeoutError()
+
+    mocknode.supported[Version.COMMAND_CLASS_VERSION].interview = interview
+    await mocknode.interview()
+    assert mocknode.supported[Version.COMMAND_CLASS_VERSION].version == 0
+
+
 def test_isFailed(node: Node):
     assert node.isFailed is False
     node.isFailed = True
