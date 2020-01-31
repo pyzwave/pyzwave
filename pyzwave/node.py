@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import logging
+from typing import Dict
 
 from pyzwave.adapter import Adapter
 from pyzwave.commandclass import CommandClass
@@ -151,6 +152,6 @@ class Node(Listenable, MessageWaiter):
         self._specificDeviceClass = specificDeviceClass
 
     @property
-    def supported(self) -> dict:
+    def supported(self) -> Dict[int, CommandClass]:
         """Return a dict of command classes this node supports"""
         return self._supported
