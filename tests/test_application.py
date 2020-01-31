@@ -14,7 +14,7 @@ from test_adaper import AdapterImpl
 @pytest.fixture
 def app() -> Application:
     adapter = AdapterImpl()
-    app = Application(adapter)
+    app = Application(adapter, None)
     app._nodes = {3: Node(3, adapter, [])}
     return app
 

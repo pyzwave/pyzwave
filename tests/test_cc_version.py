@@ -4,7 +4,6 @@
 import pytest
 
 from pyzwave.commandclass import Version
-from pyzwave.message import Message
 
 from test_commandclass import MockNode
 

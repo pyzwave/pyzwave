@@ -10,6 +10,7 @@ from pyzwave.const.ZW_classcmd import (
     GENERIC_TYPE_STATIC_CONTROLLER,
     SPECIFIC_TYPE_GATEWAY,
 )
+from pyzwave.persistantstorage import PersistantStorage
 from pyzwave.util import Listenable
 
 _LOGGER = logging.getLogger(__name__)
@@ -20,10 +21,12 @@ class Application(Listenable):
     Base class for managing the Z-Wave system
     """
 
-    def __init__(self, adapter: Adapter):
+    def __init__(self, adapter: Adapter, storage: PersistantStorage):
         super().__init__()
         self.adapter = adapter
         self.adapter.addListener(self)
+        self.addListener(storage)
+        self._storage = storage
         self._typeInfo = (GENERIC_TYPE_STATIC_CONTROLLER, SPECIFIC_TYPE_GATEWAY)
         self._nodes = {}
         self._cmdClasses = []
@@ -58,6 +61,7 @@ class Application(Listenable):
         for nodeId in await self.adapter.getNodeList():
             nodeInfo = await self.adapter.getNodeInfo(nodeId)
             node = Node(nodeId, self.adapter, [x for x in nodeInfo.commandClass])
+            node.addListener(self._storage)
             node.basicDeviceClass = nodeInfo.basicDeviceClass
             # node.flirs = ?
             node.genericDeviceClass = nodeInfo.genericDeviceClass
@@ -65,6 +69,7 @@ class Application(Listenable):
             node.listening = nodeInfo.listening
             node.specificDeviceClass = nodeInfo.specificDeviceClass
             self._nodes[nodeId] = node
+            self.speak("nodeAdded", node)
 
         for nodeId in await self.adapter.getFailedNodeList():
             _LOGGER.warning("FAILED node %s", nodeId)

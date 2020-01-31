@@ -60,13 +60,16 @@ def version() -> Version.Version:
             applicationSubVersion=0,
         )
     )
-    # TODO: load settings using __setstate__ once implemented
-    node.supported[Version.COMMAND_CLASS_VERSION].zwaveLibraryType = 0x06
+    node.supported[Version.COMMAND_CLASS_VERSION].__setstate__({"zwaveLibraryType": 6})
     return node.supported[Version.COMMAND_CLASS_VERSION]
 
 
 def test_getattr(version: Version):
     assert version.zwaveLibraryType == 0x06
+
+
+def test_getstate(version: Version):
+    assert version.__getstate__() == {"version": 0, "zwaveLibraryType": 6}
 
 
 def test_id(version: Version.Version):
