@@ -57,7 +57,7 @@ def registerCmdClass(cmdClass, name):
     cmdClasses[cmdClass] = name
 
 
-# pylint: disable=wrong-import-position
+# pylint: disable=wrong-import-position,import-self
 from . import (
     Basic,
     ManufacturerSpecific,
