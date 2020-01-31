@@ -36,6 +36,7 @@ class CommandClass(Listenable):
 
     def __init__(self, securityS0, node):
         super().__init__()
+        self._attributes = {}
         self._node = node
         self._securityS0 = securityS0
         self._version = 0
@@ -90,6 +91,16 @@ class CommandClass(Listenable):
     def version(self) -> int:
         """Returns the command class version implemented by the node"""
         return self._version
+
+    def __getattr__(self, name):
+        return self._attributes.get(name)
+
+    def __setattr__(self, name, value):
+        for attrName, attrType in getattr(self, "attributes"):
+            if attrName == name:
+                self._attributes[name] = attrType(value)
+                return
+        super().__setattr__(name, value)
 
     @staticmethod
     def load(cmdClass: int, securityS0: bool, node):

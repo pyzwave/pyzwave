@@ -66,6 +66,15 @@ async def test_interview(mocknode: Node):
             requestedCommandClass=Version.COMMAND_CLASS_VERSION, commandClassVersion=4,
         )
     )
+    mocknode.queue(
+        Version.VersionReport(
+            zwaveLibraryType=6,
+            zwaveProtocolVersion=1,
+            zwaveProtocolSubVersion=2,
+            applicationVersion=1,
+            applicationSubVersion=0,
+        )
+    )
     await mocknode.interview()
     assert mocknode.supported[Version.COMMAND_CLASS_VERSION].version == 4
 

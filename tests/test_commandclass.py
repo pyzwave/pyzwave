@@ -51,7 +51,22 @@ def version() -> Version.Version:
             requestedCommandClass=Version.COMMAND_CLASS_VERSION, commandClassVersion=4,
         )
     )
+    node.queue(
+        Version.VersionReport(
+            zwaveLibraryType=6,
+            zwaveProtocolVersion=1,
+            zwaveProtocolSubVersion=2,
+            applicationVersion=1,
+            applicationSubVersion=0,
+        )
+    )
+    # TODO: load settings using __setstate__ once implemented
+    node.supported[Version.COMMAND_CLASS_VERSION].zwaveLibraryType = 0x06
     return node.supported[Version.COMMAND_CLASS_VERSION]
+
+
+def test_getattr(version: Version):
+    assert version.zwaveLibraryType == 0x06
 
 
 def test_id(version: Version.Version):
