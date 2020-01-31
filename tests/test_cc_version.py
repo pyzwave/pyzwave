@@ -5,7 +5,7 @@ import pytest
 
 from pyzwave.commandclass import Version
 
-from test_commandclass import MockNode, version
+from test_commandclass import version  # pylint: disable=unused-import
 
 
 @pytest.mark.asyncio
