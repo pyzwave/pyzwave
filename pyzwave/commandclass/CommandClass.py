@@ -3,6 +3,7 @@ import logging
 
 from pyzwave.util import Listenable
 from pyzwave.commandclass import ZWaveCommandClass
+from pyzwave.message import Message
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -75,6 +76,15 @@ class CommandClass(Listenable):
     def securityS0(self) -> bool:
         """Returns if security class S0 is required to access this command class"""
         return self._securityS0
+
+    async def sendAndReceive(
+        self, cmd: Message, waitFor: Message, timeout: int = 3, **kwargs
+    ) -> Message:
+        """
+        Send a message and wait for the response. This is a convenience
+        wrapper around Node.sendAndReceive
+        """
+        return await self._node.sendAndReceive(cmd, waitFor, timeout, **kwargs)
 
     @property
     def version(self) -> int:
