@@ -68,7 +68,7 @@ class CommandClass(Listenable):
                 Version.VersionCommandClassGet(requestedCommandClass=self.id),
                 Version.VersionCommandClassReport,
             )
-            self._version = answer.commandClassVersion
+            self._version = int(answer.commandClassVersion)
         except asyncio.TimeoutError:
             return 0
         self.speak("commandClassUpdated")
