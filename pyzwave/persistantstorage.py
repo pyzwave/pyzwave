@@ -61,7 +61,7 @@ class YamlStorage(PersistantStorage):
 
     def pathForNode(self, nodeId: int) -> pathlib.Path:
         """Returns the path for settings for a node"""
-        return pathlib.Path(self._path) / "node{}.yml".format(nodeId)
+        return pathlib.Path(self._path) / "nodes" / "{}.yml".format(nodeId)
 
     @staticmethod
     def cmdClassRepresenter(cmdClass: CommandClass):
