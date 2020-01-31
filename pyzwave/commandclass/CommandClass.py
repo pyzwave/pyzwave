@@ -31,7 +31,7 @@ def interviewDecorator(interview):
 class CommandClass(Listenable):
     """Base class for a command class"""
 
-    NAME = "Unknown class"
+    NAME = "UNKNOWN"
 
     attributes = ()
 

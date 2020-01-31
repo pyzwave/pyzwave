@@ -16,7 +16,7 @@ from .CommandClass import CommandClass
 class Version(CommandClass):
     """Command Class COMMAND_CLASS_VERSION"""
 
-    NAME = "COMMAND_CLASS_VERSION"
+    NAME = "VERSION"
     attributes = (
         ("zwaveLibraryType", uint8_t),
         ("zwaveProtocolVersion", uint8_t),
