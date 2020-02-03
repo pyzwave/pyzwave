@@ -32,10 +32,6 @@ class ZipInvNodeSolicitation(Message):
     )
 
 
-# node_solicitation
-# attributes = (("-", reserved_t(8)), ("nodeId", uint8_t), ("ipv6", IPv6))
-
-
 @ZWaveMessage(COMMAND_CLASS_ZIP_ND, ZIP_NODE_ADVERTISEMENT)
 class ZipNodeAdvertisement(Message):
     """
