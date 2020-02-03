@@ -67,5 +67,6 @@ from . import (
     Zip,
     ZipGateway,
     ZipND,
+    ZwavePlusInfo,
 )
 from .CommandClass import CommandClass
