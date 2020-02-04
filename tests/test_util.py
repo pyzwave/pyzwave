@@ -29,6 +29,7 @@ class Listener:
 
 class CustomAttribute(str):
     def __init__(self):
+        super().__init__()
         self.content = ""
 
     def __setstate__(self, state):

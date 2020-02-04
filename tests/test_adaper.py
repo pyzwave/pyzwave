@@ -4,10 +4,11 @@
 # pylint: disable=redefined-outer-name
 
 import asyncio
+from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.adapter import Adapter
-from pyzwave.commandclass import Basic, NetworkManagementProxy
+from pyzwave.commandclass import Basic, NetworkManagementProxy, Zip
 from pyzwave.message import Message
 
 
@@ -17,6 +18,14 @@ class AdapterImpl(Adapter):
 
     async def getFailedNodeList(self) -> list:
         return await super().getFailedNodeList()
+
+    async def getMultiChannelCapability(
+        self, nodeId: int, endpoint: int
+    ) -> NetworkManagementProxy.MultiChannelCapabilityReport:
+        return await super().getMultiChannelCapability(nodeId, endpoint)
+
+    async def getMultiChannelEndPoints(self, nodeId: int) -> int:
+        return await super().getMultiChannelEndPoints(nodeId)
 
     async def getNodeInfo(
         self, nodeId: int
@@ -66,6 +75,12 @@ def test_ack_not_existing(adapter: Adapter):
     assert adapter.ackReceived(43) is False
 
 
+def test_commandReceived(adapter: Adapter):
+    adapter.messageReceived = MagicMock()
+    adapter.commandReceived(Zip.ZipPacket(command=Basic.Report(value=0)))
+    adapter.messageReceived.assert_called_once_with(Basic.Report(value=0))
+
+
 @pytest.mark.asyncio
 async def test_connect(adapter: Adapter):
     with pytest.raises(NotImplementedError):
@@ -76,6 +91,18 @@ async def test_connect(adapter: Adapter):
 async def test_getFailedNodeList(adapter: Adapter):
     with pytest.raises(NotImplementedError):
         await adapter.getFailedNodeList()
+
+
+@pytest.mark.asyncio
+async def test_getMultiChannelCapability(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.getMultiChannelCapability(1, 1)
+
+
+@pytest.mark.asyncio
+async def test_getMultiChannelEndPoints(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.getMultiChannelEndPoints(1)
 
 
 @pytest.mark.asyncio

@@ -4,7 +4,7 @@ import abc
 import asyncio
 import logging
 
-from pyzwave.commandclass import NetworkManagementProxy
+from pyzwave.commandclass import NetworkManagementProxy, Zip
 from .util import Listenable, MessageWaiter
 from .message import Message
 
@@ -29,7 +29,11 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
 
     def commandReceived(self, cmd: Message):
         """Call this method when a command has been received"""
-        if not self.messageReceived(cmd):
+        if isinstance(cmd, Zip.ZipPacket):
+            msg = cmd.command
+        else:
+            msg = cmd
+        if not self.messageReceived(msg):
             self.speak("onMessageReceived", cmd)
 
     @abc.abstractmethod
@@ -40,6 +44,18 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def getFailedNodeList(self) -> list:
         """Return a list of failing nodes"""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def getMultiChannelCapability(
+        self, nodeId: int, endpoint: int
+    ) -> NetworkManagementProxy.MultiChannelCapabilityReport:
+        """Return the multi channel capabilities for an endpoint in a node"""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def getMultiChannelEndPoints(self, nodeId: int) -> int:
+        """Return the number of multi channel end points implemented by a node"""
         raise NotImplementedError()
 
     @abc.abstractmethod

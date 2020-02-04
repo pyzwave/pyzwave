@@ -10,7 +10,7 @@ import pytest
 
 from pyzwave.adapter import Adapter
 from pyzwave.commandclass import Basic, SwitchBinary, Version, ZwavePlusInfo
-from pyzwave.node import Node
+from pyzwave.node import Node, NodeEndPoint
 from test_zipconnection import ZIPConnectionImpl
 
 from test_adaper import runDelayed
@@ -37,6 +37,13 @@ def node() -> Node:
     return Node(2, connection, [ZwavePlusInfo.COMMAND_CLASS_ZWAVEPLUS_INFO])
 
 
+@pytest.fixture
+def nodeendpoint() -> Node:
+    connection = ZIPConnectionImpl(None, None)
+    node = Node(2, connection, [ZwavePlusInfo.COMMAND_CLASS_ZWAVEPLUS_INFO])
+    return NodeEndPoint(node, 1, connection, [])
+
+
 def test_adapter(node: Node):
     assert isinstance(node.adapter, Adapter)
 
@@ -47,10 +54,28 @@ def test_basicdeviceclass(node: Node):
     assert node.basicDeviceClass == 2
 
 
+def test_basicdeviceclass_nodeendpoint(nodeendpoint: Node):
+    assert nodeendpoint.basicDeviceClass == 0
+    nodeendpoint.parent.basicDeviceClass = 2
+    assert nodeendpoint.basicDeviceClass == 2
+
+
+def test_endpoint(node: Node):
+    assert node.endpoint == 0
+    node.endpoint = 2
+    assert node.endpoint == 2
+
+
 def test_flirs(node: Node):
     assert node.flirs is False
     node.flirs = True
     assert node.flirs is True
+
+
+def test_flirs_nodeendpoint(nodeendpoint: Node):
+    assert nodeendpoint.flirs is False
+    nodeendpoint.parent.flirs = True
+    assert nodeendpoint.flirs is True
 
 
 def test_genericdeviceclass(node: Node):
@@ -95,6 +120,12 @@ def test_isFailed(node: Node):
     assert node.isFailed is True
 
 
+def test_isFailed_nodeendpoint(nodeendpoint: Node):
+    assert nodeendpoint.isFailed is False
+    nodeendpoint.parent.isFailed = True
+    assert nodeendpoint.isFailed is True
+
+
 def test_isZWavePlus(node: Node):
     assert node.isZWavePlus is True
 
@@ -105,8 +136,14 @@ def test_listening(node: Node):
     assert node.listening is True
 
 
+def test_listening_nodeendpoint(nodeendpoint: Node):
+    assert nodeendpoint.listening is False
+    nodeendpoint.parent.listening = True
+    assert nodeendpoint.listening is True
+
+
 def test_nodeId(node: Node):
-    assert node.nodeId == 2
+    assert node.nodeId == "2:0"
 
 
 @pytest.mark.asyncio

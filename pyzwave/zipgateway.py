@@ -5,7 +5,7 @@ import ipaddress
 import logging
 
 from pyzwave.message import Message
-from pyzwave.commandclass import NetworkManagementProxy, ZipGateway, ZipND
+from pyzwave.commandclass import NetworkManagementProxy, Zip, ZipGateway, ZipND
 from pyzwave.connection import Connection
 from pyzwave.zipconnection import ZIPConnection
 
@@ -52,6 +52,36 @@ class ZIPGateway(ZIPConnection):
             return set()
         return report.failedNodeList
 
+    async def getMultiChannelEndPoints(self, nodeId: int) -> int:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementProxy.MultiChannelEndPointGet(
+            seqNo=self._nmSeq, nodeID=nodeId
+        )
+        try:
+            report = await self.sendAndReceive(
+                cmd, NetworkManagementProxy.MultiChannelEndPointReport
+            )
+        except asyncio.TimeoutError:
+            # No response
+            return 0
+        return report.individualEndPoints + report.aggregatedEndPoints
+
+    async def getMultiChannelCapability(
+        self, nodeId: int, endpoint: int
+    ) -> NetworkManagementProxy.MultiChannelCapabilityReport:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementProxy.MultiChannelCapabilityGet(
+            seqNo=self._nmSeq, nodeID=nodeId, endPoint=endpoint
+        )
+        try:
+            report = await self.sendAndReceive(
+                cmd, NetworkManagementProxy.MultiChannelCapabilityReport
+            )
+        except asyncio.TimeoutError:
+            # No response
+            return NetworkManagementProxy.MultiChannelCapabilityReport()
+        return report
+
     async def getNodeList(self) -> set:
         if self._nodes:
             # Return cached list
@@ -92,11 +122,15 @@ class ZIPGateway(ZIPConnection):
 
     def onMessageReceived(self, connection: ZIPConnection, message: Message):
         """Called when a message is received from any node connection. Not unsolicited."""
+        sourceEP = 0
+        if isinstance(message, Zip.ZipPacket):
+            sourceEP = message.sourceEP
+            message = message.command
         for nodeId, nodeConnection in self._connections.items():
             if connection != nodeConnection:
                 continue
             flags = 0  # Set flags such as encapsulation type
-            self.speak("messageReceived", nodeId, message, flags)
+            self.speak("messageReceived", nodeId, sourceEP, message, flags)
             return
         _LOGGER.warning("Got message from unknown sender %s: %s", connection, message)
 
@@ -107,16 +141,17 @@ class ZIPGateway(ZIPConnection):
         """
         zipPkt = Message.decode(pkt)
         sourceIp = ipaddress.IPv6Address(address[0])
+        sourceEP = zipPkt.sourceEP
+
         # Find the node this was from
         for nodeId, node in self._nodes.items():
             if node.get("ip") == sourceIp:
                 flags = 0  # Set flags such as encapsulation type
-                self.speak("messageReceived", nodeId, zipPkt.command, flags)
+                self.speak("messageReceived", nodeId, sourceEP, zipPkt.command, flags)
                 return True
         _LOGGER.warning(
             "Got message from unknown sender %s: %s", sourceIp, zipPkt.command
         )
-        _LOGGER.debug(zipPkt.debugString())
         return False
 
     async def sendToNode(self, nodeId: int, cmd: Message, **kwargs) -> bool:

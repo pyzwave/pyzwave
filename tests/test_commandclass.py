@@ -47,9 +47,7 @@ class MockNode(Node):
     def queue(self, msg: Message):
         self._queue.insert(0, msg)
 
-    async def send(
-        self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
-    ) -> bool:
+    async def send(self, cmd: Message, timeout: int = 3) -> bool:
         self._sent.append(cmd)
 
     async def sendAndReceive(

@@ -24,6 +24,7 @@ from pyzwave.commandclass import (
     Basic,
     SwitchBinary,
     NetworkManagementProxy,
+    Zip,
     ZipGateway,
     ZipND,
 )
@@ -72,6 +73,10 @@ async def ipOfNode(_nodeId):
     return ipaddress.IPv6Address("::ffff:c0a8:ee")
 
 
+async def sendNop(_msg):
+    pass
+
+
 async def sendAndReceiveTimeout(msg, waitFor):
     raise asyncio.TimeoutError()
 
@@ -103,10 +108,7 @@ async def test_getFailedNodeList(gateway: ZIPGateway):
         b"R\x0C\x02!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     )
 
-    async def dummySend(_msg):
-        pass
-
-    gateway.send = dummySend
+    gateway.send = sendNop
     [nodeList, _] = await asyncio.gather(
         gateway.getFailedNodeList(),
         runDelayed(gateway.commandReceived, failedNodeListReport),
@@ -122,16 +124,54 @@ async def test_getFailedNodeList_timeout(gateway: ZIPGateway):
 
 
 @pytest.mark.asyncio
+async def test_getMultiChannelCapability(gateway: ZIPGateway):
+    gateway.send = sendNop
+    [report, _] = await asyncio.gather(
+        gateway.getMultiChannelCapability(1, 1),
+        runDelayed(
+            gateway.commandReceived,
+            NetworkManagementProxy.MultiChannelCapabilityReport(),
+        ),
+    )
+    assert isinstance(report, NetworkManagementProxy.MultiChannelCapabilityReport)
+
+
+@pytest.mark.asyncio
+async def test_getMultiChannelCapability_timeout(gateway: ZIPGateway):
+    gateway.sendAndReceive = sendAndReceiveTimeout
+    report = await gateway.getMultiChannelCapability(1, 1)
+    assert isinstance(report, NetworkManagementProxy.MultiChannelCapabilityReport)
+
+
+@pytest.mark.asyncio
+async def test_getMultiChannelEndPoints(gateway: ZIPGateway):
+    gateway.send = sendNop
+    [endpoints, _] = await asyncio.gather(
+        gateway.getMultiChannelEndPoints(1),
+        runDelayed(
+            gateway.commandReceived,
+            NetworkManagementProxy.MultiChannelEndPointReport(
+                individualEndPoints=2, aggregatedEndPoints=0
+            ),
+        ),
+    )
+    assert endpoints == 2
+
+
+@pytest.mark.asyncio
+async def test_getMultiChannelEndPoints_timeout(gateway: ZIPGateway):
+    gateway.sendAndReceive = sendAndReceiveTimeout
+    assert await gateway.getMultiChannelEndPoints(1) == 0
+
+
+@pytest.mark.asyncio
 async def test_getNodeInfo(gateway: ZIPGateway):
     # pylint: disable=line-too-long
     cachedNodeInfoReport = Message.decode(
         b"R\x04\x03\x1b\x9c\x9c\x00\x04\x10\x01^%'\x85\\pru\x86ZYszh#"
     )
 
-    async def dummySend(_msg):
-        pass
-
-    gateway.send = dummySend
+    gateway.send = sendNop
     [nodeInfo, _] = await asyncio.gather(
         gateway.getNodeInfo(1),
         runDelayed(gateway.commandReceived, cachedNodeInfoReport),
@@ -193,8 +233,8 @@ def test_onMessageReceived(gateway: ZIPGateway):
     connection = DummyConnection()
     msg = Basic.Get()
     gateway._connections = {2: connection}
-    gateway.onMessageReceived(connection, msg)
-    gateway.listener.messageReceived.assert_called_once_with(gateway, 2, msg, 0)
+    gateway.onMessageReceived(connection, Zip.ZipPacket(sourceEP=0, command=msg))
+    gateway.listener.messageReceived.assert_called_once_with(gateway, 2, 0, msg, 0)
 
 
 def test_onMessageReceived_noNode(gateway: ZIPGateway):
@@ -209,7 +249,7 @@ def test_onUnsolicitedMessage(gateway: ZIPGateway):
     pkt = b"#\x02\x00\xc0\xf9\x00\x00\x05\x84\x02\x00\x00%\x03\x00"
     assert gateway.onUnsolicitedMessage(pkt, (ip,)) is True
     gateway.listener.messageReceived.assert_called_once_with(
-        gateway, 7, SwitchBinary.Report(value=0), 0
+        gateway, 7, 0, SwitchBinary.Report(value=0), 0
     )
 
 

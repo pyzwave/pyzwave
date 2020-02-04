@@ -24,6 +24,7 @@ class Node(Listenable, MessageWaiter):
         self._basicDeviceClass = 0
         self._controlled = {}
         self._dirty = False  # Flag is this node need to be saved to persistant storage
+        self._endpoint = 0
         self._flirs = False
         self._genericDeviceClass = 0
         self._isFailed = False
@@ -75,6 +76,15 @@ class Node(Listenable, MessageWaiter):
     def commandClassUpdated(self, _commandClass: CommandClass):
         """Called by the command classes if their data is updated"""
         self._dirty = True
+
+    @property
+    def endpoint(self) -> int:
+        """Returns the endpoint if this is a subnode. 0 if it is the root node"""
+        return self._endpoint
+
+    @endpoint.setter
+    def endpoint(self, endpoint: int):
+        self._endpoint = endpoint
 
     @property
     def flirs(self) -> bool:
@@ -129,16 +139,19 @@ class Node(Listenable, MessageWaiter):
         self._listening = listening
 
     @property
-    def nodeId(self) -> int:
-        """The node id"""
+    def nodeId(self) -> str:
+        """The node id in the format nodeid:channel"""
+        return "{}:{}".format(self._nodeId, self._endpoint)
+
+    @property
+    def rootNodeId(self) -> int:
+        """Return the root node id"""
         return self._nodeId
 
-    async def send(
-        self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
-    ) -> bool:
+    async def send(self, cmd: Message, timeout: int = 3) -> bool:
         """Send a message to this node"""
         return await self._adapter.sendToNode(
-            self._nodeId, cmd, sourceEP=sourceEP, destEP=destEP, timeout=timeout
+            self._nodeId, cmd, sourceEP=0, destEP=self._endpoint, timeout=timeout
         )
 
     async def sendAndReceive(
@@ -166,3 +179,37 @@ class Node(Listenable, MessageWaiter):
     def supports(self, commandClass: int) -> bool:
         """Returns if this node supports a specific command class or not"""
         return commandClass in self._supported
+
+
+class NodeEndPoint(Node):
+    """Base class for a sub node for nodes supporting command class multi channel"""
+
+    def __init__(self, parent: Node, endpoint: int, adapter: Adapter, cmdClasses: list):
+        super().__init__(parent.rootNodeId, adapter, cmdClasses)
+        self._parent = parent
+        self.endpoint = endpoint
+
+    @property
+    def basicDeviceClass(self) -> int:
+        """Return this nodes basic device class"""
+        return self._parent.basicDeviceClass
+
+    @property
+    def flirs(self) -> bool:
+        """Returns if this node is a FLiRS node or not"""
+        return self._parent.flirs
+
+    @property
+    def isFailed(self) -> bool:
+        """Returns is this node is considered failing or not"""
+        return self._parent.isFailed
+
+    @property
+    def listening(self) -> bool:
+        """Returns True if this node is listening. False if it is a sleeping node"""
+        return self._parent.listening
+
+    @property
+    def parent(self) -> Node:
+        """Returns the parent node"""
+        return self._parent

@@ -60,6 +60,18 @@ async def test_getFailedNodeList(connection: ZIPConnection):
 
 
 @pytest.mark.asyncio
+async def test_getMultiChannelCapability(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.getMultiChannelCapability(1, 1)
+
+
+@pytest.mark.asyncio
+async def test_getMultiChannelEndPoints(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.getMultiChannelEndPoints(1)
+
+
+@pytest.mark.asyncio
 async def test_getNodeInfo(connection: ZIPConnection):
     with pytest.raises(NotImplementedError):
         await connection.getNodeInfo(1)

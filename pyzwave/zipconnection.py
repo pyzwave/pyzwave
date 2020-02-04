@@ -30,6 +30,14 @@ class ZIPConnection(Adapter):
     async def getFailedNodeList(self) -> list:
         raise NotImplementedError()
 
+    async def getMultiChannelCapability(
+        self, nodeId: int, endpoint: int
+    ) -> NetworkManagementProxy.MultiChannelCapabilityReport:
+        raise NotImplementedError()
+
+    async def getMultiChannelEndPoints(self, nodeId: int) -> int:
+        raise NotImplementedError()
+
     async def getNodeList(self) -> set:
         raise NotImplementedError()
 
@@ -59,7 +67,7 @@ class ZIPConnection(Adapter):
                 _LOGGER.error("This message needs an ack response. Not implemented")
                 return False
             if zipPkt.zwCmdIncluded:
-                self.commandReceived(zipPkt.command)
+                self.commandReceived(zipPkt)
         elif isinstance(zipPkt, Zip.ZipKeepAlive):
             if zipPkt.ackResponse:
                 # Ignore a response

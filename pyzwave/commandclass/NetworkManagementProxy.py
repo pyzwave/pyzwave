@@ -2,13 +2,25 @@ from pyzwave.const.ZW_classcmd import (
     COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY,
     COMMAND_FAILED_NODE_LIST_GET,
     COMMAND_FAILED_NODE_LIST_REPORT,
+    NM_MULTI_CHANNEL_CAPABILITY_GET,
+    NM_MULTI_CHANNEL_CAPABILITY_REPORT,
+    NM_MULTI_CHANNEL_END_POINT_GET,
+    NM_MULTI_CHANNEL_END_POINT_REPORT,
     NODE_INFO_CACHED_GET,
     NODE_INFO_CACHED_REPORT,
     NODE_LIST_GET,
     NODE_LIST_REPORT,
 )
 from pyzwave.message import Message
-from pyzwave.types import BitStreamReader, bits_t, bytes_t, flag_t, reserved_t, uint8_t
+from pyzwave.types import (
+    BitStreamReader,
+    bits_t,
+    bytes_t,
+    flag_t,
+    reserved_t,
+    uint7_t,
+    uint8_t,
+)
 from . import ZWaveMessage, registerCmdClass
 
 registerCmdClass(COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY, "NETWORK_MANAGEMENT_PROXY")
@@ -49,6 +61,81 @@ class FailedNodeListReport(Message):
     attributes = (
         ("seqNo", uint8_t),
         ("failedNodeList", NodeList),
+    )
+
+
+@ZWaveMessage(COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY, NM_MULTI_CHANNEL_CAPABILITY_GET)
+class MultiChannelCapabilityGet(Message):
+    """
+    Command Class message
+    COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY NM_MULTI_CHANNEL_CAPABILITY_GET
+    """
+
+    NAME = "NM_MULTI_CHANNEL_CAPABILITY_GET"
+
+    attributes = (
+        ("seqNo", uint8_t),
+        ("nodeID", uint8_t),
+        ("-", reserved_t(1)),
+        ("endPoint", uint7_t),
+    )
+
+
+@ZWaveMessage(
+    COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY, NM_MULTI_CHANNEL_CAPABILITY_REPORT
+)
+class MultiChannelCapabilityReport(Message):
+    """
+    Command Class message
+    COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY NM_MULTI_CHANNEL_CAPABILITY_REPORT
+    """
+
+    NAME = "NM_MULTI_CHANNEL_CAPABILITY_REPORT"
+
+    attributes = (
+        ("seqNo", uint8_t),
+        ("nodeID", uint8_t),
+        ("commandClassLength", uint8_t),
+        ("-", reserved_t(1)),
+        ("endPoint", uint7_t),
+        ("genericDeviceClass", uint8_t),
+        ("specificDeviceClass", uint8_t),
+        ("commandClass", bytes_t),
+    )
+
+
+@ZWaveMessage(COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY, NM_MULTI_CHANNEL_END_POINT_GET)
+class MultiChannelEndPointGet(Message):
+    """
+    Command Class message
+    COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY NM_MULTI_CHANNEL_END_POINT_GET
+    """
+
+    NAME = "NM_MULTI_CHANNEL_END_POINT_GET"
+
+    attributes = (
+        ("seqNo", uint8_t),
+        ("nodeID", uint8_t),
+    )
+
+
+@ZWaveMessage(COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY, NM_MULTI_CHANNEL_END_POINT_REPORT)
+class MultiChannelEndPointReport(Message):
+    """
+    Command Class message
+    COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY NM_MULTI_CHANNEL_END_POINT_REPORT
+    """
+
+    NAME = "NM_MULTI_CHANNEL_END_POINT_REPORT"
+
+    attributes = (
+        ("seqNo", uint8_t),
+        ("nodeID", uint8_t),
+        ("-", reserved_t(8)),
+        ("-", reserved_t(1)),
+        ("individualEndPoints", uint7_t),
+        ("-", reserved_t(1)),
+        ("aggregatedEndPoints", uint7_t),
     )
 
 
