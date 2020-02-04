@@ -2,7 +2,7 @@ import asyncio
 import logging
 from typing import Dict, Any
 
-from pyzwave.util import Listenable
+from pyzwave.util import AttributesMixin, Listenable
 from pyzwave.commandclass import ZWaveCommandClass
 from pyzwave.message import Message
 
@@ -28,16 +28,13 @@ def interviewDecorator(interview):
     return wrapper
 
 
-class CommandClass(Listenable):
+class CommandClass(AttributesMixin, Listenable):
     """Base class for a command class"""
 
     NAME = "UNKNOWN"
 
-    attributes = ()
-
     def __init__(self, securityS0, node):
         super().__init__()
-        self._attributes = {}
         self._node = node
         self._securityS0 = securityS0
         self._version = 0
@@ -93,27 +90,14 @@ class CommandClass(Listenable):
         """Returns the command class version implemented by the node"""
         return self._version
 
-    def __getattr__(self, name):
-        return self._attributes.get(name)
-
     def __getstate__(self) -> Dict[str, Any]:
-        values = self._attributes.copy()
+        values = super().__getstate__()
         values["version"] = self.version
         return values
 
-    def __setattr__(self, name, value):
-        for attrName, attrType in getattr(self, "attributes"):
-            if attrName == name:
-                self._attributes[name] = attrType(value)
-                return
-        super().__setattr__(name, value)
-
     def __setstate__(self, state):
         self._version = int(state.get("version", 0))
-        for attrName, attrType in getattr(self, "attributes"):
-            if attrName not in state:
-                continue
-            self._attributes[attrName] = attrType(state[attrName])
+        super().__setstate__(state)
 
     @staticmethod
     def load(cmdClass: int, securityS0: bool, node):

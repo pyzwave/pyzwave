@@ -2,8 +2,61 @@
 
 import asyncio
 import logging
+from typing import Dict, Any
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class AttributesMixin:
+    """Inheritable class to implement defined attributes"""
+
+    attributes = ()
+
+    def __init__(self):
+        super().__init__()
+        self._attributes = {}
+
+    def __getattr__(self, name):
+        if name not in self._attributes:
+            # Try to load default
+            for attrName, attrType in getattr(self, "attributes"):
+                if attrName != name:
+                    continue
+                attr = attrType()
+                self._attributes[name] = attr
+                return attr
+        return self._attributes.get(name)
+
+    def __getstate__(self) -> Dict[str, Any]:
+        values = {}
+        for attr, value in self._attributes.items():
+            if hasattr(value, "__getstate__"):
+                values[attr] = value.__getstate__()
+            else:
+                values[attr] = value
+        return values
+
+    def __setattr__(self, name, value):
+        for attrName, attrType in getattr(self, "attributes"):
+            if attrName == name:
+                if hasattr(attrType, "__setstate__"):
+                    self._attributes[name] = attrType()
+                    self._attributes[name].__setstate__(value)
+                else:
+                    self._attributes[name] = attrType(value)
+                return
+        super().__setattr__(name, value)
+
+    def __setstate__(self, state):
+        for attrName, attrType in getattr(self, "attributes"):
+            if attrName not in state:
+                continue
+            if hasattr(attrType, "__setstate__"):
+                value = attrType()
+                value.__setstate__(state[attrName])
+            else:
+                value = attrType(state[attrName])
+            self._attributes[attrName] = value
 
 
 class Listenable:
