@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.adapter import Adapter
-from pyzwave.commandclass import Basic, SwitchBinary, Version
+from pyzwave.commandclass import Basic, SwitchBinary, Version, ZwavePlusInfo
 from pyzwave.node import Node
 from test_zipconnection import ZIPConnectionImpl
 
@@ -34,7 +34,7 @@ def node() -> Node:
     future.set_result(True)
     connection.sendToNode = MagicMock()
     connection.sendToNode.return_value = future
-    return Node(2, connection, [])
+    return Node(2, connection, [ZwavePlusInfo.COMMAND_CLASS_ZWAVEPLUS_INFO])
 
 
 def test_adapter(node: Node):
@@ -93,6 +93,10 @@ def test_isFailed(node: Node):
     assert node.isFailed is False
     node.isFailed = True
     assert node.isFailed is True
+
+
+def test_isZWavePlus(node: Node):
+    assert node.isZWavePlus is True
 
 
 def test_listening(node: Node):

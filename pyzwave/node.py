@@ -8,6 +8,8 @@ from pyzwave.commandclass import CommandClass
 from pyzwave.message import Message
 from pyzwave.util import Listenable, MessageWaiter
 
+from pyzwave.const.ZW_classcmd import COMMAND_CLASS_ZWAVEPLUS_INFO
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -111,6 +113,11 @@ class Node(Listenable, MessageWaiter):
     @isFailed.setter
     def isFailed(self, isFailed: bool):
         self._isFailed = isFailed
+
+    @property
+    def isZWavePlus(self) -> bool:
+        """Returns True if this is a Z-Wave Plus node"""
+        return self.supports(COMMAND_CLASS_ZWAVEPLUS_INFO)
 
     @property
     def listening(self) -> bool:
