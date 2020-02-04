@@ -13,17 +13,10 @@ import pytest
 from pyzwave.connection import Connection
 
 
-class DummySock:
-    pass
-
-
 @pytest.fixture
 def connection() -> Connection:
     connection = Connection()
-    sock = DummySock()
-    sock.close = MagicMock()
-    sock.sendto = MagicMock()
-    connection._sock = sock
+    connection._sock = MagicMock()
     return connection
 
 
@@ -43,3 +36,10 @@ def test_send(connection: Connection):
     connection._sock.sendto.assert_called_once_with(pkt)
     connection._sock = None
     assert connection.send(pkt) is False
+
+
+def test_stop(connection: Connection):
+    connection._running = True
+    connection.stop()
+    assert connection._running is False
+    connection._sock.close.assert_called_once()
