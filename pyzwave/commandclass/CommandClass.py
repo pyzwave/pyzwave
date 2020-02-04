@@ -9,6 +9,14 @@ from pyzwave.message import Message
 _LOGGER = logging.getLogger(__name__)
 
 
+class Attribute:
+    """An attribute"""
+
+
+class DictAttribute(Attribute, AttributesMixin):
+    """A dict attribute"""
+
+
 def interviewDecorator(interview):
     """Decorator to make sure the command class is ready for interview"""
 

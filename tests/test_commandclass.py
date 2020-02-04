@@ -20,13 +20,42 @@ class MockNode(Node):
     def __init__(self, cmdClasses: list):
         super().__init__(1, Adapter, cmdClasses)
         self._queue = []
+        self._sent = []
+
+    def addCommandClass(self, cmdClass, securityS0=False):
+        self._supported[cmdClass] = CommandClass.load(cmdClass, securityS0, self)
+
+    def assert_message_not_sent(self, cmd: Message):
+        try:
+            self.assert_message_sent(cmd)
+        except Exception:
+            return True
+        raise Exception("Message {} was sent but was not expected".format(cmd))
+
+    def assert_message_sent(self, cmd: Message):
+        for msg in self._sent:
+            if msg == cmd:
+                return True
+        raise Exception("Excpected message {} was not sent".format(cmd))
+
+    def clear(self, sent=False, queue=False):
+        if sent:
+            self._sent[:] = []
+        if queue:
+            self._queue[:] = []
 
     def queue(self, msg: Message):
-        self._queue.append(msg)
+        self._queue.insert(0, msg)
+
+    async def send(
+        self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
+    ) -> bool:
+        self._sent.append(cmd)
 
     async def sendAndReceive(
         self, cmd: Message, waitFor: Message, timeout: int = 3, **kwargs
     ) -> Message:
+        self._sent.append(cmd)
         for msg in self._queue:
             if msg.hid() == waitFor.hid():
                 return msg
