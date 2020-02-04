@@ -6,7 +6,6 @@ import yaml
 
 from pyzwave.commandclass import CommandClass
 from pyzwave.node import Node
-from pyzwave.types import int_t
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -73,16 +72,6 @@ class YamlStorage(PersistantStorage):
             yaml_tag = cmdClass.NAME
 
             def __getstate__(self):
-                return {
-                    key: YamlStorage.typeRepresenter(value)
-                    for key, value in cmdClass.__getstate__().items()
-                }
+                return cmdClass.__getstate__()
 
         return YAMLCommandClass()
-
-    @staticmethod
-    def typeRepresenter(data):
-        """Wrapper method for converting types to yaml format"""
-        if isinstance(data, int_t):
-            return int(data)
-        return data

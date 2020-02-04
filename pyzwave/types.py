@@ -85,6 +85,9 @@ class int_t(int):  # pylint: disable=invalid-name
     signed = True
     size = 0
 
+    def __getstate__(self):
+        return int(self)
+
     def serialize(self, stream: BitStreamWriter):
         """Serialize into stream"""
         stream.addBytes(self, self.size, self.signed, self.endian)
