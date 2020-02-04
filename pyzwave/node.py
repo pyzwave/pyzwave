@@ -155,3 +155,7 @@ class Node(Listenable, MessageWaiter):
     def supported(self) -> Dict[int, CommandClass]:
         """Return a dict of command classes this node supports"""
         return self._supported
+
+    def supports(self, commandClass: int) -> bool:
+        """Returns if this node supports a specific command class or not"""
+        return commandClass in self._supported
