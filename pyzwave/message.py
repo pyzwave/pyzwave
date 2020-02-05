@@ -19,6 +19,9 @@ class Message:
             if kwargs[attrName] is None:
                 # Try to create default value
                 self._attributes[attrName] = attrType()
+            elif hasattr(attrType, "__setstate__"):
+                self._attributes[attrName] = attrType()
+                self._attributes[attrName].__setstate__(kwargs[attrName])
             elif issubclass(attrType, Message):
                 self._attributes[attrName] = kwargs[attrName]
             else:
