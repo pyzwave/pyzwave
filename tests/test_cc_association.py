@@ -4,7 +4,13 @@
 import asyncio
 import pytest
 
-from pyzwave.commandclass import Association, Version, ZwavePlusInfo
+from pyzwave.commandclass import (
+    Association,
+    MultiChannelAssociation,
+    Version,
+    ZwavePlusInfo,
+)
+from pyzwave.types import BitStreamReader, BitStreamWriter
 
 from test_commandclass import MockNode
 
@@ -19,8 +25,16 @@ def association() -> Association.Association:
     )
     node.queue(Association.GroupingsReport(supportedGroupings=1,))
     node.queue(
+        MultiChannelAssociation.MultiChannelReport(
+            groupingIdentifier=1,
+            maxNodesSupported=1,
+            reportsToFollow=0,
+            nodes=[(1, None), (2, 0)],
+        )
+    )
+    node.queue(
         Association.Report(
-            groupingIdentifier=1, maxNodesSupported=1, reportsToFollow=0, nodes=b"\x01"
+            groupingIdentifier=1, maxNodesSupported=1, reportsToFollow=0, nodes=[1]
         )
     )
     return node.supported[Association.COMMAND_CLASS_ASSOCIATION]
@@ -39,7 +53,20 @@ def test_groupings():
 async def test_interview(association: Association.Association):
     await association.interview()
     assert association.__getstate__() == {
-        "groupings": {1: {"maxNodes": 1, "nodes": [1]}},
+        "groupings": {1: {"maxNodes": 1, "nodes": ["1"]}},
+        "version": 1,
+    }
+
+
+@pytest.mark.asyncio
+async def test_interview_multichannel(association: Association.Association):
+    association.node.addCommandClass(
+        Association.COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2
+    )
+    association.node.addCommandClass(Association.COMMAND_CLASS_MULTI_CHANNEL_V2)
+    await association.interview()
+    assert association.__getstate__() == {
+        "groupings": {1: {"maxNodes": 1, "nodes": ["1", "2:0"]}},
         "version": 1,
     }
 
@@ -71,10 +98,34 @@ async def test_interview_wrong_response(association: Association.Association):
     }
 
 
+def test_nodes__getstate__():
+    nodes = Association.Nodes([(1, None), (2, 0)])
+    assert nodes.__getstate__() == ["1", "2:0"]
+
+
+def test_nodes__setstate__():
+    nodes = Association.Nodes()
+    nodes.__setstate__(["1", "2:0"])
+    assert nodes == [(1, None), (2, 0)]
+
+
+def test_nodes_deserialize():
+    reader = BitStreamReader(bytes([1, 0, 2, 0]))
+    nodes = Association.Nodes.deserialize(reader)
+    assert nodes == [(1, None), (2, 0)]
+
+
+def test_nodes_serialize():
+    writer = BitStreamWriter()
+    nodes = Association.Nodes([(1, None), (2, 0)])
+    nodes.serialize(writer)
+    assert writer == bytes([1, 0, 2, 0])
+
+
 @pytest.mark.asyncio
 async def test_setupLifeLine(association: Association.Association):
     association.node.addCommandClass(ZwavePlusInfo.COMMAND_CLASS_ZWAVEPLUS_INFO)
-    setMsg = Association.Set(groupingIdentifier=1, nodes=bytes([1]))
+    setMsg = Association.Set(groupingIdentifier=1, nodes=[1])
 
     # Do not send message until groups has been setup
     await association.setupLifeLine()
@@ -88,6 +139,20 @@ async def test_setupLifeLine(association: Association.Association):
     association.node.clear(sent=True)
     await association.setupLifeLine()
     association.node.assert_message_not_sent(setMsg)
+
+
+@pytest.mark.asyncio
+async def test_setupLifeLine_multichannel(association: Association.Association):
+    association.node.addCommandClass(ZwavePlusInfo.COMMAND_CLASS_ZWAVEPLUS_INFO)
+    association.node.addCommandClass(
+        Association.COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2
+    )
+    association.node.addCommandClass(Association.COMMAND_CLASS_MULTI_CHANNEL_V2)
+    association.groupings.setNumGroups(1)
+    await association.setupLifeLine()
+    association.node.assert_message_sent(
+        MultiChannelAssociation.MultiChannelSet(groupingIdentifier=1, nodes=[(1, 0)])
+    )
 
 
 @pytest.mark.asyncio

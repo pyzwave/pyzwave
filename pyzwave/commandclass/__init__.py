@@ -62,6 +62,7 @@ from . import (
     Association,
     Basic,
     ManufacturerSpecific,
+    MultiChannelAssociation,
     NetworkManagementProxy,
     SwitchBinary,
     Version,

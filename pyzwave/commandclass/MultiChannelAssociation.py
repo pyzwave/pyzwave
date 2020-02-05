@@ -1,0 +1,49 @@
+import logging
+
+from pyzwave.const.ZW_classcmd import (
+    COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2,
+    MULTI_CHANNEL_ASSOCIATION_GET_V2,
+    MULTI_CHANNEL_ASSOCIATION_REPORT_V2,
+    MULTI_CHANNEL_ASSOCIATION_SET_V2,
+)
+
+from pyzwave.commandclass import Association
+from . import ZWaveMessage
+
+_LOGGER = logging.getLogger(__name__)
+
+
+@ZWaveMessage(
+    COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2, MULTI_CHANNEL_ASSOCIATION_GET_V2
+)
+class MultiChannelGet(Association.Get):
+    """
+    Command Class message
+    COMMAND_CLASS_MULTICHANNEL_ASSOCIATION MULTI_CHANNEL_ASSOCIATION_GET
+    """
+
+    NAME = "MULTICHANNEL_GET"
+
+
+@ZWaveMessage(
+    COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2, MULTI_CHANNEL_ASSOCIATION_REPORT_V2
+)
+class MultiChannelReport(Association.Report):
+    """
+    Command Class message
+    COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2 MULTI_CHANNEL_ASSOCIATION_REPORT_V2
+    """
+
+    NAME = "MULTICHANNEL_REPORT"
+
+
+@ZWaveMessage(
+    COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2, MULTI_CHANNEL_ASSOCIATION_SET_V2
+)
+class MultiChannelSet(Association.Set):
+    """
+    Command Class message
+    COMMAND_CLASS_MULTI_CHANNEL_ASSOCIATION_V2 MULTI_CHANNEL_ASSOCIATION_SET_V2
+    """
+
+    NAME = "MULTICHANNEL_SET"
