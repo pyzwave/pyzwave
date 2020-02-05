@@ -85,8 +85,9 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
         self, cmd: Message, waitFor: Message, timeout: int = 3, **kwargs
     ) -> Message:
         """Send a message and wait for the response"""
+        session = self.addWaitingSession(waitFor)
         await self.send(cmd, **kwargs)
-        return await self.waitForMessage(waitFor, timeout=timeout)
+        return await self.waitForMessage(waitFor, session=session, timeout=timeout)
 
     @abc.abstractmethod
     async def setNodeInfo(self, generic, specific, cmdClasses):

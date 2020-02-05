@@ -109,9 +109,10 @@ class MessageWaiter:
             return True
         return False
 
-    async def waitForMessage(self, msgType, timeout: int = 3):
+    async def waitForMessage(self, msgType, timeout: int = 3, session=None):
         """Async method for waiting for a specific message to arrive from the node."""
-        session = self.addWaitingSession(msgType)
+        if not session:
+            session = self.addWaitingSession(msgType)
         try:
             await asyncio.wait_for(session, timeout)
         except asyncio.TimeoutError:
