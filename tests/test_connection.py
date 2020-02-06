@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pyzwave.connection import Connection
+from pyzwave.connection import Connection, ZipClientProtocol
 
 
 @pytest.fixture
@@ -43,3 +43,11 @@ def test_stop(connection: Connection):
     connection.stop()
     assert connection._running is False
     connection._sock.close.assert_called_once()
+
+
+def test_ZipClientProtocol_onConLost():
+    onConLost = asyncio.get_event_loop().create_future()
+    protocol = ZipClientProtocol(onConLost, None)
+    assert onConLost.done() is False
+    protocol.connection_lost(None)
+    assert onConLost.done() is True
