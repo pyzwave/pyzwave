@@ -160,6 +160,9 @@ class BitsBase:
     def __eq__(self, other):
         return self._value.__eq__(other)
 
+    def __int__(self):
+        return self._value
+
     def __repr__(self):
         return "bits_t({0:0{1}b})".format(self._value, self.sizeBits)
 

@@ -33,14 +33,17 @@ def test_bits_t():
     bits1_t = bits_t(1)
     assert bits1_t.sizeBits == 1
     assert repr(bits1_t(1)) == "bits_t(1)"
+    assert int(bits1_t(1)) == 1
 
     bits2_t = bits_t(2)
     assert bits2_t.sizeBits == 2
     assert repr(bits2_t(2)) == "bits_t(10)"
+    assert int(bits2_t(2)) == 2
 
     bits4_t = bits_t(4)
     assert bits4_t.sizeBits == 4
     assert repr(bits4_t(3)) == "bits_t(0011)"
+    assert int(bits4_t(3)) == 3
 
 
 def test_BitStreamReader_bits(streamReader):
