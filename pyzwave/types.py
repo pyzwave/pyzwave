@@ -78,6 +78,16 @@ class BitStreamWriter(bytearray):
         self._start = 0
 
 
+class str_t(str):  # pylint: disable=invalid-name
+    """Unicode string"""
+
+    @classmethod
+    def deserialize(cls, stream: BitStreamReader):
+        """Deserialize unicode string"""
+        length = stream.byte()
+        return stream.value(length).decode("utf-8")
+
+
 class int_t(int):  # pylint: disable=invalid-name
     """Base class for any int like type"""
 

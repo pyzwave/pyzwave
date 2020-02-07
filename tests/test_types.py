@@ -13,6 +13,7 @@ from pyzwave.types import (
     flag_t,
     HomeID,
     IPv6,
+    str_t,
     uint7_t,
     uint8_t,
 )
@@ -120,6 +121,11 @@ def test_IPv6_t():
         streamWriter
         == b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\xa8\x00\xee"
     )
+
+
+def test_str_t():
+    stream = BitStreamReader(b"\x0BHello World")
+    assert str_t.deserialize(stream) == "Hello World"
 
 
 def test_uint7_t(streamReader):
