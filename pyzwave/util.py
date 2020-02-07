@@ -5,6 +5,8 @@ import inspect
 import logging
 from typing import Dict, Any
 
+from pyzwave.types import BitStreamReader
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -28,6 +30,17 @@ class AttributesMixin:
                 self._attributes[attrName].__setstate__(value)
             else:
                 self._attributes[attrName] = attrType(value)
+
+    def parseAttributes(self, stream: BitStreamReader):
+        """Populate the attributes from a raw bitstream."""
+        for name, attrType in self.attributes:
+            serializer = getattr(self, "parse_{}".format(name), None)
+            if serializer:
+                value = serializer(stream)
+            else:
+                value = attrType.deserialize(stream)
+            # This can be optimized to reduce the second loop in __setattr__
+            setattr(self, name, value)
 
     def __getattr__(self, name):
         if name not in self._attributes:

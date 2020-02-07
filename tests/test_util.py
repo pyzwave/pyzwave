@@ -13,7 +13,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.util import AttributesMixin, Listenable
-from pyzwave.types import uint8_t
+from pyzwave.types import BitStreamReader, uint8_t
 
 
 class Speaker(Listenable):
@@ -50,7 +50,14 @@ class CustomAttribute(str):
 
 
 class AnotherAttributable(AttributesMixin):
-    pass
+    attributes = (
+        ("foo", uint8_t),
+        ("bar", uint8_t),
+        ("custom", CustomAttribute),
+    )
+
+    def parse_custom(self, reader):
+        return ""
 
 
 class Attributable(AttributesMixin):
@@ -101,6 +108,14 @@ def test_attributes__init__():
     assert attributable.foo == 0
     assert str(attributable.custom) == "hello"
     assert attributable.recursive == another
+
+
+def test_attributes_parseAttributes():
+    pkt = b"\x01\x02"
+    attributable = AnotherAttributable()
+    attributable.parseAttributes(BitStreamReader(pkt))
+    assert attributable.foo == 1
+    assert attributable.bar == 2
 
 
 def test_attributes_state(attributable: Attributable):
