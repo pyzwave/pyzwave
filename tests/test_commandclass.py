@@ -20,6 +20,7 @@ class MockNode(Node):
     def __init__(self, cmdClasses: list):
         super().__init__(1, Adapter, cmdClasses)
         self._queue = []
+        self._replies = []
         self._sent = []
 
     def addCommandClass(self, cmdClass, securityS0=False):
@@ -47,8 +48,15 @@ class MockNode(Node):
     def queue(self, msg: Message):
         self._queue.insert(0, msg)
 
+    def reply(self, msg: Message, reply: Message):
+        self._replies.append((msg, reply))
+
     async def send(self, cmd: Message, timeout: int = 3) -> bool:
         self._sent.append(cmd)
+        for msg, reply in self._replies:
+            if msg.hid() == cmd.hid():
+                await self.handleMessage(reply)
+                break
 
     async def sendAndReceive(
         self, cmd: Message, waitFor: Message, timeout: int = 3, **kwargs

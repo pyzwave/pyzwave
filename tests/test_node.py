@@ -9,7 +9,13 @@ from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.adapter import Adapter
-from pyzwave.commandclass import Basic, SwitchBinary, Version, ZwavePlusInfo
+from pyzwave.commandclass import (
+    AssociationGrpInfo,
+    Basic,
+    SwitchBinary,
+    Version,
+    ZwavePlusInfo,
+)
 from pyzwave.node import Node, NodeEndPoint
 from test_zipconnection import ZIPConnectionImpl
 
@@ -34,7 +40,14 @@ def node() -> Node:
     future.set_result(True)
     connection.sendToNode = MagicMock()
     connection.sendToNode.return_value = future
-    return Node(2, connection, [ZwavePlusInfo.COMMAND_CLASS_ZWAVEPLUS_INFO])
+    return Node(
+        2,
+        connection,
+        [
+            ZwavePlusInfo.COMMAND_CLASS_ZWAVEPLUS_INFO,
+            AssociationGrpInfo.COMMAND_CLASS_ASSOCIATION_GRP_INFO,
+        ],
+    )
 
 
 @pytest.fixture
@@ -92,6 +105,14 @@ async def test_handleMessage(node: Node):
 
     # Try again without any sessions
     assert await node.handleMessage(Basic.Get()) is False
+
+    # Send message with handler
+    assert (
+        await node.handleMessage(
+            AssociationGrpInfo.GroupNameReport(groupingsIdentifier=1, name="Lifeline")
+        )
+        is True
+    )
 
 
 @pytest.mark.asyncio

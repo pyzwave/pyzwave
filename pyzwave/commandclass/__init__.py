@@ -77,6 +77,7 @@ def registerCmdClass(cmdClass, name):
 # pylint: disable=wrong-import-position,import-self
 from . import (
     Association,
+    AssociationGrpInfo,
     Basic,
     ManufacturerSpecific,
     MultiChannelAssociation,
