@@ -66,7 +66,7 @@ class Application(Listenable):
             for endpoint in range(1, endpoints + 1):
                 await self.loadEndPointNode(node, endpoint)
 
-    def messageReceived(
+    async def messageReceived(
         self, _sender, rootNodeId: int, endPoint: int, message: Message, _flags: int
     ):
         """Called when a message is received from a node"""

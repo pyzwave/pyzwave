@@ -48,9 +48,10 @@ async def test_loadEndPointNode(app: Application):
     assert app.nodes.keys() == {"3:0", "3:1"}
 
 
-def test_messageReceived(app: Application):
-    assert app.messageReceived(None, 4, 0, Basic.Report(value=0), 0) is False
-    assert app.messageReceived(None, 3, 0, Basic.Report(value=0), 0) is True
+@pytest.mark.asyncio
+async def test_messageReceived(app: Application):
+    assert await app.messageReceived(None, 4, 0, Basic.Report(value=0), 0) is False
+    assert await app.messageReceived(None, 3, 0, Basic.Report(value=0), 0) is True
 
 
 def test_nodes(app: Application):
