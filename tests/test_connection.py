@@ -45,6 +45,13 @@ def test_stop(connection: Connection):
     connection._sock.close.assert_called_once()
 
 
+def test_ZipClientProtocol_connection_made():
+    protocol = ZipClientProtocol(None, None)
+    assert protocol.transport is None
+    protocol.connection_made(42)
+    assert protocol.transport == 42
+
+
 def test_ZipClientProtocol_onConLost():
     onConLost = asyncio.get_event_loop().create_future()
     protocol = ZipClientProtocol(onConLost, None)
