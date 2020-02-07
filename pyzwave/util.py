@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import inspect
 import logging
 from typing import Dict, Any
 
@@ -70,16 +71,26 @@ class Listenable:
         """Add class as listener for messages"""
         self._listeners.append(listener)
 
-    def speak(self, message, *args):
-        """Send message to listeners"""
+    def speak(self, message, *args) -> list:
+        """
+        Send message to listeners.
+        Returns a list of futures if the listeners are async. This can be used to allow waiting
+        for all listeners to finish before continue.
+        """
+        retval = []
         for listener in self._listeners:
             method = getattr(listener, message, None)
             if not method:
+                continue
+            if inspect.iscoroutinefunction(method):
+                # Listener is a coroutine, call async
+                retval.append(asyncio.ensure_future(method(self, *args)))
                 continue
             try:
                 method(self, *args)
             except Exception as error:
                 _LOGGER.warning("Error calling listener.%s: %s", message, error)
+        return retval
 
 
 class MessageWaiter:

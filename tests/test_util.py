@@ -5,7 +5,7 @@
 # pylint: disable=unused-argument
 # pylint: disable=no-self-use
 # pylint: disable=unidiomatic-typecheck
-
+import asyncio
 import logging
 from unittest.mock import MagicMock
 
@@ -20,8 +20,14 @@ class Speaker(Listenable):
 
 
 class Listener:
+    def __init__(self):
+        self.fooCalled = False
+
     def hello(self, speaker):
         logging.warning("Hello was called")
+
+    async def foo(self, speaker):
+        self.fooCalled = True
 
     def enrage(self, speaker):
         raise Exception("This is outragous!")
@@ -99,6 +105,14 @@ def test_listen(speaker: Speaker, listener: Listener):
     speaker.addListener(listener)
     speaker.speak("hello")
     listener.hello.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_speaker_async_listener(event_loop, speaker: Speaker, listener: Listener):
+    speaker.addListener(listener)
+    assert listener.fooCalled is False
+    await asyncio.gather(*speaker.speak("foo"))
+    assert listener.fooCalled is True
 
 
 def test_speaker_no_listener(speaker: Speaker, listener: Listener):
