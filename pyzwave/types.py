@@ -179,6 +179,8 @@ class BitsBase:
 class bytes_t(bytes):  # pylint: disable=invalid-name
     """Variable size bytes"""
 
+    default = b""
+
     def serialize(self, stream: BitStreamWriter):
         """Serialize into stream"""
         stream.extend(self)
