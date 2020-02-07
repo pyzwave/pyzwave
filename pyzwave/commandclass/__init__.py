@@ -49,6 +49,23 @@ ZWaveCommandClass = CommandClassCollection()  # pylint: disable=invalid-name
 cmdClasses = {}  # pylint: disable=invalid-name
 
 
+class ZWaveMessageHandler:
+    """Decorator for functions handeling command class messages"""
+
+    def __init__(self, message):
+        self.hid = message.hid()
+        self.func = None
+
+    def __call__(self, func):
+        self.func = func
+        return self
+
+    def __set_name__(self, owner, name):
+        if not hasattr(owner, "__messageHandlers__"):
+            owner.__messageHandlers__ = {}
+        owner.__messageHandlers__[self.hid] = self.func
+
+
 def registerCmdClass(cmdClass, name):
     """
     Function for registering the name of a command class to

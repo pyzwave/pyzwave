@@ -104,6 +104,25 @@ class Node(Listenable, MessageWaiter):
     def genericDeviceClass(self, genericDeviceClass: int):
         self._genericDeviceClass = genericDeviceClass
 
+    async def handleMessage(self, message: Message) -> bool:
+        """Handle and incomming message. Route it to the correct handler"""
+        if self.messageReceived(message) is True:
+            # Message has already been handled
+            return True
+        hid = message.hid()
+        for _, cmdClass in self.supported.items():
+            if not cmdClass.__messageHandlers__:
+                continue
+            handler = cmdClass.__messageHandlers__.get(hid)
+            if not handler:
+                continue
+            if await handler(cmdClass, message):
+                # Message was handled, stop further processing
+                return True
+        # Message was not handled
+        _LOGGER.warning("Unhandled message %s", message)
+        return False
+
     async def interview(self):
         """(Re)interview this node"""
         for _, cmdClass in self._supported.items():

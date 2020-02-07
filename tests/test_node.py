@@ -85,6 +85,16 @@ def test_genericdeviceclass(node: Node):
 
 
 @pytest.mark.asyncio
+async def test_handleMessage(node: Node):
+    # Skip handlers, when there is a session wating for the message
+    node.addWaitingSession(Basic.Get)
+    assert await node.handleMessage(Basic.Get()) is True
+
+    # Try again without any sessions
+    assert await node.handleMessage(Basic.Get()) is False
+
+
+@pytest.mark.asyncio
 async def test_interview(mocknode: Node):
     mocknode.queue(
         Version.VersionCommandClassReport(

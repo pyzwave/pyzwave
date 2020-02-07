@@ -78,7 +78,7 @@ class Application(Listenable):
                 "Received message from unknown node %s: %s", nodeId, message
             )
             return False
-        _reply = node.messageReceived(message)
+        _reply = await node.handleMessage(message)
         return True
 
     @property
