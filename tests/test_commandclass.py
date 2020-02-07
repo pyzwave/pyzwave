@@ -147,3 +147,9 @@ async def test_requestVersion_unknownCommandClass(commandclass: CommandClass):
 
 def test_securityS0(version: Version.Version):
     assert version.securityS0 is False
+
+
+@pytest.mark.asyncio
+async def test_send(version: Version.Version):
+    await version.send(Version.VersionGet())
+    version.node.assert_message_sent(Version.VersionGet())

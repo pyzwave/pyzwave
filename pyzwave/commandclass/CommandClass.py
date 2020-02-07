@@ -84,6 +84,11 @@ class CommandClass(AttributesMixin, Listenable):
         """Returns if security class S0 is required to access this command class"""
         return self._securityS0
 
+    async def send(self, cmd: Message, timeout: int = 3) -> bool:
+        """Send a message to the node. This is a convenience
+        wrapper around Node.send."""
+        return await self._node.send(cmd, timeout=timeout)
+
     async def sendAndReceive(
         self, cmd: Message, waitFor: Message, timeout: int = 3, **kwargs
     ) -> Message:
