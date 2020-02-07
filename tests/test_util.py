@@ -5,6 +5,7 @@
 # pylint: disable=unused-argument
 # pylint: disable=no-self-use
 # pylint: disable=unidiomatic-typecheck
+# pylint: disable=blacklisted-name
 import asyncio
 import logging
 from unittest.mock import MagicMock
@@ -48,12 +49,17 @@ class CustomAttribute(str):
         return str(self.content)
 
 
+class AnotherAttributable(AttributesMixin):
+    pass
+
+
 class Attributable(AttributesMixin):
     attributes = (
         ("foo", uint8_t),
         ("bar", uint8_t),
         ("custom", CustomAttribute),
         ("native", int),
+        ("recursive", AnotherAttributable),
     )
 
 
@@ -87,6 +93,14 @@ def test_attributes(attributable: Attributable):
     assert attributable.native == 4
     assert isinstance(attributable.foo, uint8_t)
     assert type(attributable.native) == int
+
+
+def test_attributes__init__():
+    another = AnotherAttributable()
+    attributable = Attributable(foo=0, custom="hello", recursive=another)
+    assert attributable.foo == 0
+    assert str(attributable.custom) == "hello"
+    assert attributable.recursive == another
 
 
 def test_attributes_state(attributable: Attributable):

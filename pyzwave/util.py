@@ -13,9 +13,21 @@ class AttributesMixin:
 
     attributes = ()
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__()
         self._attributes = {}
+        for attrName, attrType in getattr(self, "attributes"):
+            if attrName not in kwargs:
+                continue
+            value = kwargs[attrName]
+            if isinstance(value, AttributesMixin):
+                # Is a subclass of ourself, not not wrap it
+                self._attributes[attrName] = value
+            elif hasattr(attrType, "__setstate__"):
+                self._attributes[attrName] = attrType()
+                self._attributes[attrName].__setstate__(value)
+            else:
+                self._attributes[attrName] = attrType(value)
 
     def __getattr__(self, name):
         if name not in self._attributes:
