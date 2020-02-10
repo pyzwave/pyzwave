@@ -102,7 +102,9 @@ class Message:
         super().__setattr__(name, value)
 
     def __repr__(self):
-        cmdClass, cmd = ZWaveMessage.reverseMapping.get(self.__class__, (0, 0))
+        hid = self.hid()
+        cmdClass = (hid >> 8) & 0xFF
+        cmd = hid & 0xFF
         cmdClassName = cmdClasses.get(cmdClass, "cmdClass 0x{:02X}".format(cmdClass))
         name = self.NAME or "0x{:02X}".format(cmd)
         return "<Z-Wave {} cmd {}>".format(cmdClassName, name)
@@ -118,9 +120,12 @@ class Message:
         cmdClass = stream.byte()
         cmd = stream.byte()
         hid = cmdClass << 8 | (cmd & 0xFF)
-        MsgCls = ZWaveMessage.get(hid, Message)  # pylint: disable=invalid-name
-        msg = MsgCls()
-        msg.parse(stream)
+        MsgCls = ZWaveMessage.get(hid, None)  # pylint: disable=invalid-name
+        if MsgCls:
+            msg = MsgCls()
+            msg.parse(stream)
+        else:
+            msg = UnknownMessage(hid)
         return msg
 
     @classmethod
@@ -130,6 +135,20 @@ class Message:
         """
         cmdClass, cmd = ZWaveMessage.reverseMapping.get(cls, (0, 0))
         return (cmdClass << 8) | (cmd & 0xFF)
+
+
+class UnknownMessage(Message):
+    """
+    Wrapper class for wrapping unknown messages. Using this class we still know which
+    command class and command this message is (but we don't know how to decode it)
+    """
+
+    def __init__(self, hid):
+        super().__init__()
+        self._hid = hid
+
+    def hid(self):
+        return self._hid
 
 
 # pylint: disable=wrong-import-position
