@@ -2,6 +2,7 @@
 # pylint: disable=invalid-name
 # pylint: disable=redefined-outer-name
 # pylint: disable=protected-access
+from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.application import Application
@@ -33,7 +34,7 @@ def app() -> Application:
 
     adapter = AdapterImpl()
     app = Application(adapter, None)
-    app._nodes = {"3:0": Node(3, adapter, [])}
+    app._nodes = {"3:0": Node(3, adapter, [Basic.COMMAND_CLASS_BASIC])}
     app.adapter.getFailedNodeList = getFailedNodeList
     app.adapter.getMultiChannelCapability = getMultiChannelCapability
     app.adapter.getMultiChannelEndPoints = getMultiChannelEndPoints
@@ -50,8 +51,12 @@ async def test_loadEndPointNode(app: Application):
 
 @pytest.mark.asyncio
 async def test_messageReceived(app: Application):
-    assert await app.messageReceived(None, 4, 0, Basic.Report(value=0), 0) is False
-    assert await app.messageReceived(None, 3, 0, Basic.Report(value=0), 0) is True
+    handler = MagicMock()
+    cmdClass = app.nodes["3:0"].supported[Basic.COMMAND_CLASS_BASIC]
+    cmdClass.addListener(handler)
+    assert await app.messageReceived(None, 4, 0, Basic.Report(value=42), 0) is False
+    assert await app.messageReceived(None, 3, 0, Basic.Report(value=42), 0) is True
+    handler.report.assert_called_once_with(cmdClass, 42)
 
 
 def test_nodes(app: Application):

@@ -6,9 +6,8 @@ from pyzwave.const.ZW_classcmd import (
 )
 from pyzwave.message import Message
 from pyzwave.types import uint8_t
-from . import ZWaveMessage, registerCmdClass
-
-registerCmdClass(COMMAND_CLASS_BASIC, "BASIC")
+from . import ZWaveCommandClass, ZWaveMessage, ZWaveMessageHandler
+from .CommandClass import CommandClass
 
 
 @ZWaveMessage(COMMAND_CLASS_BASIC, BASIC_GET)
@@ -34,3 +33,16 @@ class Set(Message):
     NAME = "SET"
 
     attributes = (("value", uint8_t),)
+
+
+# pylint: disable=attribute-defined-outside-init
+@ZWaveCommandClass(COMMAND_CLASS_BASIC)
+class Basic(CommandClass):
+    """Command Class COMMAND_CLASS_BASIC"""
+
+    NAME = "BASIC"
+
+    @ZWaveMessageHandler(Report)
+    async def __report__(self, report: Report):
+        self.speak("report", report.value)
+        return True

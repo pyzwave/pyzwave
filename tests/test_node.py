@@ -141,6 +141,7 @@ async def test_interview_timeout(mocknode: Node):
         raise asyncio.TimeoutError()
 
     mocknode.supported[Version.COMMAND_CLASS_VERSION].interview = interview
+    mocknode.supported[Basic.COMMAND_CLASS_BASIC].interview = interview
     await mocknode.interview()
     assert mocknode.supported[Version.COMMAND_CLASS_VERSION].version == 0
 
