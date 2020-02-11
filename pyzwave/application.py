@@ -32,11 +32,6 @@ class Application(Listenable):
         self._nodes = {}
         self._cmdClasses = []
 
-    def setNodeInfo(self, generic, specific, cmdClasses):
-        """Set the application NIF (Node Information Frame)"""
-        self._typeInfo = (generic, specific)
-        self._cmdClasses = cmdClasses
-
     async def loadEndPointNode(self, node: Node, endpoint: int):
         """Load an endpoint for a node"""
         report = await self.adapter.getMultiChannelCapability(node.rootNodeId, endpoint)
@@ -85,6 +80,11 @@ class Application(Listenable):
     def nodes(self) -> Dict[int, Node]:
         """All nodes in the network"""
         return self._nodes
+
+    def setNodeInfo(self, generic, specific, cmdClasses):
+        """Set the application NIF (Node Information Frame)"""
+        self._typeInfo = (generic, specific)
+        self._cmdClasses = cmdClasses
 
     async def shutdown(self):
         """Shut down the application gracefully"""
