@@ -232,6 +232,52 @@ def reserved_t(size):  # pylint: disable=invalid-name
     return reserved_t
 
 
+class dsk_t:  # pylint: disable=invalid-name
+    """Type for a DSK key"""
+
+    def __init__(self, dsk=None):
+        self._dsk = dsk or b""
+
+    def __getstate__(self):
+        return "-".join(
+            [
+                "{:05d}".format((self._dsk[i] << 8) | self._dsk[i + 1])
+                for i in range(0, len(self._dsk), 2)
+            ]
+        )
+
+    def __repr__(self):
+        return self.__getstate__()
+
+    def __setstate__(self, state):
+        fields = state.split("-")
+        if len(fields) != 8:
+            return
+        dsk = bytearray(16)
+        for i, value in enumerate(fields):
+            word = int(value, base=10)
+            dsk[i * 2] = (word >> 8) & 0xFF
+            dsk[i * 2 + 1] = word & 0xFF
+        self._dsk = bytes(dsk)
+
+    def serialize(self, stream: BitStreamWriter):
+        """Serialize DSK"""
+        stream.addBits(0, 3)
+        stream.addBits(len(self._dsk), 5)
+        stream.extend(self._dsk)
+
+    @classmethod
+    def deserialize(cls, stream: BitStreamReader):
+        """Deserialize DSK"""
+        length = stream.byte() & 0x1F
+        if length == 0:
+            # No key included
+            return b""
+        if length != 16:
+            raise ValueError("DSK must be 16 bytes, got {}".format(length))
+        return stream.value(length)
+
+
 class IPv6(ipaddress.IPv6Address):
     """Type for a IPv6 address"""
 

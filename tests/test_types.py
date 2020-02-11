@@ -1,6 +1,7 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=invalid-name
 # pylint: disable=redefined-outer-name
+# pylint: disable=protected-access
 
 import ipaddress
 import pytest
@@ -10,6 +11,7 @@ from pyzwave.types import (
     BitStreamWriter,
     bits_t,
     bytes_t,
+    dsk_t,
     flag_t,
     HomeID,
     IPv6,
@@ -104,6 +106,36 @@ def test_bytes_t(streamReader: BitStreamReader):
     writer = BitStreamWriter()
     bytes_t(pkt).serialize(writer)
     assert writer == pkt
+
+
+def test_dsk_t():
+    DSK = "32333-28706-61913-46249-43027-54794-27762-42208"
+    rawDSK = b"\x10~Mp\x22\xf1\xd9\xb4\xa9\xa8\x13\xd6\nlr\xa4\xe0"
+    bDSK = rawDSK[1:]
+    dsk = dsk_t()
+    dsk.__setstate__(DSK)
+    assert dsk._dsk == bDSK
+    assert dsk.__getstate__() == DSK
+    assert repr(dsk) == DSK
+
+    writer = BitStreamWriter()
+    dsk.serialize(writer)
+    assert writer == rawDSK
+
+    reader = BitStreamReader(rawDSK)
+    assert dsk_t.deserialize(reader) == bDSK
+
+
+def test_dsk_t_invalid_data():
+    dsk = dsk_t()
+    dsk.__setstate__("12345-67890")
+    assert dsk._dsk == b""
+
+    with pytest.raises(ValueError):
+        dsk.deserialize(
+            BitStreamReader(b"\x0f~Mp\x22\xf1\xd9\xb4\xa9\xa8\x13\xd6\nlr\xa4\xe0")
+        )
+    assert dsk.deserialize(BitStreamReader(b"")) == b""
 
 
 def test_flags_t():
