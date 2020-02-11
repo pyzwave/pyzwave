@@ -17,6 +17,7 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     def __init__(self):
         super().__init__()
         self._ackQueue = {}
+        self._nodeId = 0
 
     def ackReceived(self, ackId: int):
         """Call this method when an ack message has been received"""
@@ -69,6 +70,15 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     async def getNodeList(self) -> set:
         """Return a list of nodes included in the network"""
         raise NotImplementedError()
+
+    @property
+    def nodeId(self) -> int:
+        """Return the node id of the controller"""
+        return self._nodeId
+
+    @nodeId.setter
+    def nodeId(self, nodeId: int):
+        self._nodeId = nodeId
 
     @abc.abstractmethod
     async def send(

@@ -95,6 +95,7 @@ class ZIPGateway(ZIPConnection):
         except asyncio.TimeoutError:
             # No response
             return set()
+        self._nodeId = report.nodeListControllerId
         self._nodes = {x: {} for x in report.nodes}
         return report.nodes
 

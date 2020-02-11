@@ -198,11 +198,13 @@ async def test_getNodeList(gateway: ZIPGateway):
         pass
 
     gateway.send = dummySend
+    assert gateway.nodeId == 0
     [nodeList, _] = await asyncio.gather(
         gateway.getNodeList(), runDelayed(gateway.commandReceived, nodeListReport)
     )
     assert nodeList == {1, 6}
     assert gateway._nodes == {1: {}, 6: {}}
+    assert gateway.nodeId == 1
 
 
 @pytest.mark.asyncio

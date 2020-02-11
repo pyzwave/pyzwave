@@ -117,6 +117,12 @@ async def test_getNodeList(adapter: Adapter):
         await adapter.getNodeList()
 
 
+def test_nodeId(adapter: Adapter):
+    assert adapter.nodeId == 0
+    adapter.nodeId = 1
+    assert adapter.nodeId == 1
+
+
 @pytest.mark.asyncio
 async def test_send(adapter: Adapter):
     with pytest.raises(NotImplementedError):
