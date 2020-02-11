@@ -221,6 +221,29 @@ async def test_getNodeList_timeout(gateway: ZIPGateway):
 
 
 @pytest.mark.asyncio
+async def test_handleNodeListReport(gateway: ZIPGateway):
+    async def ipOfNode(_):
+        return ipaddress.IPv6Address("::1")
+
+    listener = MagicMock()
+    gateway.ipOfNode = ipOfNode
+    gateway.addListener(listener)
+    gateway._nodes = {
+        1: {"ip": ipaddress.IPv6Address("::1")},
+        2: {"ip": ipaddress.IPv6Address("::1")},
+    }
+    # pylint: disable=line-too-long
+    zipPkt = b"#\x02@\x10\x00\x00\x00R\x02\x02\x00\x01!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    future = gateway.onUnsolicitedMessage(zipPkt, ("::1",))
+    await asyncio.gather(future)
+    assert gateway._nodes == {
+        1: {"ip": ipaddress.IPv6Address("::1")},
+        6: {"ip": ipaddress.IPv6Address("::1")},
+    }
+    listener.nodeListUpdated.assert_called_once()
+
+
+@pytest.mark.asyncio
 async def test_ipOfNode(gateway: ZIPGateway):
     # pylint: disable=line-too-long
     pkt = b"X\x01\x00\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xc0\xa8\x00\xee\xea\xec\xfa\xf9"

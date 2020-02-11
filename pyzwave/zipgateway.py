@@ -114,7 +114,25 @@ class ZIPGateway(ZIPConnection):
             return NetworkManagementProxy.NodeInfoCachedReport()
         return report
 
-    async def ipOfNode(self, nodeId):
+    async def __handleNodeListReport__(
+        self, report: NetworkManagementProxy.NodeListReport
+    ):
+        """Update nodes from a nodeListReport"""
+        # Find removed nodes
+        for nodeId in list(self._nodes.keys()):
+            if nodeId in report.nodes:
+                continue
+            del self._nodes[nodeId]
+
+        # Find new nodes
+        for nodeId in report.nodes:
+            if nodeId in self._nodes:
+                continue
+            # Retrieve ip
+            self._nodes[nodeId] = {"ip": await self.ipOfNode(nodeId)}
+        self.speak("nodeListUpdated")
+
+    async def ipOfNode(self, nodeId) -> ipaddress.IPv6Address:
         """Returns the IPv6 address of the node"""
         msg = ZipND.ZipInvNodeSolicitation(local=False, nodeId=nodeId)
         self._conn.send(msg.compose())
@@ -143,6 +161,9 @@ class ZIPGateway(ZIPConnection):
         zipPkt = Message.decode(pkt)
         sourceIp = ipaddress.IPv6Address(address[0])
         sourceEP = zipPkt.sourceEP
+
+        if isinstance(zipPkt.command, NetworkManagementProxy.NodeListReport):
+            return asyncio.ensure_future(self.__handleNodeListReport__(zipPkt.command))
 
         # Find the node this was from
         for nodeId, node in self._nodes.items():
