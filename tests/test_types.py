@@ -61,6 +61,16 @@ def test_BitStreamReader_bytes(streamReader):
     assert streamReader.value(1) == b"\x01"
 
 
+def test_BitStreamReader_bytesLeft(streamReader):
+    assert streamReader.bytesLeft() == 4
+    assert streamReader.value(1) == b"\x02"
+    assert streamReader.bytesLeft() == 3
+    assert streamReader.peekValue(2) == b"\x01\xCB"
+    assert streamReader.bytesLeft() == 3
+    assert streamReader.value(1) == b"\x01"
+    assert streamReader.bytesLeft() == 2
+
+
 def test_BitStreamReader_remaining(streamReader: BitStreamReader):
     assert streamReader.remaining(advance=False) == b"\x02\x01\xcb@"
     assert streamReader.value(1) == b"\x02"

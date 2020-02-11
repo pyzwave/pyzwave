@@ -29,6 +29,11 @@ class BitStreamReader:
         """Return one byte from the stream"""
         return int.from_bytes(self.value(1, advance), "little", signed=False)
 
+    def bytesLeft(self) -> int:
+        """Return the number of bytes remaining from the stream"""
+        startByte = int(self._start / 8)
+        return len(self._value) - startByte
+
     def peekByte(self) -> int:
         """Return the next byte from the stream without advancing the stream"""
         return self.byte(advance=False)
