@@ -120,7 +120,7 @@ class Node(Listenable, MessageWaiter):
                 # Message was handled, stop further processing
                 return True
         # Message was not handled
-        _LOGGER.warning("Unhandled message %s", message)
+        _LOGGER.warning("Unhandled message %s from node %s", message, self.nodeId)
         return False
 
     async def interview(self):

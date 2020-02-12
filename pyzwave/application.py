@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import asyncio
 import logging
 from typing import Dict
 
@@ -44,6 +45,9 @@ class Application(Listenable):
 
     async def loadNode(self, nodeId: int):
         """Load a node"""
+        if nodeId == self.adapter.nodeId:
+            # Ignore ourself
+            return
         nodeInfo = await self.adapter.getNodeInfo(nodeId)
         node = Node(nodeId, self.adapter, list(nodeInfo.commandClass))
         node.addListener(self._storage)
@@ -67,13 +71,21 @@ class Application(Listenable):
         """Called when a message is received from a node"""
         nodeId = "{}:{}".format(rootNodeId, endPoint)
         node = self._nodes.get(nodeId)
-        if not node:
+        if node:
+            reply = await node.handleMessage(message)
+            if reply:
+                # Message was handled
+                return True
+            return False
+        if rootNodeId != self.adapter.nodeId:
             # Unknown node. Should not happen
             _LOGGER.warning(
                 "Received message from unknown node %s: %s", nodeId, message
             )
             return False
-        _reply = await node.handleMessage(message)
+        # Message from the Z-Wave chip
+        await asyncio.gather(*self.speak("messageReceived", message))
+        # TODO, check retval from above and see if message was handled
         return True
 
     @property

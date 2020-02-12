@@ -13,6 +13,10 @@ from pyzwave.message import Message
 
 
 class AdapterImpl(Adapter):
+    def __init__(self):
+        super().__init__()
+        self.nodeId = 1
+
     async def connect(self):
         await super().connect()
 
@@ -118,9 +122,9 @@ async def test_getNodeList(adapter: Adapter):
 
 
 def test_nodeId(adapter: Adapter):
-    assert adapter.nodeId == 0
-    adapter.nodeId = 1
     assert adapter.nodeId == 1
+    adapter.nodeId = 2
+    assert adapter.nodeId == 2
 
 
 @pytest.mark.asyncio

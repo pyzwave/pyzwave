@@ -56,7 +56,14 @@ async def test_messageReceived(app: Application):
     cmdClass.addListener(handler)
     assert await app.messageReceived(None, 4, 0, Basic.Report(value=42), 0) is False
     assert await app.messageReceived(None, 3, 0, Basic.Report(value=42), 0) is True
+    assert await app.messageReceived(None, 3, 0, Basic.Set(value=0), 0) is False
     handler.report.assert_called_once_with(cmdClass, 42)
+    assert (
+        await app.messageReceived(
+            None, app.adapter.nodeId, 0, Basic.Report(value=42), 0
+        )
+        is True
+    )
 
 
 def test_nodes(app: Application):
@@ -77,4 +84,4 @@ async def test_shutdown(app: Application):
 @pytest.mark.asyncio
 async def test_startup(app: Application):
     await app.startup()
-    assert app.nodes.keys() == {"1:0", "1:1", "2:0", "2:1", "3:0", "3:1"}
+    assert app.nodes.keys() == {"2:0", "2:1", "3:0", "3:1"}
