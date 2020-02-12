@@ -2,7 +2,7 @@
 # pylint: disable=invalid-name
 # pylint: disable=redefined-outer-name
 # pylint: disable=protected-access
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 import pytest
 
 from pyzwave.application import Application
@@ -11,6 +11,13 @@ from pyzwave.const.ZW_classcmd import COMMAND_CLASS_MULTI_CHANNEL_V2
 from pyzwave.node import Node
 
 from test_adaper import AdapterImpl
+
+
+def asyncReturn(value):
+    async def wrapper():
+        return value
+
+    return wrapper()
 
 
 @pytest.fixture
@@ -64,6 +71,35 @@ async def test_messageReceived(app: Application):
         )
         is True
     )
+
+
+@pytest.mark.asyncio
+async def test_nodeListUpdated(app: Application):
+    listener = MagicMock()
+    app.addListener(listener)
+    assert app._nodes.keys() == {"3:0"}
+
+    app.adapter.getNodeList = MagicMock(return_value=asyncReturn([1, 2, 3]))
+    await app.nodeListUpdated(None)
+    assert app._nodes.keys() == {"2:0", "2:1", "3:0"}
+    listener.nodesAdded.assert_called_once_with(
+        app, [app._nodes["2:0"], app._nodes["2:1"]]
+    )
+    assert listener.nodeAdded.call_args_list == [
+        call(app, app._nodes["2:0"]),
+        call(app, app._nodes["2:1"]),
+    ]
+    listener.nodesRemoved.assert_not_called()
+    listener.nodeRemoved.assert_not_called()
+
+    app.adapter.getNodeList.return_value = asyncReturn([1, 2])
+    listener.reset_mock()
+    await app.nodeListUpdated(None)
+    assert app._nodes.keys() == {"2:0", "2:1"}
+    listener.nodesAdded.assert_not_called()
+    listener.nodeAdded.assert_not_called()
+    listener.nodesRemoved.assert_called_once_with(app, ["3:0"])
+    listener.nodeRemoved.assert_called_once_with(app, "3:0")
 
 
 def test_nodes(app: Application):

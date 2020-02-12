@@ -41,15 +41,17 @@ class Application(Listenable):
         nodeEP.genericDeviceClass = report.genericDeviceClass
         nodeEP.specificDeviceClass = report.specificDeviceClass
         self._nodes[nodeEP.nodeId] = nodeEP
-        self.speak("nodeAdded", nodeEP)
+        return nodeEP
 
-    async def loadNode(self, nodeId: int):
+    async def loadNode(self, nodeId: int) -> list:
         """Load a node"""
         if nodeId == self.adapter.nodeId:
             # Ignore ourself
-            return
+            return []
+        nodes = []
         nodeInfo = await self.adapter.getNodeInfo(nodeId)
         node = Node(nodeId, self.adapter, list(nodeInfo.commandClass))
+        nodes.append(node)
         node.addListener(self._storage)
         node.basicDeviceClass = nodeInfo.basicDeviceClass
         # node.flirs = ?
@@ -58,12 +60,12 @@ class Application(Listenable):
         node.listening = nodeInfo.listening
         node.specificDeviceClass = nodeInfo.specificDeviceClass
         self._nodes[node.nodeId] = node
-        self.speak("nodeAdded", node)
 
         if node.supports(COMMAND_CLASS_MULTI_CHANNEL_V2):
             endpoints = await self.adapter.getMultiChannelEndPoints(nodeId)
             for endpoint in range(1, endpoints + 1):
-                await self.loadEndPointNode(node, endpoint)
+                nodes.append(await self.loadEndPointNode(node, endpoint))
+        return nodes
 
     async def messageReceived(
         self, _sender, rootNodeId: int, endPoint: int, message: Message, _flags: int
@@ -88,6 +90,33 @@ class Application(Listenable):
         # TODO, check retval from above and see if message was handled
         return True
 
+    async def nodeListUpdated(self, _sender):
+        """Called when the node list has been updated"""
+        nodeList = await self.adapter.getNodeList()
+        nodesToRemove = []
+        for nodeId, node in self._nodes.items():
+            if node.rootNodeId in nodeList:
+                continue
+            nodesToRemove.append(nodeId)
+        for nodeId in nodesToRemove:
+            del self._nodes[nodeId]
+            self.speak("nodeRemoved", nodeId)
+        # For clients supporting batch removing
+        if nodesToRemove:
+            self.speak("nodesRemoved", nodesToRemove)
+
+        # Find new nodes
+        newNodes = []
+        for nodeId in nodeList:
+            if "{}:0".format(nodeId) in self._nodes:
+                continue
+            newNodes.extend(await self.loadNode(nodeId))
+
+        if newNodes:
+            self.speak("nodesAdded", newNodes)
+        for node in newNodes:
+            self.speak("nodeAdded", node)
+
     @property
     def nodes(self) -> Dict[int, Node]:
         """All nodes in the network"""
@@ -108,3 +137,7 @@ class Application(Listenable):
 
         for nodeId in await self.adapter.getFailedNodeList():
             _LOGGER.warning("FAILED node %s", nodeId)
+
+        self.speak("nodesAdded", list(self._nodes.values()))
+        for _, node in self._nodes.items():
+            self.speak("nodeAdded", node)
