@@ -20,6 +20,11 @@ def connection() -> Connection:
     return connection
 
 
+@pytest.fixture
+def protocol() -> ZipClientProtocol:
+    return ZipClientProtocol(MagicMock(), MagicMock())
+
+
 @pytest.mark.asyncio
 async def test_run(connection: Connection):
     async def setEvent(event: asyncio.Future):
@@ -50,6 +55,11 @@ def test_ZipClientProtocol_connection_made():
     assert protocol.transport is None
     protocol.connection_made(42)
     assert protocol.transport == 42
+
+
+def test_ZipClientProtocol_datagram_received(protocol: ZipClientProtocol):
+    protocol.datagram_received("Foo", "::1")
+    protocol.onMessage.assert_called_once_with("Foo", "::1")
 
 
 def test_ZipClientProtocol_onConLost():
