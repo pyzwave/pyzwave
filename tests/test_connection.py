@@ -50,8 +50,7 @@ def test_stop(connection: Connection):
     connection._sock.close.assert_called_once()
 
 
-def test_ZipClientProtocol_connection_made():
-    protocol = ZipClientProtocol(None, None)
+def test_ZipClientProtocol_connection_made(protocol: ZipClientProtocol):
     assert protocol.transport is None
     protocol.connection_made(42)
     assert protocol.transport == 42
