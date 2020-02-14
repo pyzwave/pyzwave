@@ -13,6 +13,7 @@ from pyzwave.types import (
     bytes_t,
     dsk_t,
     flag_t,
+    float_t,
     HomeID,
     IPv6,
     str_t,
@@ -141,6 +142,14 @@ def test_dsk_t_invalid_data():
 def test_flags_t():
     assert str(flag_t(True)) == "flag_t(True)"
     assert str(flag_t(False)) == "flag_t(False)"
+
+
+def test_float_t():
+    value = float_t(23.2, 1, 2)
+    assert value == 23.2
+    assert value.scale == 2
+
+    assert float_t.deserialize(BitStreamReader(b"\x22\x00\xe4")) == (22.8, 2, 0)
 
 
 def test_HomeID():

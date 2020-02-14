@@ -1,4 +1,5 @@
 import ipaddress
+import math
 
 
 class BitStreamReader:
@@ -218,6 +219,35 @@ def bits_t(size):  # pylint: disable=invalid-name
         sizeBits = size
 
     return bits_t
+
+
+class float_t(float):  # pylint: disable=invalid-name
+    """Type for representing signed float values."""
+
+    def __new__(cls, value=0, *_args):  # pylint: disable=keyword-arg-before-vararg
+        # Override __new__ to allow *args
+        return float.__new__(cls, value)
+
+    def __init__(self, _value=0, size=1, scale=0):
+        super().__init__()
+        self._size = size
+        self._scale = scale
+
+    @property
+    def scale(self) -> int:
+        """The scale this value represents"""
+        return self._scale
+
+    @classmethod
+    def deserialize(cls, stream: BitStreamReader):
+        """Deserialize float value from stream"""
+        precision = stream.bits(3)
+        scale = stream.bits(2)
+        size = stream.bits(3)
+        value = int.from_bytes(stream.value(size), "big", signed=True) / math.pow(
+            10, precision
+        )
+        return (value, size, scale)
 
 
 def reserved_t(size):  # pylint: disable=invalid-name

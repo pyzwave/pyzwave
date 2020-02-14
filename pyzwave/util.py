@@ -71,6 +71,8 @@ class AttributesMixin:
                 elif hasattr(attrType, "__setstate__"):
                     self._attributes[name] = attrType()
                     self._attributes[name].__setstate__(value)
+                elif isinstance(value, tuple):
+                    self._attributes[name] = attrType(*value)
                 else:
                     self._attributes[name] = attrType(value)
                 return

@@ -13,7 +13,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.util import AttributesMixin, Listenable
-from pyzwave.types import BitStreamReader, uint8_t
+from pyzwave.types import BitStreamReader, float_t, uint8_t
 
 
 class Speaker(Listenable):
@@ -64,6 +64,7 @@ class Attributable(AttributesMixin):
     attributes = (
         ("foo", uint8_t),
         ("bar", uint8_t),
+        ("floating", float_t),
         ("custom", CustomAttribute),
         ("native", int),
         ("recursive", AnotherAttributable),
@@ -88,14 +89,18 @@ def listener():
 def test_attributes(attributable: Attributable):
     assert attributable.foo == 0
     assert attributable.bar == 0
+    assert attributable.floating == 0.0
     assert attributable.custom == ""
     assert attributable.native == 0
     attributable.foo = 1
     attributable.bar = 2
+    attributable.floating = (22.3, 2, 1)
     attributable.custom = "3"
     attributable.native = 4
     assert attributable.foo == 1
     assert attributable.bar == 2
+    assert attributable.floating == 22.3
+    assert attributable.floating.scale == 1
     assert str(attributable.custom) == "3"
     assert attributable.native == 4
     assert isinstance(attributable.foo, uint8_t)
