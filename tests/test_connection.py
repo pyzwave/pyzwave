@@ -61,6 +61,11 @@ def test_ZipClientProtocol_datagram_received(protocol: ZipClientProtocol):
     protocol.onMessage.assert_called_once_with("Foo", "::1")
 
 
+def test_ZipClientProtocol_error_received(protocol: ZipClientProtocol):
+    # Change this test once the function is implemented
+    assert protocol.error_received("Too bad for you") is None
+
+
 def test_ZipClientProtocol_onConLost():
     onConLost = asyncio.get_event_loop().create_future()
     protocol = ZipClientProtocol(onConLost, None)
