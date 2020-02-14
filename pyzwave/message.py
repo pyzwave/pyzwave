@@ -54,8 +54,6 @@ class Message:
         """
         Convert all attributes in this message to a human readable string used for debug output.
         """
-        cmdClass, cmd = ZWaveMessage.reverseMapping.get(self.__class__, (0, 0))
-
         attrs = []
         for name, _ in self.attributes:
             if name not in self._attributes:
@@ -65,10 +63,7 @@ class Message:
             else:
                 value = repr(self._attributes[name])
             attrs.append("{}{} = {}".format("\t" * (indent + 1), name, value))
-
-        cmdClassName = cmdClasses.get(cmdClass, "cmdClass 0x{:02X}".format(cmdClass))
-        name = self.NAME or "0x{:02X}".format(cmd)
-        return "{}.{}:\n{}".format(cmdClassName, name, "\n".join(attrs))
+        return "{}:\n{}".format(str(self), "\n".join(attrs))
 
     def parse(self, stream: BitStreamReader):
         """Populate the attributes from a raw bitstream."""
@@ -105,9 +100,9 @@ class Message:
         hid = self.hid()
         cmdClass = (hid >> 8) & 0xFF
         cmd = hid & 0xFF
-        cmdClassName = cmdClasses.get(cmdClass, "cmdClass 0x{:02X}".format(cmdClass))
+        cmdClassName = cmdClasses.get(cmdClass, "0x{:02X}".format(cmdClass))
         name = self.NAME or "0x{:02X}".format(cmd)
-        return "<Z-Wave {} cmd {}>".format(cmdClassName, name)
+        return "<Z-Wave {}.{}>".format(cmdClassName, name)
 
     @classmethod
     def decode(cls, pkt: bytearray):

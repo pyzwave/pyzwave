@@ -34,14 +34,14 @@ def test_compose_type():
 
 
 def test_debugString():
-    assert (Basic.Report().debugString()) == "BASIC.REPORT:\n"
+    assert (Basic.Report().debugString()) == "<Z-Wave BASIC.REPORT>:\n"
     assert (
         Basic.Report(value=0xFF).debugString()
-    ) == "BASIC.REPORT:\n\tvalue = 0xFF (255)"
+    ) == "<Z-Wave BASIC.REPORT>:\n\tvalue = 0xFF (255)"
     msg = Message.decode(b"#\x02\x80P\x01\x03\x00 \x02")
     assert (
         msg.debugString()
-        == "ZIP.ZIP_PACKET:\n\
+        == "<Z-Wave ZIP.ZIP_PACKET>:\n\
 	ackRequest = flag_t(True)\n\
 	ackResponse = flag_t(False)\n\
 	nackResponse = flag_t(False)\n\
@@ -58,9 +58,9 @@ def test_debugString():
 	sourceEP = 0x3 (3)\n\
 	destEP = 0x0 (0)\n\
 	headerExtension = {}\n\
-	command = BASIC.GET:\n"
+	command = <Z-Wave BASIC.GET>:\n"
     )
 
 
 def test_repr():
-    assert str(Basic.Report()) == "<Z-Wave BASIC cmd REPORT>"
+    assert str(Basic.Report()) == "<Z-Wave BASIC.REPORT>"
