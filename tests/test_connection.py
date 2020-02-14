@@ -26,6 +26,16 @@ def protocol() -> ZipClientProtocol:
 
 
 @pytest.mark.asyncio
+async def test_connect(connection: Connection):
+    async def run(_):
+        pass
+
+    connection.run = run
+    await connection.connect(None, None)
+    assert isinstance(connection._sock, asyncio.Transport)
+
+
+@pytest.mark.asyncio
 async def test_run(connection: Connection):
     async def setEvent(event: asyncio.Future):
         event.set_result(True)
