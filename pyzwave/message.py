@@ -1,31 +1,15 @@
 import logging
 
 from pyzwave.types import BitStreamReader, BitStreamWriter
+from pyzwave.util import AttributesMixin
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class Message:
+class Message(AttributesMixin):
     """Base class for all Z-Wave messages. This class should not be initiated manually"""
 
     NAME = None
-    attributes = ()
-
-    def __init__(self, **kwargs):
-        self._attributes = {}
-        for attrName, attrType in getattr(self, "attributes"):
-            if attrName not in kwargs:
-                continue
-            if kwargs[attrName] is None:
-                # Try to create default value
-                self._attributes[attrName] = attrType()
-            elif hasattr(attrType, "__setstate__"):
-                self._attributes[attrName] = attrType()
-                self._attributes[attrName].__setstate__(kwargs[attrName])
-            elif issubclass(attrType, Message):
-                self._attributes[attrName] = kwargs[attrName]
-            else:
-                self._attributes[attrName] = attrType(kwargs[attrName])
 
     def compose(self) -> bytes:
         """Convert the message to a bytearray ready to be sent over the wire"""
@@ -65,17 +49,6 @@ class Message:
             attrs.append("{}{} = {}".format("\t" * (indent + 1), name, value))
         return "{}:\n{}".format(str(self), "\n".join(attrs))
 
-    def parse(self, stream: BitStreamReader):
-        """Populate the attributes from a raw bitstream."""
-        for name, attrType in self.attributes:
-            serializer = getattr(self, "parse_{}".format(name), None)
-            if serializer:
-                value = serializer(stream)
-            else:
-                value = attrType.deserialize(stream)
-            # This can be optimized to reduze the second loop in __setattr__
-            setattr(self, name, value)
-
     def serialize(self, stream: BitStreamWriter):
         """Write the message as binary into the bitstream. See compose()"""
         stream.extend(self.compose())
@@ -84,17 +57,9 @@ class Message:
         return self.compose() == other.compose()
 
     def __getattr__(self, name):
+        # Default implentation in AttributesMixin returns a default value.
+        # We do not want it here
         return self._attributes.get(name)
-
-    def __setattr__(self, name, value):
-        for msgAttrName, attrType in getattr(self, "attributes"):
-            if isinstance(value, Message):
-                self._attributes[name] = value
-                return
-            if msgAttrName == name:
-                self._attributes[name] = attrType(value)
-                return
-        super().__setattr__(name, value)
 
     def __repr__(self):
         hid = self.hid()
@@ -118,7 +83,7 @@ class Message:
         MsgCls = ZWaveMessage.get(hid, None)  # pylint: disable=invalid-name
         if MsgCls:
             msg = MsgCls()
-            msg.parse(stream)
+            msg.parseAttributes(stream)
         else:
             msg = UnknownMessage(hid)
         return msg
