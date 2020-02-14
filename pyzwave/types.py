@@ -221,6 +221,23 @@ def bits_t(size):  # pylint: disable=invalid-name
     return bits_t
 
 
+def enum_t(enumType, baseType):  # pylint: disable=invalid-name
+    """Return a new enum type based on the specified type"""
+    # pylint: disable=redefined-outer-name
+    class enum_t(baseType):  # pylint: disable=invalid-name
+        """Type for representing an enum value"""
+
+        def __repr__(self):
+            value = int(self)
+            try:
+                return "{} (0x{:X})".format(enumType(value).name, value)
+            except Exception:
+                # Enum not defined
+                return "UNKNOWN (0x{:X})".format(value)
+
+    return enum_t
+
+
 class float_t(float):  # pylint: disable=invalid-name
     """Type for representing signed float values."""
 

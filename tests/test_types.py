@@ -2,7 +2,9 @@
 # pylint: disable=invalid-name
 # pylint: disable=redefined-outer-name
 # pylint: disable=protected-access
+# pylint: disable=missing-class-docstring
 
+from enum import Enum
 import ipaddress
 import pytest
 
@@ -12,6 +14,7 @@ from pyzwave.types import (
     bits_t,
     bytes_t,
     dsk_t,
+    enum_t,
     flag_t,
     float_t,
     HomeID,
@@ -137,6 +140,17 @@ def test_dsk_t_invalid_data():
             BitStreamReader(b"\x0f~Mp\x22\xf1\xd9\xb4\xa9\xa8\x13\xd6\nlr\xa4\xe0")
         )
     assert dsk.deserialize(BitStreamReader(b"")) == b""
+
+
+def test_enum_t():
+    class MyEnum(Enum):
+        FOO = 1
+        BAR = 2
+
+    EnumType = enum_t(MyEnum, uint8_t)
+    assert repr(EnumType(1)) == "FOO (0x1)"
+    assert repr(EnumType(2)) == "BAR (0x2)"
+    assert repr(EnumType(3)) == "UNKNOWN (0x3)"
 
 
 def test_flags_t():
