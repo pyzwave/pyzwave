@@ -65,7 +65,8 @@ class AttributesMixin:
     def __setattr__(self, name, value):
         for attrName, attrType in getattr(self, "attributes"):
             if attrName == name:
-                if issubclass(attrType, AttributesMixin):
+                if isinstance(value, attrType):
+                    # Correct type set, use it directly
                     self._attributes[name] = value
                 elif hasattr(attrType, "__setstate__"):
                     self._attributes[name] = attrType()
