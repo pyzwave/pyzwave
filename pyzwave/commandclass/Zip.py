@@ -106,3 +106,28 @@ class ZipPacket(Message):
         if not self.headerExtIncluded:
             return {}
         return HeaderExtension.deserialize(stream)
+
+    def response(
+        self,
+        success: bool,
+        nackWaiting: bool = False,
+        nackQueueFull: bool = False,
+        nackOptionError: bool = False,
+    ) -> Message:
+        """Generate an ackResponse for this messsage. Use if ackRequest is set"""
+        return ZipPacket(
+            ackRequest=False,
+            ackResponse=success,
+            nackResponse=not success,
+            nackWaiting=nackWaiting,
+            nackQueueFull=nackQueueFull,
+            nackOptionError=nackOptionError,
+            headerExtIncluded=False,
+            zwCmdIncluded=False,
+            moreInformation=False,
+            secureOrigin=self.secureOrigin,
+            seqNo=self.seqNo,
+            sourceEP=self.destEP,
+            destEP=self.sourceEP,
+            command=None,
+        )

@@ -50,6 +50,29 @@ def test_zip_packet_networkmanagementproxt_nodelistreport():
     assert type(msg.command) is NetworkManagementProxy.NodeListReport
 
 
+def test_zip_packet_response():
+    # pylint: disable=line-too-long
+    pkt = b"#\x02\x00\xd0`\x00\x00\x05\x84\x02\x04\x00R\x02\x01\x00\x01!\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    msg = Message.decode(pkt)
+    assert isinstance(msg, Zip.ZipPacket)
+    reply = msg.response(success=True)
+    assert reply.ackRequest == False
+    assert reply.ackResponse == True
+    assert reply.nackResponse == False
+    assert reply.nackWaiting == False
+    assert reply.nackQueueFull == False
+    assert reply.nackOptionError == False
+    assert reply.seqNo == msg.seqNo
+    reply = msg.response(success=False, nackQueueFull=True)
+    assert reply.ackRequest == False
+    assert reply.ackResponse == False
+    assert reply.nackResponse == True
+    assert reply.nackWaiting == False
+    assert reply.nackQueueFull == True
+    assert reply.nackOptionError == False
+    assert reply.seqNo == msg.seqNo
+
+
 def test_zip_tlv():
     for header, value in Zip.HeaderExtension.tlvIterator(b"\x84\x02\x04\x00"):
         assert header == 132

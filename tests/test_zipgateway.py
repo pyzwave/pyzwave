@@ -271,15 +271,19 @@ def test_onMessageReceived_noNode(gateway: ZIPGateway):
 def test_onUnsolicitedMessage(gateway: ZIPGateway):
     ip = ipaddress.IPv6Address("::ffff:c0a8:ee")
     gateway._nodes = {7: {"ip": ip}}
-    pkt = b"#\x02\x00\xc0\xf9\x00\x00\x05\x84\x02\x00\x00%\x03\x00"
-    assert gateway.onUnsolicitedMessage(pkt, (ip,)) is True
+    pkt = b"#\x02\x80\xc0\xf9\x00\x00\x05\x84\x02\x00\x00%\x03\x00"
+    assert gateway.onUnsolicitedMessage(pkt, (ip, 4123)) is True
     gateway.listener.messageReceived.assert_called_once_with(
         gateway, 7, 0, SwitchBinary.Report(value=0), 0
+    )
+    gateway._unsolicitedConnection.sendTo.assert_called_once_with(
+        b"#\x02@\x00\xf9\x00\x00", (ip, 4123)
     )
 
 
 def test_onUnsolicitedMessage_unknownNode(gateway: ZIPGateway):
     ip = ipaddress.IPv6Address("::ffff:c0a8:ee")
+    gateway._nodes = {7: {"ip": ipaddress.IPv6Address("::ffff:c0a8:ef")}}
     pkt = b"#\x02\x00\xc0\xf9\x00\x00\x05\x84\x02\x00\x00%\x03\x00"
     assert gateway.onUnsolicitedMessage(pkt, (ip,)) is False
     gateway.listener.messageReceived.assert_not_called()

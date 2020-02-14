@@ -82,6 +82,10 @@ class Connection:
         self._sock.sendto(msg)
         return True
 
+    def sendTo(self, msg, address) -> bool:
+        """Send bytes to address"""
+        self._sock.sendto(msg, address)
+
     def onMessage(self, cbfn):
         """Set the callback function to use when data has arrived"""
         self._onMessage = cbfn

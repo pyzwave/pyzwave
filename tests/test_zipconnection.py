@@ -29,7 +29,7 @@ async def runDelayed(func, *args):
     return func(*args)
 
 
-class DummyConnection:
+class DummyConnection(MagicMock):
     async def connect(self, address, psk):
         pass
 
