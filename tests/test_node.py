@@ -12,6 +12,7 @@ from pyzwave.adapter import Adapter
 from pyzwave.commandclass import (
     AssociationGrpInfo,
     Basic,
+    Supervision,
     SwitchBinary,
     Version,
     ZwavePlusInfo,
@@ -202,3 +203,46 @@ def test_specificdeviceclass(node: Node):
     assert node.specificDeviceClass == 0
     node.specificDeviceClass = 2
     assert node.specificDeviceClass == 2
+
+
+@pytest.mark.asyncio
+async def test_supervision_handled(node: Node):
+    supervision = Supervision.Get(
+        statusUpdates=False, sessionID=42, command=Basic.Report(value=1)
+    )
+    node.addWaitingSession(Basic.Report)
+    assert await node.handleMessage(supervision) is True
+    node._adapter.sendToNode.assert_called_with(
+        node.rootNodeId,
+        Supervision.Report(
+            moreStatusUpdates=False,
+            wakeUpRequest=False,
+            sessionID=supervision.sessionID,
+            status=0xFF,
+            duration=0,
+        ),
+        destEP=0,
+        sourceEP=0,
+        timeout=3,
+    )
+
+
+@pytest.mark.asyncio
+async def test_supervision_not_handled(node: Node):
+    supervision = Supervision.Get(
+        statusUpdates=False, sessionID=42, command=Basic.Report(value=1)
+    )
+    assert await node.handleMessage(supervision) is False
+    node._adapter.sendToNode.assert_called_with(
+        node.rootNodeId,
+        Supervision.Report(
+            moreStatusUpdates=False,
+            wakeUpRequest=False,
+            sessionID=supervision.sessionID,
+            status=0x0,
+            duration=0,
+        ),
+        destEP=0,
+        sourceEP=0,
+        timeout=3,
+    )

@@ -4,13 +4,45 @@ import logging
 from typing import Dict
 
 from pyzwave.adapter import Adapter
-from pyzwave.commandclass import CommandClass
+from pyzwave.commandclass import CommandClass, Supervision
 from pyzwave.message import Message
 from pyzwave.util import Listenable, MessageWaiter
 
 from pyzwave.const.ZW_classcmd import COMMAND_CLASS_ZWAVEPLUS_INFO
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def supervision(func):
+    """Decoratior for handling calls wrapped in supervision messages"""
+
+    async def __wrapper__(self, message: Message):
+        if not isinstance(message, Supervision.Get):
+            return await func(self, message)
+        # Handle supervision calls
+        if await func(self, message.command):
+            await self.send(
+                Supervision.Report(
+                    moreStatusUpdates=False,
+                    wakeUpRequest=False,
+                    sessionID=message.sessionID,
+                    status=0xFF,
+                    duration=0,
+                )
+            )
+            return True
+        await self.send(
+            Supervision.Report(
+                moreStatusUpdates=False,
+                wakeUpRequest=False,
+                sessionID=message.sessionID,
+                status=0x00,
+                duration=0,
+            )
+        )
+        return False
+
+    return __wrapper__
 
 
 class Node(Listenable, MessageWaiter):
@@ -104,11 +136,13 @@ class Node(Listenable, MessageWaiter):
     def genericDeviceClass(self, genericDeviceClass: int):
         self._genericDeviceClass = genericDeviceClass
 
+    @supervision
     async def handleMessage(self, message: Message) -> bool:
         """Handle and incomming message. Route it to the correct handler"""
         if self.messageReceived(message) is True:
             # Message has already been handled
             return True
+
         hid = message.hid()
         for _, cmdClass in self.supported.items():
             if not cmdClass.__messageHandlers__:
