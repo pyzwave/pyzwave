@@ -4,6 +4,7 @@
 # pylint: disable=redefined-outer-name
 
 import asyncio
+import inspect
 from unittest.mock import MagicMock
 import pytest
 
@@ -37,7 +38,11 @@ class MockNode(Node):
 
     def assert_message_sent(self, cmd: Message):
         for msg in self._sent:
-            if msg == cmd:
+            if inspect.isclass(cmd):
+                # Not any specific parameters, just make sure any message with this type is sent
+                if msg.hid() == cmd.hid():
+                    return True
+            elif msg == cmd:
                 return True
         raise Exception("Excpected message {} was not sent".format(cmd))
 

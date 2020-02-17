@@ -83,6 +83,7 @@ from . import (
     MultiChannelAssociation,
     NetworkManagementInclusion,
     NetworkManagementProxy,
+    SensorMultilevel,
     Supervision,
     SwitchBinary,
     Version,
