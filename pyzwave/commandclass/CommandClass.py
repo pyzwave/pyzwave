@@ -47,6 +47,19 @@ class CommandClass(AttributesMixin, Listenable):
         self._securityS0 = securityS0
         self._version = 0
 
+    async def handleMessage(self, message: Message) -> bool:
+        """Handle and incomming message specific to this command class"""
+        # Find internal handlers
+        hid = message.hid()
+        if self.__messageHandlers__:
+            handler = self.__messageHandlers__.get(hid)
+            if handler and await handler(self, message):
+                # Message was handled, stop further processing
+                return True
+
+        # No message handlers for this kind of message
+        return False
+
     @property
     def id(self) -> int:  # pylint: disable=invalid-name
         """Return the command class id"""

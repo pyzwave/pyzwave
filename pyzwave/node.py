@@ -142,17 +142,11 @@ class Node(Listenable, MessageWaiter):
         if self.messageReceived(message) is True:
             # Message has already been handled
             return True
-
-        hid = message.hid()
-        for _, cmdClass in self.supported.items():
-            if not cmdClass.__messageHandlers__:
-                continue
-            handler = cmdClass.__messageHandlers__.get(hid)
-            if not handler:
-                continue
-            if await handler(cmdClass, message):
-                # Message was handled, stop further processing
-                return True
+        cmdClass: CommandClass = self.supported.get(message.cmdClass())
+        if cmdClass:
+            retval = await cmdClass.handleMessage(message)
+            if retval:
+                return retval
         # Message was not handled
         _LOGGER.warning("Unhandled message %s from node %s", message, self.nodeId)
         return False

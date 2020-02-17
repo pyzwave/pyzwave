@@ -11,6 +11,10 @@ class Message(AttributesMixin):
 
     NAME = None
 
+    def cmdClass(self) -> int:
+        """Return the command class id for this message"""
+        return (self.hid() >> 8) & 0xFF
+
     def compose(self) -> bytes:
         """Convert the message to a bytearray ready to be sent over the wire"""
         cmdClass, cmd = ZWaveMessage.reverseMapping.get(self.__class__, (None, None))
