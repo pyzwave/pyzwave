@@ -65,7 +65,7 @@ async def test_messageReceived(app: Application):
     assert await app.messageReceived(None, 4, 0, Basic.Report(value=42), 0) is False
     assert await app.messageReceived(None, 3, 0, Basic.Report(value=42), 0) is True
     assert await app.messageReceived(None, 3, 0, Basic.Set(value=0), 0) is False
-    handler.report.assert_called_once_with(cmdClass, 42)
+    handler.onReport.assert_called_once_with(cmdClass, Basic.Report(value=42))
     assert (
         await app.messageReceived(
             None, app.adapter.nodeId, 0, Basic.Report(value=42), 0

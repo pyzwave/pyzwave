@@ -6,7 +6,7 @@ from pyzwave.const.ZW_classcmd import (
 )
 from pyzwave.message import Message
 from pyzwave.types import uint8_t
-from . import ZWaveCommandClass, ZWaveMessage, ZWaveMessageHandler
+from . import ZWaveCommandClass, ZWaveMessage
 from .CommandClass import CommandClass
 
 
@@ -41,8 +41,3 @@ class Basic(CommandClass):
     """Command Class COMMAND_CLASS_BASIC"""
 
     NAME = "BASIC"
-
-    @ZWaveMessageHandler(Report)
-    async def __report__(self, report: Report):
-        self.speak("report", report.value)
-        return True
