@@ -101,6 +101,13 @@ class Listenable:
         """Add class as listener for messages"""
         self._listeners.append(listener)
 
+    async def ask(self, message, *args) -> list:
+        """
+        Send message to listeners and wait for the listeners to respond.
+        This a shorthand for awaiting thre result from speak()
+        """
+        return await asyncio.gather(*self.speak(message, *args))
+
     def speak(self, message, *args) -> list:
         """
         Send message to listeners.

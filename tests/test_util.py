@@ -29,6 +29,7 @@ class Listener:
 
     async def foo(self, speaker):
         self.fooCalled = True
+        return 42
 
     def enrage(self, speaker):
         raise Exception("This is outragous!")
@@ -142,7 +143,16 @@ def test_listen(speaker: Speaker, listener: Listener):
 
 
 @pytest.mark.asyncio
-async def test_speaker_async_listener(event_loop, speaker: Speaker, listener: Listener):
+async def test_speaker_ask(speaker: Speaker, listener: Listener):
+    speaker.addListener(listener)
+    assert listener.fooCalled is False
+    retval = await speaker.ask("foo")
+    assert listener.fooCalled is True
+    assert retval == [42]
+
+
+@pytest.mark.asyncio
+async def test_speaker_async_listener(speaker: Speaker, listener: Listener):
     speaker.addListener(listener)
     assert listener.fooCalled is False
     await asyncio.gather(*speaker.speak("foo"))
