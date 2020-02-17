@@ -4,6 +4,7 @@
 # pylint: disable=redefined-outer-name
 
 import asyncio
+from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.commandclass import CommandClass, Version
@@ -105,6 +106,15 @@ def test_getattr(version: Version):
 
 def test_getstate(version: Version):
     assert version.__getstate__() == {"version": 0, "zwaveLibraryType": 6}
+
+
+@pytest.mark.asyncio
+async def test_handleMessage(version: Version.Version):
+    listener = MagicMock()
+    listener.onVersionCommandClassReport.return_value = True
+    version.addListener(listener)
+    assert await version.handleMessage(Version.VersionCommandClassReport()) is True
+    listener.onVersionCommandClassReport.assert_called_once()
 
 
 def test_id(version: Version.Version):

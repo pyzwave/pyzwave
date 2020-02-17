@@ -124,7 +124,9 @@ class Listenable:
                 retval.append(asyncio.ensure_future(method(self, *args)))
                 continue
             try:
-                method(self, *args)
+                future = asyncio.get_event_loop().create_future()
+                future.set_result(method(self, *args))
+                retval.append(future)
             except Exception as error:
                 _LOGGER.warning("Error calling listener.%s: %s", message, error)
         return retval

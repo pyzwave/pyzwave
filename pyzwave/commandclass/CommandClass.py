@@ -57,6 +57,12 @@ class CommandClass(AttributesMixin, Listenable):
                 # Message was handled, stop further processing
                 return True
 
+        components = message.NAME.lower().split("_")
+        name = "".join(["on", *map(str.title, components)])
+        for retval in await self.ask(name, message):
+            if retval:
+                return True
+
         # No message handlers for this kind of message
         return False
 

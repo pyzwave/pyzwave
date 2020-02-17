@@ -59,6 +59,7 @@ async def test_loadEndPointNode(app: Application):
 @pytest.mark.asyncio
 async def test_messageReceived(app: Application):
     handler = MagicMock()
+    handler.onSet.return_value = False  # Do not handle these messages
     cmdClass = app.nodes["3:0"].supported[Basic.COMMAND_CLASS_BASIC]
     cmdClass.addListener(handler)
     assert await app.messageReceived(None, 4, 0, Basic.Report(value=42), 0) is False
