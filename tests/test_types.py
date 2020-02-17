@@ -163,7 +163,21 @@ def test_float_t():
     assert value == 23.2
     assert value.scale == 2
 
-    assert float_t.deserialize(BitStreamReader(b"\x22\x00\xe4")) == (22.8, 2, 0)
+
+@pytest.mark.parametrize(
+    "raw,expected",
+    [
+        (b"\x22\x00{", (12.3, 2, 0)),
+        (b"\x22\x00\xe4", (22.8, 2, 0)),
+        (b"\x22\xff\x82", (-12.6, 2, 0)),
+        (b"\x22\xff\xba", (-7, 2, 0)),
+        (b"\x22\xffZ", (-16.6, 2, 0)),
+    ],
+)
+def test_float_t_values(raw, expected):
+    reader = BitStreamReader(raw)
+    value = float_t.deserialize(reader)
+    assert value == expected
 
 
 def test_HomeID():
