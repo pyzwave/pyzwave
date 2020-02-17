@@ -91,4 +91,4 @@ from . import (
     ZipND,
     ZwavePlusInfo,
 )
-from .CommandClass import CommandClass
+from .CommandClass import CommandClass, VarDictAttribute

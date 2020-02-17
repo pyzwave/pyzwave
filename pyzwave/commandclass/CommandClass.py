@@ -17,6 +17,35 @@ class DictAttribute(Attribute, AttributesMixin):
     """A dict attribute"""
 
 
+def VarDictAttribute(ValueType):  # pylint: disable=invalid-name
+    """
+    Helper class to store variable attributes as a dictionary.
+    All values must be of the same type
+    """
+
+    class VarDictAttributeType(dict):
+        """Variable dictionary attribute type"""
+
+        def __getstate__(self):
+            return {i: value.__getstate__() for i, value in self.items()}
+
+        def __setitem__(self, name, value):
+            if isinstance(value, ValueType):
+                return super().__setitem__(name, value)
+            if hasattr(ValueType, "__setstate__"):
+                valueContainer = ValueType()  # pylint: disable=invalid-name
+                valueContainer.__setstate__(value)
+            else:
+                valueContainer = ValueType(value)
+            return super().__setitem__(name, valueContainer)
+
+        def __setstate__(self, state):
+            for key, value in state.items():
+                self[int(key)] = value
+
+    return VarDictAttributeType
+
+
 def interviewDecorator(interview):
     """Decorator to make sure the command class is ready for interview"""
 

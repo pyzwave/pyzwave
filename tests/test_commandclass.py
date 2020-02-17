@@ -7,9 +7,10 @@ import asyncio
 from unittest.mock import MagicMock
 import pytest
 
-from pyzwave.commandclass import CommandClass, Version
+from pyzwave.commandclass import CommandClass, VarDictAttribute, Version
 from pyzwave.message import Message
 from pyzwave.node import Node
+from pyzwave.types import dsk_t, uint8_t
 
 
 class Adapter:
@@ -171,3 +172,16 @@ def test_securityS0(version: Version.Version):
 async def test_send(version: Version.Version):
     await version.send(Version.VersionGet())
     version.node.assert_message_sent(Version.VersionGet())
+
+
+def test_VarDictAttribute_dsk_t():
+    DSK = "09134-08770-57123-33165-04152-33972-09108-15612"
+    attribute = VarDictAttribute(dsk_t)()
+    attribute[1] = DSK
+    assert attribute.__getstate__() == {1: DSK}
+
+
+def test_VarDictAttribute_uint8_t():
+    attribute = VarDictAttribute(uint8_t)()
+    attribute.__setstate__({1: 2, 3: 4, 5: uint8_t(6)})
+    assert attribute.__getstate__() == {1: 2, 3: 4, 5: 6}
