@@ -22,6 +22,8 @@ unittest:
   image: python:3.6-alpine
   stage: test
   coverage: '/^TOTAL.+?(\d+\%)$/'
+  variables:
+    CI_BRANCH: "${CI_COMMIT_REF_NAME}"
   script:
     - apk add -U gcc git musl-dev
     - pip install -r requirements.txt
