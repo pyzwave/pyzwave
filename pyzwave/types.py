@@ -87,6 +87,9 @@ class BitStreamWriter(bytearray):
 class str_t(str):  # pylint: disable=invalid-name
     """Unicode string"""
 
+    def __getstate__(self):
+        return str(self)
+
     @classmethod
     def deserialize(cls, stream: BitStreamReader):
         """Deserialize unicode string"""
