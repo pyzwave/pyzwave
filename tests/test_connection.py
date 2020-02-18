@@ -53,6 +53,12 @@ def test_send(connection: Connection):
     assert connection.send(pkt) is False
 
 
+def test_sendTo(connection: Connection):
+    pkt = b"\xde\xad\xbe\xef"
+    connection.sendTo(pkt, "::1")
+    connection._sock.sendto.assert_called_once_with(pkt, "::1")
+
+
 def test_stop(connection: Connection):
     connection._running = True
     connection.stop()
