@@ -26,6 +26,21 @@ def VarDictAttribute(ValueType):  # pylint: disable=invalid-name
     class VarDictAttributeType(dict):
         """Variable dictionary attribute type"""
 
+        def debugString(self, indent=0):
+            """
+            Convert all attributes in this object to a human readable string used for debug output.
+            """
+            attrs = []
+            for name, value in self.items():
+                if hasattr(value, "debugString"):
+                    debugString = value.debugString(indent + 1)
+                else:
+                    debugString = repr(value)
+                attrs.append(
+                    "{}{} = {}".format("\t" * (indent + 1), repr(name), debugString)
+                )
+            return "{}:\n{}".format(self.__class__.__name__, "\n".join(attrs))
+
         def __getstate__(self):
             return {i: value.__getstate__() for i, value in self.items()}
 

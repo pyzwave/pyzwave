@@ -192,9 +192,26 @@ def test_VarDictAttribute_dsk_t():
     attribute = VarDictAttribute(dsk_t)()
     attribute[1] = DSK
     assert attribute.__getstate__() == {1: DSK}
+    assert (
+        attribute.debugString()
+        == "VarDictAttributeType:\n\t1 = 09134-08770-57123-33165-04152-33972-09108-15612"
+    )
+
+
+def test_VarDictAttribute_Message():
+    attribute = VarDictAttribute(Message)()
+    attribute.__setstate__({1: UnknownMessage(0x0000)})
+    assert attribute.__getstate__() == {1: {}}
+    assert (
+        attribute.debugString() == "VarDictAttributeType:\n\t1 = <Z-Wave 0x00.0x00>:\n"
+    )
 
 
 def test_VarDictAttribute_uint8_t():
     attribute = VarDictAttribute(uint8_t)()
     attribute.__setstate__({1: 2, 3: 4, 5: uint8_t(6)})
     assert attribute.__getstate__() == {1: 2, 3: 4, 5: 6}
+    assert (
+        attribute.debugString()
+        == "VarDictAttributeType:\n\t1 = 0x2 (2)\n\t3 = 0x4 (4)\n\t5 = 0x6 (6)"
+    )
