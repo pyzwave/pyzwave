@@ -38,21 +38,6 @@ class Message(AttributesMixin):
             self._attributes[name].serialize(stream)
         return bytes(stream)
 
-    def debugString(self, indent=0):
-        """
-        Convert all attributes in this message to a human readable string used for debug output.
-        """
-        attrs = []
-        for name, _ in self.attributes:
-            if name not in self._attributes:
-                continue
-            if hasattr(self._attributes[name], "debugString"):
-                value = self._attributes[name].debugString(indent + 1)
-            else:
-                value = repr(self._attributes[name])
-            attrs.append("{}{} = {}".format("\t" * (indent + 1), name, value))
-        return "{}:\n{}".format(str(self), "\n".join(attrs))
-
     def serialize(self, stream: BitStreamWriter):
         """Write the message as binary into the bitstream. See compose()"""
         stream.extend(self.compose())

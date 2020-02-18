@@ -31,6 +31,21 @@ class AttributesMixin:
             else:
                 self._attributes[attrName] = attrType(value)
 
+    def debugString(self, indent=0):
+        """
+        Convert all attributes in this object to a human readable string used for debug output.
+        """
+        attrs = []
+        for name, _ in self.attributes:
+            if name not in self._attributes:
+                continue
+            if hasattr(self._attributes[name], "debugString"):
+                value = self._attributes[name].debugString(indent + 1)
+            else:
+                value = repr(self._attributes[name])
+            attrs.append("{}{} = {}".format("\t" * (indent + 1), name, value))
+        return "{}:\n{}".format(str(self), "\n".join(attrs))
+
     def parseAttributes(self, stream: BitStreamReader):
         """Populate the attributes from a raw bitstream."""
         for name, attrType in self.attributes:
