@@ -79,6 +79,10 @@ class CommandClass(AttributesMixin, Listenable):
     async def handleMessage(self, message: Message) -> bool:
         """Handle and incomming message specific to this command class"""
         # Find internal handlers
+        if not message.NAME:
+            # Not implemented, do not look for handlers
+            return False
+
         hid = message.hid()
         if self.__messageHandlers__:
             handler = self.__messageHandlers__.get(hid)

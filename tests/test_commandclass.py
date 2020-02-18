@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.commandclass import CommandClass, VarDictAttribute, Version
-from pyzwave.message import Message
+from pyzwave.message import Message, UnknownMessage
 from pyzwave.node import Node
 from pyzwave.types import dsk_t, uint8_t
 
@@ -121,6 +121,14 @@ async def test_handleMessage(version: Version.Version):
     version.addListener(listener)
     assert await version.handleMessage(Version.VersionCommandClassReport()) is True
     listener.onVersionCommandClassReport.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_handleMessage_unknown(version: Version.Version):
+    listener = MagicMock()
+    version.addListener(listener)
+    assert await version.handleMessage(UnknownMessage(0x0000)) is False
+    assert listener.mock_calls == []
 
 
 def test_id(version: Version.Version):
