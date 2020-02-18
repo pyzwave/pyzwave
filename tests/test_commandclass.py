@@ -189,7 +189,7 @@ async def test_send(version: Version.Version):
 
 def test_VarDictAttribute_dsk_t():
     DSK = "09134-08770-57123-33165-04152-33972-09108-15612"
-    attribute = VarDictAttribute(dsk_t)()
+    attribute = VarDictAttribute(int, dsk_t)()
     attribute[1] = DSK
     assert attribute.__getstate__() == {1: DSK}
     assert (
@@ -199,7 +199,7 @@ def test_VarDictAttribute_dsk_t():
 
 
 def test_VarDictAttribute_Message():
-    attribute = VarDictAttribute(Message)()
+    attribute = VarDictAttribute(int, Message)()
     attribute.__setstate__({1: UnknownMessage(0x0000)})
     assert attribute.__getstate__() == {1: {}}
     assert (
@@ -208,7 +208,7 @@ def test_VarDictAttribute_Message():
 
 
 def test_VarDictAttribute_uint8_t():
-    attribute = VarDictAttribute(uint8_t)()
+    attribute = VarDictAttribute(int, uint8_t)()
     attribute.__setstate__({1: 2, 3: 4, 5: uint8_t(6)})
     assert attribute.__getstate__() == {1: 2, 3: 4, 5: 6}
     assert (

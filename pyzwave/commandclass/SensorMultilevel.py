@@ -155,7 +155,7 @@ class SensorMultilevel(CommandClass):
     """Command Class SENSOR_MULTILEVEL"""
 
     NAME = "SENSOR_MULTILEVEL"
-    attributes = (("supportedTypes", VarDictAttribute(uint8_t)),)
+    attributes = (("supportedTypes", VarDictAttribute(int, uint8_t)),)
 
     @ZWaveMessageHandler(Report)
     async def __report__(self, report: Report):

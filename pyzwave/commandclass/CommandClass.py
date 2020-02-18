@@ -17,7 +17,7 @@ class DictAttribute(Attribute, AttributesMixin):
     """A dict attribute"""
 
 
-def VarDictAttribute(ValueType):  # pylint: disable=invalid-name
+def VarDictAttribute(KeyType, ValueType):  # pylint: disable=invalid-name
     """
     Helper class to store variable attributes as a dictionary.
     All values must be of the same type
@@ -56,7 +56,7 @@ def VarDictAttribute(ValueType):  # pylint: disable=invalid-name
 
         def __setstate__(self, state):
             for key, value in state.items():
-                self[int(key)] = value
+                self[KeyType(key)] = value
 
     return VarDictAttributeType
 
