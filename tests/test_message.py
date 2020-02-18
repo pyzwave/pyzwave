@@ -59,7 +59,7 @@ def test_debugString():
 	sourceEP = 3\n\
 	- = bits_t(0)\n\
 	destEP = 0\n\
-	headerExtension = {}\n\
+	headerExtension = HeaderExtension:\n\n\
 	command = <Z-Wave BASIC.GET>:\n"
     )
 

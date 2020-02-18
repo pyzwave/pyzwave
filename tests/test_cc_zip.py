@@ -6,6 +6,7 @@
 import pytest
 from pyzwave.commandclass import NetworkManagementProxy, Zip
 from pyzwave.message import Message
+from pyzwave.types import BitStreamReader
 
 
 def test_zip_packet_networkmanagementproxt_nodelistget():
@@ -73,13 +74,22 @@ def test_zip_packet_response():
     assert reply.seqNo == msg.seqNo
 
 
-def test_zip_tlv():
-    for header, value in Zip.HeaderExtension.tlvIterator(b"\x84\x02\x04\x00"):
-        assert header == 132
-        assert value == b"\x04\x00"
-
-
-def test_zip_tlv_bad_value():
-    with pytest.raises(ValueError):
-        for _ in Zip.HeaderExtension.tlvIterator(b"\x84\x04\x04\x00"):
-            pass
+# pylint: disable=line-too-long
+@pytest.mark.parametrize(
+    "header,includedReport",
+    [
+        (
+            b"\x1e\x03\x1b\x00\x01\x00\x01\x02\x00m\x02\x054\x00\x00\x00\x02\x03\x05~\x7f\x7f\x7f\x7f\x04\x01\x01\x05\x01\x01",
+            Zip.ZIPPacketOptionType.MAINTENANCE_REPORT,
+        ),
+        (
+            b"\x05\x84\x02\x04\x00_\x03\x01",
+            Zip.ZIPPacketOptionType.ENCAPSULATION_FORMAT_INFORMATION,
+        ),
+    ],
+)
+def test_zip_packet_ima(header, includedReport):
+    data = Zip.HeaderExtension.deserialize(BitStreamReader(header))
+    hdr = Zip.HeaderExtension()
+    hdr.__setstate__(data)
+    assert hdr.get(includedReport)
