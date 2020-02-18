@@ -55,8 +55,10 @@ def test_debugString():
 	secureOrigin = flag_t(True)\n\
 	_ = bits_t(00)\n\
 	seqNo = 0x1 (1)\n\
-	sourceEP = 0x3 (3)\n\
-	destEP = 0x0 (0)\n\
+	- = bits_t(0)\n\
+	sourceEP = 3\n\
+	- = bits_t(0)\n\
+	destEP = 0\n\
 	headerExtension = {}\n\
 	command = <Z-Wave BASIC.GET>:\n"
     )

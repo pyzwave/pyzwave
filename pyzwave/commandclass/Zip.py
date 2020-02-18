@@ -9,6 +9,7 @@ from pyzwave.types import (
     BitStreamWriter,
     flag_t,
     reserved_t,
+    uint7_t,
     uint8_t,
 )
 from . import ZWaveMessage, registerCmdClass
@@ -89,8 +90,10 @@ class ZipPacket(Message):
         ("secureOrigin", flag_t),
         ("_", reserved_t(4)),
         ("seqNo", uint8_t),
-        ("sourceEP", uint8_t),  # TODO, actually only 7 bits
-        ("destEP", uint8_t),  # TODO, 7 bits + bit address
+        ("-", reserved_t(1)),
+        ("sourceEP", uint7_t),
+        ("-", reserved_t(1)),
+        ("destEP", uint7_t),
         ("headerExtension", HeaderExtension),
         ("command", Message),
     )
