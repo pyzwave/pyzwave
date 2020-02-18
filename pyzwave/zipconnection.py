@@ -60,7 +60,13 @@ class ZIPConnection(Adapter):
                 self.ackReceived(zipPkt.seqNo)
                 return True
             if zipPkt.nackResponse:
-                _LOGGER.error("NAck response not implemented")
+                if zipPkt.nackWaiting:
+                    # Waiting: the preceding Z/IP Packet encapsulated Z-Wave Command is not yet
+                    # delivered to the destination and delivery will be attempted later on
+                    # Threat these as normal acks
+                    self.ackReceived(zipPkt.seqNo)
+                    return True
+                _LOGGER.error("Nack response not implemented %s", zipPkt.debugString())
                 # self.nackReceived(zipPkt.seqNo)
                 return False
             if zipPkt.ackRequest:

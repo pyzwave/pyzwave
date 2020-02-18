@@ -130,8 +130,30 @@ def test_onPacket_Zip(connection: ZIPConnection):
     assert msg.ackRequest == False
     assert msg.ackResponse == False
     assert msg.nackResponse == True
-
     assert connection.onPacket(nackResponse.compose()) is False
+
+    nackResponse = Zip.ZipPacket(
+        ackRequest=False,
+        ackResponse=False,
+        nackResponse=True,
+        nackWaiting=True,
+        nackQueueFull=False,
+        nackOptionError=False,
+        headerExtIncluded=False,
+        zwCmdIncluded=False,
+        moreInformation=False,
+        secureOrigin=True,
+        seqNo=0,
+        sourceEP=0,
+        destEP=0,
+        command=None,
+    )
+    msg = Message.decode(nackResponse.compose())
+    assert msg.ackRequest == False
+    assert msg.ackResponse == False
+    assert msg.nackResponse == True
+    # This should be treated as success
+    assert connection.onPacket(nackResponse.compose()) is True
 
     ackRequest = Zip.ZipPacket(
         ackRequest=True,
