@@ -54,7 +54,12 @@ class ZIPConnection(Adapter):
 
     def onPacket(self, pkt):
         """Called when a packed has recevied from the connection"""
-        zipPkt = Message.decode(pkt)
+        try:
+            zipPkt = Message.decode(pkt)
+        except Exception:
+            _LOGGER.error("Could not decode message. Raw message:")
+            _LOGGER.error("%s", pkt)
+            return False
         if isinstance(zipPkt, Zip.ZipPacket):
             if zipPkt.ackResponse:
                 self.ackReceived(zipPkt.seqNo)

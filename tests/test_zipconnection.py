@@ -85,6 +85,7 @@ async def test_getNodeList(connection: ZIPConnection):
 
 def test_onPacket(connection: ZIPConnection):
     assert connection.onPacket(b"malformed") is False
+    assert connection.onPacket(b"\x20\x03") is False
 
 
 def test_onPacket_Zip(connection: ZIPConnection):
