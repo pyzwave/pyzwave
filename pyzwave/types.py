@@ -300,6 +300,9 @@ class dsk_t:  # pylint: disable=invalid-name
         return self.__getstate__()
 
     def __setstate__(self, state):
+        if isinstance(state, bytes) and len(state) == 16:
+            self._dsk = state
+            return
         fields = state.split("-")
         if len(fields) != 8:
             return
