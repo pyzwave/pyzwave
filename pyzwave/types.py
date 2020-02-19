@@ -299,6 +299,9 @@ class dsk_t:  # pylint: disable=invalid-name
     def __repr__(self):
         return self.__getstate__()
 
+    def __eq__(self, other):
+        return self.__getstate__() == other
+
     def __setstate__(self, state):
         if isinstance(state, bytes) and len(state) == 16:
             self._dsk = state
