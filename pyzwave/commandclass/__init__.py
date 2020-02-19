@@ -79,6 +79,7 @@ from . import (
     Association,
     AssociationGrpInfo,
     Basic,
+    Battery,
     ManufacturerSpecific,
     MultiChannelAssociation,
     NetworkManagementInclusion,
