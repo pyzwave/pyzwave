@@ -77,6 +77,13 @@ def test_BitStreamReader_bytesLeft(streamReader):
     assert streamReader.bytesLeft() == 2
 
 
+def test_BitStreamReader_eof(streamReader: BitStreamReader):
+    streamReader.remaining()
+    assert streamReader.bytesLeft() == 0
+    with pytest.raises(EOFError):
+        streamReader.byte()
+
+
 def test_BitStreamReader_remaining(streamReader: BitStreamReader):
     assert streamReader.remaining(advance=False) == b"\x02\x01\xcb@"
     assert streamReader.value(1) == b"\x02"
@@ -139,7 +146,7 @@ def test_dsk_t_invalid_data():
         dsk.deserialize(
             BitStreamReader(b"\x0f~Mp\x22\xf1\xd9\xb4\xa9\xa8\x13\xd6\nlr\xa4\xe0")
         )
-    assert dsk.deserialize(BitStreamReader(b"")) == b""
+    assert dsk.deserialize(BitStreamReader(b"\x00")) == b""
 
 
 def test_enum_t():

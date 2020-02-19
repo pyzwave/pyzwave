@@ -66,6 +66,8 @@ class Message(AttributesMixin):
     @staticmethod
     def deserialize(stream: BitStreamReader):
         """Deserialize a bitstream into a Message object"""
+        if stream.bytesLeft() < 2:
+            return UnknownMessage(0x0000)
         cmdClass = stream.byte()
         cmd = stream.byte()
         hid = cmdClass << 8 | (cmd & 0xFF)

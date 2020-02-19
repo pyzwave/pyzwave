@@ -55,6 +55,8 @@ class BitStreamReader:
         startByte = int(self._start / 8)
         if advance:
             self.advance(size * 8)
+        if startByte + size > len(self._value):
+            raise EOFError("Tried to read past end of data")
         return self._value[startByte : startByte + size]
 
 
