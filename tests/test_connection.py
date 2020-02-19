@@ -35,6 +35,22 @@ async def test_connect(connection: Connection):
     assert isinstance(connection._sock, asyncio.Transport)
 
 
+def test_msgReceived(connection: Connection):
+    # No handler set
+    connection._msgReceived(None, None)
+
+    # Set handler
+    handler = MagicMock()
+    connection.onMessage(handler)
+    connection._msgReceived(1, 2)
+    handler.assert_called_once_with(1)
+
+    handler.reset_mock()
+    connection._server = True
+    connection._msgReceived(3, 4)
+    handler.assert_called_once_with(3, 4)
+
+
 @pytest.mark.asyncio
 async def test_run(connection: Connection):
     async def setEvent(event: asyncio.Future):
