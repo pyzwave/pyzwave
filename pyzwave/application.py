@@ -86,7 +86,7 @@ class Application(Listenable):
             )
             return False
         # Message from the Z-Wave chip
-        await asyncio.gather(*self.speak("messageReceived", message))
+        await self.ask("messageReceived", message)
         # TODO, check retval from above and see if message was handled
         return True
 
@@ -100,10 +100,10 @@ class Application(Listenable):
             nodesToRemove.append(nodeId)
         for nodeId in nodesToRemove:
             del self._nodes[nodeId]
-            self.speak("nodeRemoved", nodeId)
+            await self.ask("nodeRemoved", nodeId)
         # For clients supporting batch removing
         if nodesToRemove:
-            self.speak("nodesRemoved", nodesToRemove)
+            await self.ask("nodesRemoved", nodesToRemove)
 
         # Find new nodes
         newNodes = []
@@ -113,9 +113,9 @@ class Application(Listenable):
             newNodes.extend(await self.loadNode(nodeId))
 
         if newNodes:
-            self.speak("nodesAdded", newNodes)
+            await self.ask("nodesAdded", newNodes)
         for node in newNodes:
-            self.speak("nodeAdded", node)
+            await self.ask("nodeAdded", node)
 
     @property
     def nodes(self) -> Dict[int, Node]:
@@ -138,6 +138,6 @@ class Application(Listenable):
         for nodeId in await self.adapter.getFailedNodeList():
             _LOGGER.warning("FAILED node %s", nodeId)
 
-        self.speak("nodesAdded", list(self._nodes.values()))
+        await self.ask("nodesAdded", list(self._nodes.values()))
         for _, node in self._nodes.items():
-            self.speak("nodeAdded", node)
+            await self.ask("nodeAdded", node)

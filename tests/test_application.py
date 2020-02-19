@@ -2,6 +2,7 @@
 # pylint: disable=invalid-name
 # pylint: disable=redefined-outer-name
 # pylint: disable=protected-access
+# pylint: disable=missing-class-docstring
 from unittest.mock import MagicMock, call
 import pytest
 
@@ -120,5 +121,13 @@ async def test_shutdown(app: Application):
 
 @pytest.mark.asyncio
 async def test_startup(app: Application):
+    class Listener:
+        calls = 0
+
+        async def nodeAdded(self, _, __):
+            Listener.calls += 1
+
+    app.addListener(Listener())
     await app.startup()
+    assert Listener.calls == 4
     assert app.nodes.keys() == {"2:0", "2:1", "3:0", "3:1"}
