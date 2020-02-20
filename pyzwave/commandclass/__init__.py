@@ -80,6 +80,7 @@ from . import (
     AssociationGrpInfo,
     Basic,
     Battery,
+    Indicator,
     ManufacturerSpecific,
     Meter,
     MultiChannelAssociation,
