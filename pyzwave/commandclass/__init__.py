@@ -81,6 +81,7 @@ from . import (
     Basic,
     Battery,
     ManufacturerSpecific,
+    Meter,
     MultiChannelAssociation,
     NetworkManagementInclusion,
     NetworkManagementProxy,
