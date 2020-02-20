@@ -35,6 +35,15 @@ async def test_connect(connection: Connection):
     assert isinstance(connection._sock, asyncio.Transport)
 
 
+@pytest.mark.asyncio
+async def test_listen(connection: Connection):
+    connection._sock = None
+    await connection.listen("1234", 0)
+    assert connection._psk == "1234"
+    assert connection._sock
+    assert connection._server is True
+
+
 def test_msgReceived(connection: Connection):
     # No handler set
     connection._msgReceived(None, None)
