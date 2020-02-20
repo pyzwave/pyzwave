@@ -18,7 +18,8 @@ class AttributesMixin:
     def __init__(self, **kwargs):
         super().__init__()
         self._attributes = {}
-        for attrName, attrType in getattr(self, "attributes"):
+        for attr in getattr(self, "attributes"):
+            attrName, attrType = attr[0], attr[1]
             if attrName not in kwargs:
                 continue
             value = kwargs[attrName]
@@ -36,29 +37,31 @@ class AttributesMixin:
         Convert all attributes in this object to a human readable string used for debug output.
         """
         attrs = []
-        for name, _ in self.attributes:
-            if name not in self._attributes:
+        for attr in self.attributes:
+            attrName = attr[0]
+            if attrName not in self._attributes:
                 continue
-            if hasattr(self._attributes[name], "debugString"):
-                value = self._attributes[name].debugString(indent + 1)
+            if hasattr(self._attributes[attrName], "debugString"):
+                value = self._attributes[attrName].debugString(indent + 1)
             else:
-                value = repr(self._attributes[name])
-            attrs.append("{}{} = {}".format("\t" * (indent + 1), name, value))
+                value = repr(self._attributes[attrName])
+            attrs.append("{}{} = {}".format("\t" * (indent + 1), attrName, value))
         return "{}:\n{}".format(str(self), "\n".join(attrs))
 
     def parseAttributes(self, stream: BitStreamReader):
         """Populate the attributes from a raw bitstream."""
-        for name, attrType in self.attributes:
+        for attr in self.attributes:
             if stream.bytesLeft() == 0:
                 # No more data, cannot decode rest of the attributes
                 break
-            serializer = getattr(self, "parse_{}".format(name), None)
+            attrName, attrType = attr[0], attr[1]
+            serializer = getattr(self, "parse_{}".format(attrName), None)
             if serializer:
                 value = serializer(stream)
             else:
                 value = attrType.deserialize(stream)
             # This can be optimized to reduce the second loop in __setattr__
-            setattr(self, name, value)
+            setattr(self, attrName, value)
 
     def __getattr__(self, name):
         if name not in self._attributes:
@@ -81,7 +84,8 @@ class AttributesMixin:
         return values
 
     def __setattr__(self, name, value):
-        for attrName, attrType in getattr(self, "attributes"):
+        for attr in getattr(self, "attributes"):
+            attrName, attrType = attr[0], attr[1]
             if attrName == name:
                 if isinstance(value, attrType):
                     # Correct type set, use it directly
