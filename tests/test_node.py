@@ -117,6 +117,19 @@ async def test_handleMessage(node: Node):
 
 
 @pytest.mark.asyncio
+async def test_handleMessage_onMessage(node: Node):
+    # Test catch all message handler
+    listener = MagicMock()
+    node.addListener(listener)
+
+    listener.onMessage.return_value = True
+    assert await node.handleMessage(Basic.Report(value=0)) is True
+
+    listener.onMessage.return_value = False
+    assert await node.handleMessage(Basic.Report(value=0)) is False
+
+
+@pytest.mark.asyncio
 async def test_interview(mocknode: Node):
     mocknode.queue(
         Version.VersionCommandClassReport(

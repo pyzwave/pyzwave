@@ -147,6 +147,9 @@ class Node(Listenable, MessageWaiter):
             retval = await cmdClass.handleMessage(message)
             if retval:
                 return retval
+        for retval in await self.ask("onMessage", message):
+            if retval:
+                return retval
         # Message was not handled
         _LOGGER.warning("Unhandled message %s from node %s", message, self.nodeId)
         return False
