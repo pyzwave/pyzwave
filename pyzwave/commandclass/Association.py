@@ -23,6 +23,8 @@ _LOGGER = logging.getLogger(__name__)
 class Nodes(list):
     """Nodes in association reports. Handle both normal and multi channel"""
 
+    default = []
+
     def contains(self, nodeId, endpoint=0) -> bool:
         """Returns if node is in this collection"""
         for iNodeId, iEndpoint in self:

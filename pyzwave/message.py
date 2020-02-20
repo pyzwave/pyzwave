@@ -46,8 +46,13 @@ class Message(AttributesMixin):
         return self.compose() == other.compose()
 
     def __getattr__(self, name):
-        # Default implentation in AttributesMixin returns a default value.
-        # We do not want it here
+        # Default implentation in AttributesMixin returns (and sets) a default value.
+        # We do not want it here. We only return default if it is explicit set.
+        if name not in self._attributes:
+            for attrName, attrType in getattr(self, "attributes"):
+                if attrName != name:
+                    continue
+                return getattr(attrType, "default", None)
         return self._attributes.get(name)
 
     def __repr__(self):

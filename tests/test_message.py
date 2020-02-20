@@ -64,5 +64,10 @@ def test_debugString():
     )
 
 
+def test_decode_default():
+    msg = Message.decode(bytes.fromhex("8503010500"))
+    assert msg.nodes == []
+
+
 def test_repr():
     assert str(Basic.Report()) == "<Z-Wave BASIC.REPORT>"
