@@ -49,6 +49,9 @@ class AttributesMixin:
     def parseAttributes(self, stream: BitStreamReader):
         """Populate the attributes from a raw bitstream."""
         for name, attrType in self.attributes:
+            if stream.bytesLeft() == 0:
+                # No more data, cannot decode rest of the attributes
+                break
             serializer = getattr(self, "parse_{}".format(name), None)
             if serializer:
                 value = serializer(stream)
