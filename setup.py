@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
     longDescription = fh.read()  # pylint: disable=invalid-name
 
 setup(
-    name="pyzwave",
+    name="python-zwave",
     version=pyzwave.__version__,
     description="Library implementing a Z-Wave stack",
     long_description=longDescription,

@@ -1,5 +1,6 @@
 stages:
   - test
+  - release
 
 black:
   image: python:3.6-alpine
@@ -30,3 +31,18 @@ unittest:
     - pip install -r requirements-dev.txt
     - python -m pytest --cov=pyzwave --cov-report term-missing
     - coveralls
+
+pypi:
+  image: python:3.6-alpine
+  stage: release
+  only:
+    - tags
+  environment:
+    name: pypi
+    url: https://pypi.org/project/python-zwave/
+  when: manual
+  script:
+    - cp ${PYPIRC} ~/.pypirc
+    - pip install twine setuptools wheel
+    - python setup.py sdist bdist_wheel
+    - twine upload dist/*
