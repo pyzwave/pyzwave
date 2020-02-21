@@ -7,10 +7,10 @@ Welcome to pyzwave's documentation!
 ===================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
-
+   reference
 
 
 Quickstart
