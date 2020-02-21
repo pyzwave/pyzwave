@@ -1,6 +1,7 @@
 # pyzwave
 
 [![Coverage Status](https://coveralls.io/repos/github/pyzwave/pyzwave/badge.svg?branch=master)](https://coveralls.io/github/pyzwave/pyzwave?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/pyzwave/badge/?version=latest)](https://pyzwave.readthedocs.io/en/latest/?badge=latest)
 
 **[pyzwave](https://github.com/pyzwave/pyzwave)** is **[Z-Wave](https://en.wikipedia.org/wiki/Z-Wave)** library to implement the **[Z-Wave](https://www.z-wave.com/)** standard as a Python 3 library.
 
@@ -17,6 +18,10 @@ pyzwave could be adapted to talk directly with a non bridge controller but due t
 **[Z/IP Gateway](https://www.silabs.com/products/development-tools/software/z-wave/controller-sdk/z-ip-gateway-sdk)** requires the connection between this library to be encrypted using DTLS. This library includes a connection using DTLS but unfortunately unsolicited reports does not yet work using this.
 
 A workaround until this issue is resolved is to recompile Z/IP gateway to not use DTLS for the connection. Any help getting the DTLS fully supported is welcome.
+
+## Documentation
+
+The documentation is available at [`//pyzwave.readthedocs.io`](https://pyzwave.readthedocs.io/en/latest/)
 
 ## Release packages available via PyPI
 

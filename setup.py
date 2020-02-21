@@ -26,4 +26,8 @@ setup(
         "Topic :: Home Automation",
     ],
     python_requires=">=3.6",
+    project_urls={
+        "Documentation": "https://pyzwave.readthedocs.io",
+        "Source": "http://github.com/pyzwave/pyzwave",
+    },
 )
