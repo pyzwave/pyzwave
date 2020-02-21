@@ -18,6 +18,10 @@ pyzwave could be adapted to talk directly with a non bridge controller but due t
 
 A workaround until this issue is resolved is to recompile Z/IP gateway to not use DTLS for the connection. Any help getting the DTLS fully supported is welcome.
 
+## Release packages available via PyPI
+
+Packages of tagged versions are also released via [PyPI](https://pypi.org/project/python-zwave/)
+
 ## How to contribute
 
 If you are looking to make a contribution to this project we suggest that you follow the steps in these guides:
