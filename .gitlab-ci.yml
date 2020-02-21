@@ -43,6 +43,7 @@ pypi:
   when: manual
   script:
     - cp ${PYPIRC} ~/.pypirc
+    - apk add -U gcc musl-dev libffi-dev openssl-dev
     - pip install twine setuptools wheel
     - python setup.py sdist bdist_wheel
     - twine upload dist/*
