@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 from pyzwave.const.ZW_classcmd import (
     COMMAND_CLASS_NETWORK_MANAGEMENT_INCLUSION,
     FAILED_NODE_REMOVE,
@@ -23,12 +25,15 @@ from pyzwave.const.ZW_classcmd import (
 )
 from pyzwave.message import Message
 from pyzwave.types import (
+    BitStreamReader,
     dsk_t,
+    enum_t,
     flag_t,
     reserved_t,
     uint8_t,
 )
 from . import ZWaveMessage, registerCmdClass
+
 
 registerCmdClass(
     COMMAND_CLASS_NETWORK_MANAGEMENT_INCLUSION, "NETWORK_MANAGEMENT_INCLUSION"
@@ -174,16 +179,40 @@ class NodeAddKeysSet(Message):
 class NodeAddStatus(Message):
     """Command Class message COMMAND_CLASS_NETWORK_MANAGEMENT_INCLUSION NODE_ADD_STATUS"""
 
+    class Status(IntEnum):
+        """Add node status"""
+
+        NODE_FOUND = 0x02  # Note, not part of NodeAddStatus, only in Serial Api
+        ADD_SLAVE = 0x03  # Note, not part of NodeAddStatus, only in Serial Api
+        PROTOCOL_DONE = 0x05  # Note, not part of NodeAddStatus, only in Serial Api
+        DONE = 0x06
+        FAILED = 0x07
+        SECURITY_FAILED = 0x09
+
     NAME = "NODE_ADD_STATUS"
 
     attributes = (
         ("seqNo", uint8_t),
-        ("status", uint8_t),
+        ("status", enum_t(Status, uint8_t)),
         ("-", reserved_t(8)),
         ("newNodeID", uint8_t),
         ("nodeInfoLength", uint8_t),
-        # TODO, the rest of the params
+        ("listening", flag_t),
+        ("zwaveProtocolSpecific", reserved_t(7)),
+        ("optFunc", flag_t),
+        ("zwaveProtocolSpecific", reserved_t(7)),
+        ("basicDeviceClass", uint8_t),
+        ("genericDeviceClass", uint8_t),
+        ("specificDeviceClass", uint8_t),
+        ("commandClass", list),
     )
+
+    def parse_commandClass(
+        self, stream: BitStreamReader
+    ):  # pylint: disable=invalid-name
+        """Parse the length prefixed command"""
+        length = self.nodeInfoLength - 7
+        return list(stream.value(length))
 
 
 @ZWaveMessage(COMMAND_CLASS_NETWORK_MANAGEMENT_INCLUSION, NODE_NEIGHBOR_UPDATE_REQUEST)
