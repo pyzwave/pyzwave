@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from typing import Dict
+from typing import Any, Dict
 
 from pyzwave.adapter import Adapter
+from pyzwave.commandclass import NetworkManagementInclusion
 from pyzwave.message import Message
 from pyzwave.node import Node, NodeEndPoint
 from pyzwave.const.ZW_classcmd import (
@@ -120,6 +121,15 @@ class Application(Listenable):
     def nodes(self) -> Dict[int, Node]:
         """All nodes in the network"""
         return self._nodes
+
+    async def onMessageReceived(self, _speaker: Any, msg: Message) -> bool:
+        """Listener method from the adapter for any unhandled messages"""
+        command = msg.command
+        if isinstance(command, NetworkManagementInclusion.NodeAddStatus):
+            await self.ask("addNodeStatus", command)
+            return True
+        _LOGGER.info("Unhandled message! %s", command.debugString())
+        return False
 
     def setNodeInfo(self, generic, specific, cmdClasses):
         """Set the application NIF (Node Information Frame)"""

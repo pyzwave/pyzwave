@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from pyzwave.adapter import TxOptions
 from pyzwave.message import Message
 from pyzwave.commandclass import Basic, Zip, ZipND
 
@@ -46,6 +47,18 @@ def connection() -> ZIPConnection:
     connection._conn = DummyConnection()
     connection._conn.send = MagicMock()
     return connection
+
+
+@pytest.mark.asyncio
+async def test_addNode(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.addNode(TxOptions.NULL)
+
+
+@pytest.mark.asyncio
+async def test_addNodeStop(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.addNodeStop()
 
 
 @pytest.mark.asyncio

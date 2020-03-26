@@ -18,6 +18,7 @@ import pytest
 sys.modules["dtls"] = __import__("mock_dtls")
 
 # pylint: disable=wrong-import-position
+from pyzwave.adapter import TxOptions
 from pyzwave.zipgateway import ZIPGateway
 from pyzwave.message import Message
 from pyzwave.commandclass import (
@@ -77,8 +78,36 @@ async def sendNop(_msg):
     pass
 
 
+async def sendTimeout(_msg):
+    raise asyncio.TimeoutError()
+
+
 async def sendAndReceiveTimeout(msg, waitFor):
     raise asyncio.TimeoutError()
+
+
+@pytest.mark.asyncio
+async def test_addNode(gateway: ZIPGateway):
+    gateway.send = sendNop
+    assert await gateway.addNode(TxOptions.TRANSMIT_OPTION_EXPLORE) is True
+
+
+@pytest.mark.asyncio
+async def test_addNodeTimeout(gateway: ZIPGateway):
+    gateway.send = sendTimeout
+    assert await gateway.addNode(TxOptions.TRANSMIT_OPTION_EXPLORE) is False
+
+
+@pytest.mark.asyncio
+async def test_addNodeStop(gateway: ZIPGateway):
+    gateway.send = sendNop
+    assert await gateway.addNodeStop() is True
+
+
+@pytest.mark.asyncio
+async def test_addNodeStopTimeout(gateway: ZIPGateway):
+    gateway.send = sendTimeout
+    assert await gateway.addNodeStop() is False
 
 
 @pytest.mark.asyncio

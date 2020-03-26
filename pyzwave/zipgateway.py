@@ -5,7 +5,14 @@ import ipaddress
 import logging
 
 from pyzwave.message import Message
-from pyzwave.commandclass import NetworkManagementProxy, Zip, ZipGateway, ZipND
+from pyzwave.commandclass import (
+    NetworkManagementInclusion,
+    NetworkManagementProxy,
+    Zip,
+    ZipGateway,
+    ZipND,
+)
+from pyzwave.adapter import TxOptions
 from pyzwave.connection import Connection
 from pyzwave.zipconnection import ZIPConnection
 
@@ -22,6 +29,33 @@ class ZIPGateway(ZIPConnection):
         self._connections = {}
         self._nodes = {}
         self._nmSeq = 0
+
+    async def addNode(self, txOptions: TxOptions) -> bool:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementInclusion.NodeAdd(
+            seqNo=self._nmSeq,
+            mode=NetworkManagementInclusion.NodeAdd.Mode.ANY,
+            txOptions=txOptions,
+        )
+        try:
+            # We do not get any immediate response
+            await self.send(cmd)
+        except asyncio.TimeoutError:
+            return False
+        return True
+
+    async def addNodeStop(self) -> bool:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementInclusion.NodeAdd(
+            seqNo=self._nmSeq,
+            mode=NetworkManagementInclusion.NodeAdd.Mode.STOP,
+            txOptions=TxOptions.NULL,
+        )
+        try:
+            await self.send(cmd)
+        except asyncio.TimeoutError:
+            return False
+        return True
 
     async def connect(self):
         await super().connect()

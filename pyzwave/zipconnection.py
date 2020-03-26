@@ -6,7 +6,7 @@ import logging
 from pyzwave.message import Message
 from pyzwave.commandclass import NetworkManagementProxy, Zip, ZipND
 from pyzwave.connection import Connection
-from .adapter import Adapter
+from .adapter import Adapter, TxOptions
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,6 +22,12 @@ class ZIPConnection(Adapter):
         self._psk = psk
         self._conn = Connection()
         self._conn.onMessage(self.onPacket)
+
+    async def addNode(self, txOptions: TxOptions) -> bool:
+        raise NotImplementedError()
+
+    async def addNodeStop(self) -> bool:
+        raise NotImplementedError()
 
     async def connect(self):
         await self._conn.connect(self._address, self._psk)

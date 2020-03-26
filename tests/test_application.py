@@ -7,7 +7,12 @@ from unittest.mock import MagicMock, call
 import pytest
 
 from pyzwave.application import Application
-from pyzwave.commandclass import Basic, NetworkManagementProxy
+from pyzwave.commandclass import (
+    Basic,
+    NetworkManagementInclusion,
+    NetworkManagementProxy,
+    Zip,
+)
 from pyzwave.const.ZW_classcmd import COMMAND_CLASS_MULTI_CHANNEL_V2
 from pyzwave.node import Node
 
@@ -106,6 +111,19 @@ async def test_nodeListUpdated(app: Application):
 
 def test_nodes(app: Application):
     assert app.nodes.keys() == {"3:0"}
+
+
+@pytest.mark.asyncio
+async def test_onMessageReceived(app: Application):
+    listener = MagicMock()
+    app.addListener(listener)
+    command = NetworkManagementInclusion.NodeAddStatus()
+    assert await app.onMessageReceived(None, Zip.ZipPacket(command=command)) is True
+    listener.addNodeStatus.assert_called_once_with(app, command)
+
+    assert (
+        await app.onMessageReceived(None, Zip.ZipPacket(command=Basic.Get())) is False
+    )
 
 
 def test_setNodeInfo(app: Application):

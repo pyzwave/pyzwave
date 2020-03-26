@@ -7,7 +7,7 @@ import asyncio
 from unittest.mock import MagicMock
 import pytest
 
-from pyzwave.adapter import Adapter
+from pyzwave.adapter import Adapter, TxOptions
 from pyzwave.commandclass import Basic, NetworkManagementProxy, Zip
 from pyzwave.message import Message
 
@@ -16,6 +16,12 @@ class AdapterImpl(Adapter):
     def __init__(self):
         super().__init__()
         self.nodeId = 1
+
+    async def addNode(self, txOptions: TxOptions) -> bool:
+        return await super().addNode(txOptions)
+
+    async def addNodeStop(self) -> bool:
+        return await super().addNodeStop()
 
     async def connect(self):
         await super().connect()
@@ -77,6 +83,18 @@ async def test_ack_timeout(adapter: Adapter):
 
 def test_ack_not_existing(adapter: Adapter):
     assert adapter.ackReceived(43) is False
+
+
+@pytest.mark.asyncio
+async def test_addNode(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.addNode(TxOptions.NULL)
+
+
+@pytest.mark.asyncio
+async def test_addNodeStop(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.addNodeStop()
 
 
 def test_commandReceived(adapter: Adapter):

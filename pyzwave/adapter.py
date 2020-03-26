@@ -2,6 +2,7 @@
 
 import abc
 import asyncio
+import enum
 import logging
 
 from pyzwave.commandclass import NetworkManagementProxy, Zip
@@ -9,6 +10,14 @@ from .util import Listenable, MessageWaiter
 from .message import Message
 
 _LOGGER = logging.getLogger(__name__)
+
+
+class TxOptions(enum.IntFlag):
+    """TX Options used for adding nodes to network"""
+
+    NULL = 0x00
+    TRANSMIT_OPTION_LOW_POWER = 0x02
+    TRANSMIT_OPTION_EXPLORE = 0x20
 
 
 class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
@@ -27,6 +36,16 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
             return False
         event.set()
         return True
+
+    @abc.abstractmethod
+    async def addNode(self, txOptions: TxOptions) -> bool:
+        """Start inclusion mode in the controller"""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def addNodeStop(self) -> bool:
+        """Stop inclusion mode in the controller"""
+        raise NotImplementedError()
 
     def commandReceived(self, cmd: Message):
         """Call this method when a command has been received"""
