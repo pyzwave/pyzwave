@@ -114,10 +114,17 @@ class NodeAdd(Message):
 
     NAME = "NODE_ADD"
 
+    class Mode(IntEnum):
+        """Node add mode"""
+
+        ANY = 0x01
+        STOP = 0x05
+        ANY_S2 = 0x07
+
     attributes = (
         ("seqNo", uint8_t),
         ("-", reserved_t(8)),
-        ("mode", uint8_t),
+        ("mode", enum_t(Mode, uint8_t)),
         ("txOptions", uint8_t),
     )
 
@@ -266,9 +273,15 @@ class NodeRemoveStatus(Message):
 
     NAME = "NODE_REMOVE_STATUS"
 
+    class Status(IntEnum):
+        """Remove node status"""
+
+        DONE = 0x06
+        FAILED = 0x07
+
     attributes = (
         ("seqNo", uint8_t),
-        ("status", uint8_t),
+        ("status", enum_t(Status, uint8_t)),
         ("nodeID", uint8_t),
     )
 
