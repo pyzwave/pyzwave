@@ -103,6 +103,12 @@ class ZIPConnection(Adapter):
         """The psk used for the connection"""
         return self._psk
 
+    async def removeNode(self) -> bool:
+        raise NotImplementedError()
+
+    async def removeNodeStop(self) -> bool:
+        raise NotImplementedError()
+
     def resetKeepAlive(self):
         """Reset the keepalive timeout"""
         if self._keepAlive:

@@ -45,6 +45,12 @@ class AdapterImpl(Adapter):
     async def getNodeList(self) -> set:
         await super().getNodeList()
 
+    async def removeNode(self) -> bool:
+        return await super().removeNode()
+
+    async def removeNodeStop(self) -> bool:
+        return await super().removeNodeStop()
+
     async def send(
         self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
     ) -> bool:
@@ -143,6 +149,18 @@ def test_nodeId(adapter: Adapter):
     assert adapter.nodeId == 1
     adapter.nodeId = 2
     assert adapter.nodeId == 2
+
+
+@pytest.mark.asyncio
+async def test_removeNode(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.removeNode()
+
+
+@pytest.mark.asyncio
+async def test_removeNodeStop(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.removeNodeStop()
 
 
 @pytest.mark.asyncio

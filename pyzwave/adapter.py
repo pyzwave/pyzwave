@@ -100,6 +100,16 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
         self._nodeId = nodeId
 
     @abc.abstractmethod
+    async def removeNode(self) -> bool:
+        """Start exclusion mode in the controller"""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def removeNodeStop(self) -> bool:
+        """Stop exclusion mode in the controller"""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     async def send(
         self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
     ) -> bool:

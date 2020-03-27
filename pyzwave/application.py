@@ -128,6 +128,18 @@ class Application(Listenable):
         if isinstance(command, NetworkManagementInclusion.NodeAddStatus):
             await self.ask("addNodeStatus", command)
             return True
+        if isinstance(command, NetworkManagementInclusion.NodeRemoveStatus):
+            await self.ask("removeNodeStatus", command)
+            if (
+                command.status
+                != NetworkManagementInclusion.NodeRemoveStatus.Status.DONE
+            ):
+                return True
+            if command.nodeID == 0:
+                # Fire this case since it may be used to exclude nodes not in our network
+                await self.ask("nodeRemoved", 0)
+                await self.ask("nodesRemoved", [0])
+            return True
         _LOGGER.info("Unhandled message! %s", command.debugString())
         return False
 

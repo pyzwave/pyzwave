@@ -121,6 +121,22 @@ async def test_onMessageReceived(app: Application):
     assert await app.onMessageReceived(None, Zip.ZipPacket(command=command)) is True
     listener.addNodeStatus.assert_called_once_with(app, command)
 
+    listener.reset_mock()
+    command = NetworkManagementInclusion.NodeRemoveStatus(
+        status=NetworkManagementInclusion.NodeRemoveStatus.Status.FAILED
+    )
+    assert await app.onMessageReceived(None, Zip.ZipPacket(command=command)) is True
+    listener.nodeRemoved.assert_not_called()
+    listener.nodesRemoved.assert_not_called()
+
+    listener.reset_mock()
+    command = NetworkManagementInclusion.NodeRemoveStatus(
+        status=NetworkManagementInclusion.NodeRemoveStatus.Status.DONE, nodeID=0
+    )
+    assert await app.onMessageReceived(None, Zip.ZipPacket(command=command)) is True
+    listener.nodeRemoved.assert_called_once_with(app, 0)
+    listener.nodesRemoved.assert_called_once_with(app, [0])
+
     assert (
         await app.onMessageReceived(None, Zip.ZipPacket(command=Basic.Get())) is False
     )

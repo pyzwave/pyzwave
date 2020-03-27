@@ -319,6 +319,30 @@ def test_onUnsolicitedMessage_unknownNode(gateway: ZIPGateway):
 
 
 @pytest.mark.asyncio
+async def test_removeNode(gateway: ZIPGateway):
+    gateway.send = sendNop
+    assert await gateway.removeNode() is True
+
+
+@pytest.mark.asyncio
+async def test_removeNodeStop(gateway: ZIPGateway):
+    gateway.send = sendNop
+    assert await gateway.removeNodeStop() is True
+
+
+@pytest.mark.asyncio
+async def test_removeNodeStopTimeout(gateway: ZIPGateway):
+    gateway.send = sendTimeout
+    assert await gateway.removeNodeStop() is False
+
+
+@pytest.mark.asyncio
+async def test_removeNodeTimeout(gateway: ZIPGateway):
+    gateway.send = sendTimeout
+    assert await gateway.removeNode() is False
+
+
+@pytest.mark.asyncio
 async def test_sendToNode(gateway: ZIPGateway):
     connection = await gateway.connectToNode(6)
     [res, _] = await asyncio.gather(

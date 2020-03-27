@@ -260,10 +260,16 @@ class NodeRemove(Message):
 
     NAME = "NODE_REMOVE"
 
+    class Mode(IntEnum):
+        """Remove node mode"""
+
+        ANY = 0x01
+        STOP = 0x05
+
     attributes = (
         ("seqNo", uint8_t),
         ("-", reserved_t(8)),
-        ("mode", uint8_t),
+        ("mode", enum_t(Mode, uint8_t)),
     )
 
 

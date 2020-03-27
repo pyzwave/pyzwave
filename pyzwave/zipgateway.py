@@ -173,6 +173,30 @@ class ZIPGateway(ZIPConnection):
         response = await self.waitForMessage(ZipND.ZipNodeAdvertisement, timeout=3)
         return response.ipv6
 
+    async def removeNode(self) -> bool:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementInclusion.NodeRemove(
+            seqNo=self._nmSeq, mode=NetworkManagementInclusion.NodeRemove.Mode.ANY
+        )
+        try:
+            # We do not get any immediate response
+            await self.send(cmd)
+        except asyncio.TimeoutError:
+            return False
+        return True
+
+    async def removeNodeStop(self) -> bool:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementInclusion.NodeRemove(
+            seqNo=self._nmSeq, mode=NetworkManagementInclusion.NodeRemove.Mode.STOP
+        )
+        try:
+            # We do not get any immediate response
+            await self.send(cmd)
+        except asyncio.TimeoutError:
+            return False
+        return True
+
     def onMessageReceived(self, connection: ZIPConnection, message: Message):
         """Called when a message is received from any node connection. Not unsolicited."""
         sourceEP = 0

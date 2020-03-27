@@ -233,6 +233,18 @@ def test_psk():
     assert connection.psk == psk
 
 
+@pytest.mark.asyncio
+async def test_removeNode(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.removeNode()
+
+
+@pytest.mark.asyncio
+async def test_removeNodeStop(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.removeNodeStop()
+
+
 def test_resetKeepAlive(connection: ZIPConnection):
     with patch.object(asyncio.TimerHandle, "cancel"):
         assert connection._keepAlive is None
