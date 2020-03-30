@@ -173,6 +173,23 @@ class ZIPGateway(ZIPConnection):
         response = await self.waitForMessage(ZipND.ZipNodeAdvertisement, timeout=3)
         return response.ipv6
 
+    async def removeFailedNode(
+        self, nodeId: int
+    ) -> NetworkManagementInclusion.FailedNodeRemoveStatus.Status:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementInclusion.FailedNodeRemove(
+            seqNo=self._nmSeq, nodeID=nodeId
+        )
+        try:
+            # The timeout might need to be increased. The Z-Wave may need to query the
+            # network for a response first and this may take time on a large network
+            report = await self.sendAndReceive(
+                cmd, NetworkManagementInclusion.FailedNodeRemoveStatus, timeout=10
+            )
+        except asyncio.TimeoutError:
+            return NetworkManagementInclusion.FailedNodeRemoveStatus.Status.REMOVE_FAIL
+        return report.status
+
     async def removeNode(self) -> bool:
         self._nmSeq = self._nmSeq + 1
         cmd = NetworkManagementInclusion.NodeRemove(

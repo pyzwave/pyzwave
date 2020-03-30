@@ -4,7 +4,7 @@ import logging
 from typing import Dict
 
 from pyzwave.adapter import Adapter
-from pyzwave.commandclass import CommandClass, Supervision
+from pyzwave.commandclass import CommandClass, NetworkManagementInclusion, Supervision
 from pyzwave.message import Message
 from pyzwave.util import Listenable, MessageWaiter
 
@@ -192,6 +192,17 @@ class Node(Listenable, MessageWaiter):
     def nodeId(self) -> str:
         """The node id in the format nodeid:channel"""
         return "{}:{}".format(self._nodeId, self._endpoint)
+
+    async def remove(self) -> bool:
+        """
+        Remove this node from the network. This only works if the node is
+        marked as failed in the Z-Wave chip
+        """
+        status = await self.adapter.removeFailedNode(self.rootNodeId)
+        if status == NetworkManagementInclusion.FailedNodeRemoveStatus.Status.DONE:
+            return True
+        _LOGGER.warning("Could not remove failed node, reason %s", status)
+        return False
 
     @property
     def rootNodeId(self) -> int:

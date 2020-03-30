@@ -1,4 +1,5 @@
 # pylint: disable=missing-function-docstring
+# pylint: disable=missing-class-docstring
 # pylint: disable=invalid-name
 # pylint: disable=redefined-outer-name
 # pylint: disable=protected-access
@@ -12,16 +13,26 @@ from pyzwave.adapter import Adapter
 from pyzwave.commandclass import (
     AssociationGrpInfo,
     Basic,
+    NetworkManagementInclusion,
     Supervision,
     SwitchBinary,
     Version,
     ZwavePlusInfo,
 )
 from pyzwave.node import Node, NodeEndPoint
-from test_zipconnection import ZIPConnectionImpl
+import pyzwave.zipconnection
 
 from test_adaper import runDelayed
 from test_commandclass import MockNode
+
+
+class ZIPConnection(pyzwave.zipconnection.ZIPConnection):
+    async def removeFailedNode(self, nodeId: int):
+        if nodeId == 1:
+            return NetworkManagementInclusion.FailedNodeRemoveStatus.Status.REMOVE_FAIL
+        if nodeId == 2:
+            return NetworkManagementInclusion.FailedNodeRemoveStatus.Status.NOT_FOUND
+        return NetworkManagementInclusion.FailedNodeRemoveStatus.Status.DONE
 
 
 @pytest.fixture
@@ -36,7 +47,7 @@ def mocknode() -> Node:
 
 @pytest.fixture
 def node() -> Node:
-    connection = ZIPConnectionImpl(None, None)
+    connection = ZIPConnection(None, None)
     future = asyncio.Future()
     future.set_result(True)
     connection.sendToNode = MagicMock()
@@ -53,7 +64,7 @@ def node() -> Node:
 
 @pytest.fixture
 def nodeendpoint() -> Node:
-    connection = ZIPConnectionImpl(None, None)
+    connection = ZIPConnection(None, None)
     node = Node(2, connection, [ZwavePlusInfo.COMMAND_CLASS_ZWAVEPLUS_INFO])
     return NodeEndPoint(node, 1, connection, [])
 
@@ -190,6 +201,16 @@ def test_listening_nodeendpoint(nodeendpoint: Node):
 
 def test_nodeId(node: Node):
     assert node.nodeId == "2:0"
+
+
+@pytest.mark.asyncio
+async def test_remove(node: Node):
+    node._nodeId = 1  # Triggers Status.REMOVE_FAIL
+    assert await node.remove() is False
+    node._nodeId = 2  # Triggers Status.NOT_FOUND
+    assert await node.remove() is False
+    node._nodeId = 3  # Triggers Status.DONE
+    assert await node.remove() is True
 
 
 @pytest.mark.asyncio

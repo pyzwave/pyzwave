@@ -24,6 +24,7 @@ from pyzwave.message import Message
 from pyzwave.commandclass import (
     Basic,
     SwitchBinary,
+    NetworkManagementInclusion,
     NetworkManagementProxy,
     Zip,
     ZipGateway,
@@ -82,7 +83,7 @@ async def sendTimeout(_msg):
     raise asyncio.TimeoutError()
 
 
-async def sendAndReceiveTimeout(msg, waitFor):
+async def sendAndReceiveTimeout(msg, waitFor, timeout=3):
     raise asyncio.TimeoutError()
 
 
@@ -316,6 +317,30 @@ def test_onUnsolicitedMessage_unknownNode(gateway: ZIPGateway):
     pkt = b"#\x02\x00\xc0\xf9\x00\x00\x05\x84\x02\x00\x00%\x03\x00"
     assert gateway.onUnsolicitedMessage(pkt, (ip,)) is False
     gateway.listener.messageReceived.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_removeFailedNode(gateway: ZIPGateway):
+    gateway.send = sendNop
+    [status, _] = await asyncio.gather(
+        gateway.removeFailedNode(42),
+        runDelayed(
+            gateway.commandReceived,
+            NetworkManagementInclusion.FailedNodeRemoveStatus(
+                status=NetworkManagementInclusion.FailedNodeRemoveStatus.Status.DONE
+            ),
+        ),
+    )
+    assert status == NetworkManagementInclusion.FailedNodeRemoveStatus.Status.DONE
+
+
+@pytest.mark.asyncio
+async def test_removeFailedNodeTimeout(gateway: ZIPGateway):
+    gateway.sendAndReceive = sendAndReceiveTimeout
+    assert (
+        await gateway.removeFailedNode(42)
+        is NetworkManagementInclusion.FailedNodeRemoveStatus.Status.REMOVE_FAIL
+    )
 
 
 @pytest.mark.asyncio

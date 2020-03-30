@@ -48,7 +48,7 @@ class FailedNodeRemove(Message):
 
     attributes = (
         ("seqNo", uint8_t),
-        ("mode", uint8_t),
+        ("nodeID", uint8_t),
     )
 
 
@@ -58,9 +58,16 @@ class FailedNodeRemoveStatus(Message):
 
     NAME = "FAILED_NODE_REMOVE_STATUS"
 
+    class Status(IntEnum):
+        """Failed node remove status"""
+
+        NOT_FOUND = 0x00
+        DONE = 0x01
+        REMOVE_FAIL = 0x02
+
     attributes = (
         ("seqNo", uint8_t),
-        ("status", uint8_t),
+        ("status", enum_t(Status, uint8_t)),
         ("nodeID", uint8_t),
     )
 

@@ -4,7 +4,12 @@ import asyncio
 import logging
 
 from pyzwave.message import Message
-from pyzwave.commandclass import NetworkManagementProxy, Zip, ZipND
+from pyzwave.commandclass import (
+    NetworkManagementInclusion,
+    NetworkManagementProxy,
+    Zip,
+    ZipND,
+)
 from pyzwave.connection import Connection
 from .adapter import Adapter, TxOptions
 
@@ -102,6 +107,11 @@ class ZIPConnection(Adapter):
     def psk(self) -> bytes:
         """The psk used for the connection"""
         return self._psk
+
+    async def removeFailedNode(
+        self, nodeId: int
+    ) -> NetworkManagementInclusion.FailedNodeRemoveStatus.Status:
+        raise NotImplementedError()
 
     async def removeNode(self) -> bool:
         raise NotImplementedError()

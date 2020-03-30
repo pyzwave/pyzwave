@@ -234,6 +234,12 @@ def test_psk():
 
 
 @pytest.mark.asyncio
+async def test_removeFailedNode(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.removeFailedNode(42)
+
+
+@pytest.mark.asyncio
 async def test_removeNode(connection: ZIPConnection):
     with pytest.raises(NotImplementedError):
         await connection.removeNode()

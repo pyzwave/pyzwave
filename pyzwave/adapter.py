@@ -5,7 +5,7 @@ import asyncio
 import enum
 import logging
 
-from pyzwave.commandclass import NetworkManagementProxy, Zip
+from pyzwave.commandclass import NetworkManagementInclusion, NetworkManagementProxy, Zip
 from .util import Listenable, MessageWaiter
 from .message import Message
 
@@ -98,6 +98,13 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     @nodeId.setter
     def nodeId(self, nodeId: int):
         self._nodeId = nodeId
+
+    @abc.abstractmethod
+    async def removeFailedNode(
+        self, nodeId: int
+    ) -> NetworkManagementInclusion.FailedNodeRemoveStatus.Status:
+        """Remove a non-responding node"""
+        raise NotImplementedError()
 
     @abc.abstractmethod
     async def removeNode(self) -> bool:
