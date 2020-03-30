@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import asyncio
+from enum import Enum, auto
+from contextlib import contextmanager
 import logging
 from typing import Dict
 
@@ -45,6 +47,14 @@ def supervision(func):
     return __wrapper__
 
 
+class StorageStatus(Enum):
+    """Storage status flag"""
+
+    CLEAN = auto()
+    LOCKED_CLEAN = auto()
+    LOCKED_DIRTY = auto()
+
+
 class Node(Listenable, MessageWaiter):
     """
     Base class for a Z-Wave node
@@ -55,7 +65,8 @@ class Node(Listenable, MessageWaiter):
         self._adapter = adapter
         self._basicDeviceClass = 0
         self._controlled = {}
-        self._dirty = False  # Flag is this node need to be saved to persistant storage
+        # Flag is this node need to be saved to persistant storage
+        self._storageStatus: StorageStatus = StorageStatus.CLEAN
         self._endpoint = 0
         self._flirs = False
         self._genericDeviceClass = 0
@@ -107,7 +118,12 @@ class Node(Listenable, MessageWaiter):
 
     def commandClassUpdated(self, _commandClass: CommandClass):
         """Called by the command classes if their data is updated"""
-        self._dirty = True
+        if self._storageStatus == StorageStatus.CLEAN:
+            # Signal update needed
+            self.speak("nodeUpdated")
+        elif self._storageStatus == StorageStatus.LOCKED_CLEAN:
+            # Storage is locked, move to dirty
+            self._storageStatus = StorageStatus.LOCKED_DIRTY
 
     @property
     def endpoint(self) -> int:
@@ -152,18 +168,19 @@ class Node(Listenable, MessageWaiter):
                 return retval
         # Message was not handled
         _LOGGER.warning("Unhandled message %s from node %s", message, self.nodeId)
+        _LOGGER.debug(message.debugString())
         return False
 
     async def interview(self):
-        """(Re)interview this node"""
+        """
+        (Re)interview this node. It is recommended to apply the :meth:`storageLock()`
+        before calling this function.
+        """
         for _, cmdClass in self._supported.items():
             try:
                 await cmdClass.interview()
             except asyncio.TimeoutError:
                 _LOGGER.warning("Timeout interviewing %s", cmdClass.NAME)
-        if self._dirty:
-            self.speak("nodeUpdated")
-            self._dirty = False
 
     @property
     def isFailed(self) -> bool:
@@ -222,6 +239,33 @@ class Node(Listenable, MessageWaiter):
         self.addWaitingSession(waitFor)
         await self.send(cmd, **kwargs)
         return await self.waitForMessage(waitFor, timeout=timeout)
+
+    @contextmanager
+    def storageLock(self):
+        """
+        Suppresses (temporarily) the signals to store settings persistant.
+
+        Some memories do not like to be written to often, such as flash memories
+        found in embedded boards. If the application knows the node will be updated
+        a lock can be added so it will only be written to disc once all operations has
+        been finished.
+        To use this lock use the with-statement:
+
+        .. code-block:: python
+
+            with node.storageLock():
+                # Do operations with the node here.
+                # Nothing will be stored to disk.
+                node.interview()
+            # The storage will happen here, only once
+        """
+        try:
+            self._storageStatus = StorageStatus.LOCKED_CLEAN
+            yield
+        finally:
+            if self._storageStatus == StorageStatus.LOCKED_DIRTY:
+                self.speak("nodeUpdated")
+            self._storageStatus = StorageStatus.CLEAN
 
     @property
     def specificDeviceClass(self) -> int:

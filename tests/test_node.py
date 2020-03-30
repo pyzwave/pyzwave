@@ -239,6 +239,20 @@ def test_specificdeviceclass(node: Node):
     assert node.specificDeviceClass == 2
 
 
+def test_storageLock(node: Node):
+    listener = MagicMock()
+    node.addListener(listener)
+    node.commandClassUpdated(None)
+    listener.nodeUpdated.assert_called_once()
+
+    listener.reset_mock()
+    with node.storageLock():
+        node.commandClassUpdated(None)
+        node.commandClassUpdated(None)
+        listener.nodeUpdated.assert_not_called()
+    listener.nodeUpdated.assert_called_once()
+
+
 @pytest.mark.asyncio
 async def test_supervision_handled(node: Node):
     supervision = Supervision.Get(
