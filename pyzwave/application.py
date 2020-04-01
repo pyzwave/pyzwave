@@ -143,6 +143,8 @@ class Application(Listenable):
                 await self.ask("nodeRemoved", 0)
                 await self.ask("nodesRemoved", [0])
             return True
+        if command is None:
+            return False
         for response in await self.ask("messageReceived", command):
             if response is True:
                 # It was handled

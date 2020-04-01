@@ -146,6 +146,7 @@ async def test_onMessageReceived(app: Application):
     assert await app.onMessageReceived(None, Zip.ZipPacket(command=Basic.Get())) is True
 
     assert await app.onMessageReceived(None, Basic.Get()) is False
+    assert await app.onMessageReceived(None, Zip.ZipPacket()) is False
 
 
 def test_setNodeInfo(app: Application):
