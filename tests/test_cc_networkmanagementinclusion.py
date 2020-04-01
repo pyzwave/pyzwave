@@ -36,3 +36,22 @@ def test_node_add_status():
         122,
         104,
     ]
+
+
+def test_node_add_status_partial():
+    pkt = b"\x34\x02\x0c\x06\x00N\x15\xd3\x9c\x04\x10\x01^%'\x85\\pru\x86"
+    msg = Message.decode(pkt)
+    assert isinstance(msg, NetworkManagementInclusion.NodeAddStatus)
+    assert msg.seqNo == 12
+    assert msg.newNodeID == 78
+    assert msg.commandClass == [
+        94,
+        37,
+        39,
+        133,
+        92,
+        112,
+        114,
+        117,
+        134,
+    ]

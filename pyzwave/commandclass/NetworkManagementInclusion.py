@@ -241,6 +241,8 @@ class NodeAddStatus(Message):
     ):  # pylint: disable=invalid-name
         """Parse the length prefixed command"""
         length = self.nodeInfoLength - 7
+        if length > stream.bytesLeft():
+            return list(stream.remaining())
         return list(stream.value(length))
 
 
