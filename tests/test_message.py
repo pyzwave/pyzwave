@@ -69,5 +69,9 @@ def test_decode_default():
     assert msg.nodes == []
 
 
+def test_eq():
+    assert Basic.Report() != 42
+
+
 def test_repr():
     assert str(Basic.Report()) == "<Z-Wave BASIC.REPORT>"

@@ -43,6 +43,8 @@ class Message(AttributesMixin):
         stream.extend(self.compose())
 
     def __eq__(self, other):
+        if not isinstance(other, Message):
+            return False
         return self.compose() == other.compose()
 
     def __getattr__(self, name):
