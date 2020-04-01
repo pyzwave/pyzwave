@@ -85,6 +85,7 @@ async def test_interview(associationgrpinfo: AssociationGrpInfo.AssociationGrpIn
         "groupings": {
             1: {"profile": 0, "name": "Lifeline", "commands": [[1, 2], [3, 4]]}
         },
+        "interviewed": True,
         "version": 1,
     }
 

@@ -65,17 +65,26 @@ def interviewDecorator(interview):
     """Decorator to make sure the command class is ready for interview"""
 
     async def wrapper():
-        version = interview.__self__.version
+        commandClass = interview.__self__
+        version = commandClass.version
         if version == 0:
             # We cannot interview until we know the version
-            version = await interview.__self__.requestVersion()
+            version = await commandClass.requestVersion()
         if version == 0:
             _LOGGER.warning(
-                "Unable to determine command class version for %s",
-                interview.__self__.NAME,
+                "Unable to determine command class version for %s", commandClass.NAME,
             )
             return
-        return await interview()
+        try:
+            commandClass._interviewed = False  # pylint: disable=protected-access
+            retval = await interview()
+        except asyncio.TimeoutError:
+            _LOGGER.warning("Timeout interviewing command class %s", commandClass.NAME)
+            return False
+        if retval is not False:
+            commandClass._interviewed = True  # pylint: disable=protected-access
+        commandClass.speak("commandClassUpdated")
+        return retval
 
     return wrapper
 
@@ -89,6 +98,7 @@ class CommandClass(AttributesMixin, Listenable):
         super().__init__()
         self._node = node
         self._securityS0 = securityS0
+        self._interviewed = False
         self._version = 0
 
     async def handleMessage(self, message: Message) -> bool:
@@ -119,11 +129,19 @@ class CommandClass(AttributesMixin, Listenable):
         """Return the command class id"""
         return ZWaveCommandClass.reverseMapping.get(self.__class__, 0)
 
-    async def interview(self):
+    async def interview(self) -> bool:
         """
         Interview this command class. Must be implemented by subclasses.
-        The version has already been interviewed when this method is called
+        The version has already been interviewed when this method is called.
+
+        Return True if the interview was completed successfully and False or raise
+        an exception if the interview did not complete.
         """
+
+    @property
+    def interviewed(self) -> bool:
+        """Return is this command class has been fully interviewed or not"""
+        return self._interviewed
 
     @property
     def node(self):
@@ -172,11 +190,13 @@ class CommandClass(AttributesMixin, Listenable):
 
     def __getstate__(self) -> Dict[str, Any]:
         values = super().__getstate__()
+        values["interviewed"] = self.interviewed
         values["version"] = self.version
         return values
 
     def __setstate__(self, state):
         self._version = int(state.get("version", 0))
+        self._interviewed = bool(state.get("interviewed", False))
         super().__setstate__(state)
 
     @staticmethod

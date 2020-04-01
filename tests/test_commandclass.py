@@ -111,7 +111,11 @@ def test_getattr(version: Version):
 
 
 def test_getstate(version: Version):
-    assert version.__getstate__() == {"version": 0, "zwaveLibraryType": 6}
+    assert version.__getstate__() == {
+        "version": 0,
+        "interviewed": False,
+        "zwaveLibraryType": 6,
+    }
 
 
 @pytest.mark.asyncio
@@ -138,15 +142,30 @@ def test_id(version: Version.Version):
 @pytest.mark.asyncio
 async def test_interview(version: Version.Version):
     assert version.version == 0
+    assert version.interviewed is False
     await version.interview()
     assert version.version == 4
+    assert version.interviewed is True
+
+
+@pytest.mark.asyncio
+async def test_interview_timeout(version: Version.Version):
+    async def throwTimeout(_a, _b):
+        raise asyncio.TimeoutError()
+
+    version.sendAndReceive = throwTimeout
+    assert version.interviewed is False
+    assert await version.interview() is False
+    assert version.interviewed is False
 
 
 @pytest.mark.asyncio
 async def test_interview_unknownVersion(commandclass: CommandClass):
     assert commandclass.version == 0
+    assert commandclass.interviewed is False
     await commandclass.interview()
     assert commandclass.version == 0
+    assert commandclass.interviewed is False
 
 
 def test_node(version: Version.Version):

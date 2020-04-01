@@ -141,7 +141,6 @@ class Association(CommandClass):
             except asyncio.TimeoutError:
                 continue
         await self.setupLifeLine()
-        self.speak("commandClassUpdated")
 
     async def interviewGrouping(self, groupingIdentifier):
         """Interview an association group"""

@@ -54,6 +54,7 @@ async def test_interview(association: Association.Association):
     await association.interview()
     assert association.__getstate__() == {
         "groupings": {1: {"maxNodes": 1, "nodes": ["1"]}},
+        "interviewed": True,
         "version": 1,
     }
 
@@ -67,6 +68,7 @@ async def test_interview_multichannel(association: Association.Association):
     await association.interview()
     assert association.__getstate__() == {
         "groupings": {1: {"maxNodes": 1, "nodes": ["1", "2:0"]}},
+        "interviewed": True,
         "version": 1,
     }
 
@@ -80,6 +82,7 @@ async def test_interview_timeout(association: Association.Association):
     await association.interview()
     assert association.__getstate__() == {
         "groupings": {1: {"maxNodes": 0}},
+        "interviewed": True,
         "version": 1,
     }
 
@@ -94,6 +97,7 @@ async def test_interview_wrong_response(association: Association.Association):
     await association.interview()
     assert association.__getstate__() == {
         "groupings": {1: {"maxNodes": 0}},
+        "interviewed": True,
         "version": 1,
     }
 
