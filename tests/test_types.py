@@ -4,7 +4,7 @@
 # pylint: disable=protected-access
 # pylint: disable=missing-class-docstring
 
-from enum import Enum
+from enum import Enum, IntFlag
 import ipaddress
 import pytest
 
@@ -156,10 +156,21 @@ def test_enum_t():
         FOO = 1
         BAR = 2
 
-    EnumType = enum_t(MyEnum, uint8_t)
-    assert repr(EnumType(1)) == "FOO (0x1)"
-    assert repr(EnumType(2)) == "BAR (0x2)"
-    assert repr(EnumType(3)) == "UNKNOWN (0x3)"
+    MyEnum_t = enum_t(MyEnum, uint8_t)
+    assert repr(MyEnum_t(1)) == "FOO (0x1)"
+    assert repr(MyEnum_t(2)) == "BAR (0x2)"
+    assert repr(MyEnum_t(3)) == "UNKNOWN (0x3)"
+
+
+def test_enum_t_IntFlags():
+    class MyFlags(IntFlag):
+        FOO = 1
+        BAR = 2
+
+    MyFlags_t = enum_t(MyFlags, uint8_t)
+    assert repr(MyFlags_t(1)) == "MyFlags.FOO (1)"
+    assert repr(MyFlags_t(2)) == "MyFlags.BAR (10)"
+    assert repr(MyFlags_t(3)) == "MyFlags.BAR|FOO (11)"
 
 
 def test_flags_t():

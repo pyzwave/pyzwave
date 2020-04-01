@@ -1,3 +1,4 @@
+import enum
 import ipaddress
 import math
 
@@ -261,6 +262,8 @@ def enum_t(enumType, baseType):  # pylint: disable=invalid-name
         def __repr__(self):
             value = int(self)
             try:
+                if issubclass(enumType, enum.IntFlag):
+                    return "{0} ({1:b})".format(str(enumType(value)), value)
                 return "{} (0x{:X})".format(enumType(value).name, value)
             except Exception:
                 # Enum not defined
