@@ -1,6 +1,6 @@
 from enum import IntEnum
 from pyzwave.message import Message
-from pyzwave.types import BitStreamReader, bytes_t, dsk_t, uint8_t
+from pyzwave.types import BitStreamReader, bytes_t, dsk_t, reserved_t, uint5_t, uint8_t
 from . import ZWaveMessage, registerCmdClass
 from .CommandClass import VarDictAttribute
 
@@ -82,6 +82,12 @@ class ListIterationReport(Message):
     attributes = (
         ("seqNo", uint8_t),
         ("remainingCount", uint8_t),
+        ("-", reserved_t(3)),
+        ("dskLengthN", uint5_t),
         ("dsk", dsk_t),
         ("metaDataExtension", MetadataExtension),
     )
+
+    def parse_dsk(self, stream: BitStreamReader):  # pylint: disable=invalid-name
+        """Parse attribute dsk"""
+        return dsk_t.deserializeN(stream, self.dskLengthN)

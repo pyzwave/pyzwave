@@ -123,11 +123,10 @@ def test_bytes_t(streamReader: BitStreamReader):
 
 def test_dsk_t():
     DSK = "32333-28706-61913-46249-43027-54794-27762-42208"
-    rawDSK = b"\x10~Mp\x22\xf1\xd9\xb4\xa9\xa8\x13\xd6\nlr\xa4\xe0"
-    bDSK = rawDSK[1:]
+    rawDSK = b"~Mp\x22\xf1\xd9\xb4\xa9\xa8\x13\xd6\nlr\xa4\xe0"
     dsk = dsk_t()
     dsk.__setstate__(DSK)
-    assert dsk._dsk == bDSK
+    assert dsk._dsk == rawDSK
     assert dsk.__getstate__() == DSK
     assert repr(dsk) == DSK
 
@@ -136,7 +135,10 @@ def test_dsk_t():
     assert writer == rawDSK
 
     reader = BitStreamReader(rawDSK)
-    assert dsk_t.deserialize(reader) == bDSK
+    assert dsk_t.deserialize(reader) == rawDSK
+
+    reader = BitStreamReader(rawDSK)
+    assert dsk_t.deserializeN(reader, 0) == b""
 
 
 def test_dsk_t_invalid_data():
@@ -144,11 +146,12 @@ def test_dsk_t_invalid_data():
     dsk.__setstate__("12345-67890")
     assert dsk._dsk == b""
 
+    with pytest.raises(EOFError):
+        dsk.deserialize(BitStreamReader(b"\x0f~Mp\x22\xf1\xd9\xb4\xa9\xa8\x13"))
     with pytest.raises(ValueError):
-        dsk.deserialize(
-            BitStreamReader(b"\x0f~Mp\x22\xf1\xd9\xb4\xa9\xa8\x13\xd6\nlr\xa4\xe0")
-        )
-    assert dsk.deserialize(BitStreamReader(b"\x00")) == b""
+        dsk_t().__setstate__(b"12345-67890")
+    with pytest.raises(ValueError):
+        dsk_t.deserializeN(BitStreamReader(b"\x0f~Mp\x22\xf1\xd9\xb4\xa9\xa8\x13"), 8)
 
 
 def test_enum_t():

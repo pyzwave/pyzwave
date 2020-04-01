@@ -334,8 +334,11 @@ class dsk_t:  # pylint: disable=invalid-name
         return self.__getstate__() == other
 
     def __setstate__(self, state):
-        if isinstance(state, bytes) and len(state) == 16:
-            self._dsk = state
+        if isinstance(state, bytes):
+            if len(state) == 16 or len(state) == 0:
+                self._dsk = state
+            else:
+                raise ValueError("DSK must be 16 bytes, got {}".format(len(state)))
             return
         fields = state.split("-")
         if len(fields) != 8:
@@ -349,14 +352,16 @@ class dsk_t:  # pylint: disable=invalid-name
 
     def serialize(self, stream: BitStreamWriter):
         """Serialize DSK"""
-        stream.addBits(0, 3)
-        stream.addBits(len(self._dsk), 5)
         stream.extend(self._dsk)
 
     @classmethod
     def deserialize(cls, stream: BitStreamReader):
-        """Deserialize DSK"""
-        length = stream.byte() & 0x1F
+        """Deserialize 16 bytes DSK"""
+        return cls.deserializeN(stream, 16)
+
+    @staticmethod
+    def deserializeN(stream: BitStreamReader, length: int):
+        """Deserialize variable length DSK"""
         if length == 0:
             # No key included
             return b""

@@ -30,6 +30,7 @@ from pyzwave.types import (
     enum_t,
     flag_t,
     reserved_t,
+    uint4_t,
     uint8_t,
 )
 from . import ZWaveMessage, registerCmdClass
@@ -144,6 +145,8 @@ class NodeAddDSKReport(Message):
 
     attributes = (
         ("seqNo", uint8_t),
+        ("-", reserved_t(4)),
+        ("inputDSKLength", uint4_t),
         ("dsk", dsk_t),
     )
 
@@ -156,6 +159,9 @@ class NodeAddDSKSet(Message):
 
     attributes = (
         ("seqNo", uint8_t),
+        ("accept", flag_t),
+        ("-", reserved_t(3)),
+        ("inputDSKLength", uint4_t),
         ("dsk", dsk_t),
     )
 
