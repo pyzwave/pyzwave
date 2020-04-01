@@ -142,6 +142,19 @@ class uint4_t(int):  # pylint: disable=invalid-name
         stream.addBits(self, 4)
 
 
+class uint5_t(int):  # pylint: disable=invalid-name
+    """Type representing 5 bits value"""
+
+    @classmethod
+    def deserialize(cls, stream: BitStreamReader):
+        """Deserialize bits from stream"""
+        return stream.bits(5)
+
+    def serialize(self, stream: BitStreamWriter):
+        """Serialize bits into stream"""
+        stream.addBits(self, 5)
+
+
 class uint7_t(int):  # pylint: disable=invalid-name
     """Type representing 7 bits value"""
 

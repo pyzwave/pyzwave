@@ -21,6 +21,7 @@ from pyzwave.types import (
     IPv6,
     str_t,
     uint4_t,
+    uint5_t,
     uint7_t,
     uint8_t,
 )
@@ -227,6 +228,20 @@ def test_uint4_t(streamReader):
     streamWriter = BitStreamWriter()
     uint4_t(2).serialize(streamWriter)
     assert streamWriter == b"\x20"
+
+
+def test_uint5_t(streamReader: BitStreamReader):
+    assert uint5_t.deserialize(streamReader) == 0
+    streamReader.advance(3)
+    assert uint5_t.deserialize(streamReader) == 0
+    streamReader.advance(3)
+    assert uint5_t.deserialize(streamReader) == 0x19
+    streamReader.advance(3)
+    assert uint5_t.deserialize(streamReader) == 0x08
+
+    streamWriter = BitStreamWriter()
+    uint5_t(20).serialize(streamWriter)
+    assert streamWriter == b"\xa0"
 
 
 def test_uint7_t(streamReader):
