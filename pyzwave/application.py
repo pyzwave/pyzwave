@@ -140,6 +140,10 @@ class Application(Listenable):
                 await self.ask("nodeRemoved", 0)
                 await self.ask("nodesRemoved", [0])
             return True
+        for response in await self.ask("messageReceived", command):
+            if response is True:
+                # It was handled
+                return True
         _LOGGER.info("Unhandled message! %s", command.debugString())
         return False
 

@@ -141,6 +141,10 @@ async def test_onMessageReceived(app: Application):
         await app.onMessageReceived(None, Zip.ZipPacket(command=Basic.Get())) is False
     )
 
+    listener.reset_mock()
+    listener.messageReceived.return_value = True
+    assert await app.onMessageReceived(None, Zip.ZipPacket(command=Basic.Get())) is True
+
 
 def test_setNodeInfo(app: Application):
     # Not implemented yet
