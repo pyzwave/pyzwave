@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, IntFlag
 
 from pyzwave.const.ZW_classcmd import (
     COMMAND_CLASS_NETWORK_MANAGEMENT_INCLUSION,
@@ -166,6 +166,15 @@ class NodeAddDSKSet(Message):
     )
 
 
+class Keys(IntFlag):
+    """Keys flags for S2 bootstrapping"""
+
+    UNAUTHENTICATED_SECURITY_CLASS = 1
+    AUTHENTICATED_SECURITY_CLASS = 2
+    ACCESS_CONTROL_SECURITY_CLASS = 4
+    SECURITY_0_NETWORK_KEY = 128
+
+
 @ZWaveMessage(COMMAND_CLASS_NETWORK_MANAGEMENT_INCLUSION, NODE_ADD_KEYS_REPORT)
 class NodeAddKeysReport(Message):
     """Command Class message COMMAND_CLASS_NETWORK_MANAGEMENT_INCLUSION NODE_ADD_KEYS_REPORT"""
@@ -176,7 +185,7 @@ class NodeAddKeysReport(Message):
         ("seqNo", uint8_t),
         ("-", reserved_t(7)),
         ("requestCSA", flag_t),
-        ("requestedKeys", uint8_t),
+        ("requestedKeys", enum_t(Keys, uint8_t)),
     )
 
 
@@ -191,7 +200,7 @@ class NodeAddKeysSet(Message):
         ("-", reserved_t(6)),
         ("grantCSA", flag_t),
         ("accept", flag_t),
-        ("grantedKeys", uint8_t),
+        ("grantedKeys", enum_t(Keys, uint8_t)),
     )
 
 

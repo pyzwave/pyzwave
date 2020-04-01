@@ -56,6 +56,18 @@ async def test_addNode(connection: ZIPConnection):
 
 
 @pytest.mark.asyncio
+async def test_addNodeDSKSet(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.addNodeDSKSet(True, 0, b"")
+
+
+@pytest.mark.asyncio
+async def test_addNodeKeysSet(connection: ZIPConnection):
+    with pytest.raises(NotImplementedError):
+        await connection.addNodeKeysSet(False, True, 0)
+
+
+@pytest.mark.asyncio
 async def test_addNodeStop(connection: ZIPConnection):
     with pytest.raises(NotImplementedError):
         await connection.addNodeStop()

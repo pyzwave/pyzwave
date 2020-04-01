@@ -94,6 +94,30 @@ async def test_addNode(gateway: ZIPGateway):
 
 
 @pytest.mark.asyncio
+async def test_addNodeDSKSet(gateway: ZIPGateway):
+    gateway.send = sendNop
+    assert await gateway.addNodeDSKSet(True, 0, b"") is True
+
+
+@pytest.mark.asyncio
+async def test_addNodeDSKSetTimeout(gateway: ZIPGateway):
+    gateway.send = sendTimeout
+    assert await gateway.addNodeDSKSet(True, 0, b"") is False
+
+
+@pytest.mark.asyncio
+async def test_addNodeKeysSet(gateway: ZIPGateway):
+    gateway.send = sendNop
+    assert await gateway.addNodeKeysSet(False, True, 0) is True
+
+
+@pytest.mark.asyncio
+async def test_addNodeKeysSetTimeout(gateway: ZIPGateway):
+    gateway.send = sendTimeout
+    assert await gateway.addNodeKeysSet(False, True, 0) is False
+
+
+@pytest.mark.asyncio
 async def test_addNodeTimeout(gateway: ZIPGateway):
     gateway.send = sendTimeout
     assert await gateway.addNode(TxOptions.TRANSMIT_OPTION_EXPLORE) is False

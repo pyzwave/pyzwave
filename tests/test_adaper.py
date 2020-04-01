@@ -8,8 +8,14 @@ from unittest.mock import MagicMock
 import pytest
 
 from pyzwave.adapter import Adapter, TxOptions
-from pyzwave.commandclass import Basic, NetworkManagementProxy, Zip
+from pyzwave.commandclass import (
+    Basic,
+    NetworkManagementInclusion,
+    NetworkManagementProxy,
+    Zip,
+)
 from pyzwave.message import Message
+from pyzwave.types import dsk_t
 
 
 class AdapterImpl(Adapter):
@@ -19,6 +25,16 @@ class AdapterImpl(Adapter):
 
     async def addNode(self, txOptions: TxOptions) -> bool:
         return await super().addNode(txOptions)
+
+    async def addNodeDSKSet(
+        self, accept: bool, inputDSKLength: int, dsk: dsk_t
+    ) -> bool:
+        return await super().addNodeDSKSet(accept, inputDSKLength, dsk)
+
+    async def addNodeKeysSet(
+        self, grantCSA: bool, accept: bool, grantedKeys: NetworkManagementInclusion.Keys
+    ) -> bool:
+        return await super().addNodeKeysSet(grantCSA, accept, grantedKeys)
 
     async def addNodeStop(self) -> bool:
         return await super().addNodeStop()
@@ -98,6 +114,18 @@ def test_ack_not_existing(adapter: Adapter):
 async def test_addNode(adapter: Adapter):
     with pytest.raises(NotImplementedError):
         await adapter.addNode(TxOptions.NULL)
+
+
+@pytest.mark.asyncio
+async def test_addNodeDSKSet(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.addNodeDSKSet(True, 0, b"")
+
+
+@pytest.mark.asyncio
+async def test_addNodeKeysSet(adapter: Adapter):
+    with pytest.raises(NotImplementedError):
+        await adapter.addNodeKeysSet(False, True, 0)
 
 
 @pytest.mark.asyncio

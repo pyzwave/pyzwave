@@ -12,6 +12,7 @@ from pyzwave.commandclass import (
 )
 from pyzwave.connection import Connection
 from .adapter import Adapter, TxOptions
+from .types import dsk_t
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,6 +30,16 @@ class ZIPConnection(Adapter):
         self._conn.onMessage(self.onPacket)
 
     async def addNode(self, txOptions: TxOptions) -> bool:
+        raise NotImplementedError()
+
+    async def addNodeDSKSet(
+        self, accept: bool, inputDSKLength: int, dsk: dsk_t
+    ) -> bool:
+        raise NotImplementedError()
+
+    async def addNodeKeysSet(
+        self, grantCSA: bool, accept: bool, grantedKeys: NetworkManagementInclusion.Keys
+    ) -> bool:
         raise NotImplementedError()
 
     async def addNodeStop(self) -> bool:

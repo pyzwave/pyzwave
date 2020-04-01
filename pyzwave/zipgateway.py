@@ -15,6 +15,7 @@ from pyzwave.commandclass import (
 from pyzwave.adapter import TxOptions
 from pyzwave.connection import Connection
 from pyzwave.zipconnection import ZIPConnection
+from pyzwave.types import dsk_t
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,11 +35,40 @@ class ZIPGateway(ZIPConnection):
         self._nmSeq = self._nmSeq + 1
         cmd = NetworkManagementInclusion.NodeAdd(
             seqNo=self._nmSeq,
-            mode=NetworkManagementInclusion.NodeAdd.Mode.ANY,
+            mode=NetworkManagementInclusion.NodeAdd.Mode.ANY_S2,
             txOptions=txOptions,
         )
         try:
             # We do not get any immediate response
+            await self.send(cmd)
+        except asyncio.TimeoutError:
+            return False
+        return True
+
+    async def addNodeDSKSet(
+        self, accept: bool, inputDSKLength: int, dsk: dsk_t
+    ) -> bool:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementInclusion.NodeAddDSKSet(
+            seqNo=self._nmSeq, accept=accept, inputDSKLength=inputDSKLength, dsk=dsk,
+        )
+        try:
+            await self.send(cmd)
+        except asyncio.TimeoutError:
+            return False
+        return True
+
+    async def addNodeKeysSet(
+        self, grantCSA: bool, accept: bool, grantedKeys: NetworkManagementInclusion.Keys
+    ) -> bool:
+        self._nmSeq = self._nmSeq + 1
+        cmd = NetworkManagementInclusion.NodeAddKeysSet(
+            seqNo=self._nmSeq,
+            grantCSA=grantCSA,
+            accept=accept,
+            grantedKeys=grantedKeys,
+        )
+        try:
             await self.send(cmd)
         except asyncio.TimeoutError:
             return False

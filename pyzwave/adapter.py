@@ -7,6 +7,7 @@ import logging
 
 from pyzwave.commandclass import NetworkManagementInclusion, NetworkManagementProxy, Zip
 from .util import Listenable, MessageWaiter
+from .types import dsk_t
 from .message import Message
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,6 +41,26 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def addNode(self, txOptions: TxOptions) -> bool:
         """Start inclusion mode in the controller"""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def addNodeDSKSet(
+        self, accept: bool, inputDSKLength: int, dsk: dsk_t
+    ) -> bool:
+        """
+        This command is used to indicate the S2 bootstrapping controller if the DSK is
+        accepted and report the user input when needed.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    async def addNodeKeysSet(
+        self, grantCSA: bool, accept: bool, grantedKeys: NetworkManagementInclusion.Keys
+    ) -> bool:
+        """
+        This command is used to inform an S2 bootstrapping controller which keys must be
+        granted to the node being bootstrapped.
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
