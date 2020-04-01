@@ -4,7 +4,7 @@ import logging
 from typing import Any, Dict
 
 from pyzwave.adapter import Adapter
-from pyzwave.commandclass import NetworkManagementInclusion
+from pyzwave.commandclass import NetworkManagementInclusion, Zip
 from pyzwave.message import Message
 from pyzwave.node import Node, NodeEndPoint
 from pyzwave.const.ZW_classcmd import (
@@ -124,6 +124,9 @@ class Application(Listenable):
 
     async def onMessageReceived(self, _speaker: Any, msg: Message) -> bool:
         """Listener method from the adapter for any unhandled messages"""
+        if not isinstance(msg, Zip.ZipPacket):
+            # Ignore non ZipPacket
+            return False
         command = msg.command
         if isinstance(command, NetworkManagementInclusion.NodeAddStatus):
             await self.ask("addNodeStatus", command)
