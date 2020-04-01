@@ -49,6 +49,9 @@ class CustomAttribute(str):
     def __str__(self):
         return str(self.content)
 
+    def __eq__(self, other):
+        return self.content == other
+
 
 class AnotherAttributable(AttributesMixin):
     attributes = (

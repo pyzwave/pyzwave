@@ -32,6 +32,9 @@ class AttributesMixin:
             else:
                 self._attributes[attrName] = attrType(value)
 
+    def attributeUpdated(self, name, newValue, oldValue):
+        """Called if an attribute value was updated"""
+
     def debugString(self, indent=0):
         """
         Convert all attributes in this object to a human readable string used for debug output.
@@ -87,16 +90,21 @@ class AttributesMixin:
         for attr in getattr(self, "attributes"):
             attrName, attrType = attr[0], attr[1]
             if attrName == name:
+                oldValue = self._attributes.get(name, None)
                 if isinstance(value, attrType):
                     # Correct type set, use it directly
-                    self._attributes[name] = value
+                    newValue = value
                 elif hasattr(attrType, "__setstate__"):
-                    self._attributes[name] = attrType()
-                    self._attributes[name].__setstate__(value)
+                    newValue = attrType()
+                    newValue.__setstate__(value)
                 elif isinstance(value, tuple):
-                    self._attributes[name] = attrType(*value)
+                    newValue = attrType(*value)
                 else:
-                    self._attributes[name] = attrType(value)
+                    newValue = attrType(value)
+                if oldValue == newValue:
+                    return
+                self._attributes[name] = newValue
+                self.attributeUpdated(name, newValue, oldValue)
                 return
         super().__setattr__(name, value)
 
