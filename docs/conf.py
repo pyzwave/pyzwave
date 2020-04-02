@@ -14,6 +14,16 @@
 import os
 import sys
 
+
+class mockDtls:
+    @staticmethod
+    def do_patch():
+        pass
+
+
+# Mock dtls module since it may segfault
+sys.modules["dtls"] = mockDtls
+
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.append(os.path.abspath("./_ext"))
 
