@@ -4,3 +4,4 @@ pylint
 pytest
 pytest-asyncio
 pytest-cov
+sphinxcontrib-apidoc

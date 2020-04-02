@@ -6,12 +6,6 @@
 Welcome to pyzwave's documentation!
 ===================================
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Contents:
-
-   reference
-
 
 Quickstart
 ----------
@@ -50,3 +44,11 @@ Example for requesting a sensor value from a node supporting sensor multilevel
     )
     report = await node.sendAndReceive(message, SensorMultilevel.Report)
     print(report.debugString())
+
+
+.. toctree::
+   :hidden:
+   :caption: Content
+   :maxdepth: 2
+
+   reference/pyzwave

@@ -21,5 +21,7 @@ python:
   version: 3.6
   install:
     - requirements: requirements.txt
+    - method: pip
+      path: sphinxcontrib-apidoc
     - method: setuptools
       path: .
