@@ -51,4 +51,5 @@ Example for requesting a sensor value from a node supporting sensor multilevel
    :caption: Content
    :maxdepth: 2
 
+   inclusion
    reference/pyzwave
