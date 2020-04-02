@@ -10,6 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+# pylint: disable=invalid-name
 import os
 import sys
 
@@ -19,7 +20,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "pyzwave"
-copyright = "2020, Micke Prag"
+copyright = "2020, Micke Prag"  # pylint: disable=redefined-builtin
 author = "Micke Prag"
 
 # The full version, including alpha/beta/rc tags
