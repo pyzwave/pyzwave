@@ -167,6 +167,7 @@ async def test_interview_timeout(mocknode: Node):
 
     mocknode.supported[Version.COMMAND_CLASS_VERSION].interview = interview
     mocknode.supported[Basic.COMMAND_CLASS_BASIC].interview = interview
+    mocknode.supported[SwitchBinary.COMMAND_CLASS_SWITCH_BINARY].interview = interview
     await mocknode.interview()
     assert mocknode.supported[Version.COMMAND_CLASS_VERSION].version == 0
 

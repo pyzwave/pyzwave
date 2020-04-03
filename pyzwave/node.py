@@ -180,7 +180,7 @@ class Node(Listenable, MessageWaiter):
             try:
                 await cmdClass.interview()
             except asyncio.TimeoutError:
-                _LOGGER.warning("Timeout interviewing %s", cmdClass.NAME)
+                _LOGGER.warning("Timeout interviewing %s", cmdClass.name)
 
     @property
     def isFailed(self) -> bool:

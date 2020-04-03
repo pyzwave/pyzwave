@@ -72,14 +72,14 @@ def interviewDecorator(interview):
             version = await commandClass.requestVersion()
         if version == 0:
             _LOGGER.warning(
-                "Unable to determine command class version for %s", commandClass.NAME,
+                "Unable to determine command class version for %s", commandClass.name,
             )
             return
         try:
             commandClass._interviewed = False  # pylint: disable=protected-access
             retval = await interview()
         except asyncio.TimeoutError:
-            _LOGGER.warning("Timeout interviewing command class %s", commandClass.NAME)
+            _LOGGER.warning("Timeout interviewing command class %s", commandClass.name)
             return False
         if retval is not False:
             commandClass._interviewed = True  # pylint: disable=protected-access
@@ -144,6 +144,10 @@ class CommandClass(AttributesMixin, Listenable):
         return self._interviewed
 
     @property
+    def name(self):
+        return self.NAME
+
+    @property
     def node(self):
         """Returns the node this command class belongs to"""
         return self._node
@@ -203,11 +207,32 @@ class CommandClass(AttributesMixin, Listenable):
     def load(cmdClass: int, securityS0: bool, node):
         """Load and create a new command class instance from the given command class id"""
         # pylint: disable=invalid-name
-        CommandClassCls = ZWaveCommandClass.get(cmdClass, CommandClass)
-        instance = CommandClassCls(securityS0, node)
+        CommandClassCls = ZWaveCommandClass.get(cmdClass, None)
+        if CommandClassCls:
+            instance = CommandClassCls(securityS0, node)
+        else:
+            instance = UnknownCommandClass(securityS0, node, cmdClass)
         # Decorate the interview function
         instance.interview = interviewDecorator(instance.interview)
         return instance
+
+
+class UnknownCommandClass(CommandClass):
+    """
+    Wrapper class for wrapping unknown command classes.
+    """
+
+    def __init__(self, securityS0, node, id):
+        super().__init__(securityS0, node)
+        self._id = id
+
+    @property
+    def id(self) -> int:  # pylint: disable=invalid-name
+        return self._id
+
+    @property
+    def name(self):
+        return "UNKNOWN (0x{:X})".format(self.id)
 
 
 # pylint: disable=wrong-import-position
