@@ -130,6 +130,19 @@ class uint_t(int_t):  # pylint: disable=invalid-name
         return cls.from_bytes(stream.value(cls.size), cls.endian, signed=cls.signed)
 
 
+class uint3_t(int):  # pylint: disable=invalid-name
+    """Type representing 3 bits value"""
+
+    @classmethod
+    def deserialize(cls, stream: BitStreamReader):
+        """Deserialize bits from stream"""
+        return stream.bits(3)
+
+    def serialize(self, stream: BitStreamWriter):
+        """Serialize bits into stream"""
+        stream.addBits(self, 3)
+
+
 class uint4_t(int):  # pylint: disable=invalid-name
     """Type representing 4 bits value"""
 
