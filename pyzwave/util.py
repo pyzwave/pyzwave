@@ -58,9 +58,9 @@ class AttributesMixin:
                 # No more data, cannot decode rest of the attributes
                 break
             attrName, attrType = attr[0], attr[1]
-            serializer = getattr(self, "parse_{}".format(attrName), None)
-            if serializer:
-                value = serializer(stream)
+            deserializer = getattr(self, "parse_{}".format(attrName), None)
+            if deserializer:
+                value = deserializer(stream)
             else:
                 value = attrType.deserialize(stream)
             # This can be optimized to reduce the second loop in __setattr__
