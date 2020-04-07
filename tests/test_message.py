@@ -6,6 +6,7 @@ import pytest
 
 from pyzwave.message import Message
 from pyzwave.commandclass import Basic, ZWaveMessage
+from pyzwave.types import BitStreamWriter
 
 
 @pytest.fixture
@@ -16,6 +17,19 @@ def basic():
 @ZWaveMessage(1, 1)
 class NonEncodableType(Message):
     attributes = (("dummy", str),)
+
+
+@ZWaveMessage(0x01, 0x01)
+class Custom(Message):
+    attributes = (("custom", int),)
+
+    def compose_custom(self, stream: BitStreamWriter):
+        stream.addBytes(self.custom, 1, False)
+
+
+def test_compose_custom_serializer():
+    message = Custom(custom=0x42)
+    assert message.compose() == b"\x01\x01\x42"
 
 
 def test_compose_no_attribute():

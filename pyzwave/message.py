@@ -33,6 +33,10 @@ class Message(AttributesMixin):
                 raise AttributeError(
                     "Value for attribute '{}' in {} has not been set".format(name, self)
                 )
+            serializer = getattr(self, "compose_{}".format(name), None)
+            if serializer:
+                serializer(stream)
+                continue
             if not hasattr(self._attributes[name], "serialize"):
                 raise ValueError("Cannot encode", name, self._attributes[name])
             self._attributes[name].serialize(stream)
