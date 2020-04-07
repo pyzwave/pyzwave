@@ -81,6 +81,7 @@ from . import (
     AssociationGrpInfo,
     Basic,
     Battery,
+    Configuration,
     Indicator,
     ManufacturerSpecific,
     Meter,
