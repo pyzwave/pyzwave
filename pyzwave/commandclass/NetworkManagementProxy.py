@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 from pyzwave.const.ZW_classcmd import (
     COMMAND_CLASS_NETWORK_MANAGEMENT_PROXY,
     COMMAND_FAILED_NODE_LIST_GET,
@@ -16,8 +18,10 @@ from pyzwave.types import (
     BitStreamReader,
     bits_t,
     bytes_t,
+    enum_t,
     flag_t,
     reserved_t,
+    uint4_t,
     uint7_t,
     uint8_t,
 )
@@ -159,10 +163,17 @@ class NodeInfoCachedReport(Message):
 
     NAME = "NODE_INFO_CACHED_REPORT"
 
+    class Status(IntEnum):
+        """Node info status"""
+
+        OK = 0x00
+        NOT_RESPONDING = 0x01
+        UNKNOWN = 0x02
+
     attributes = (
         ("seqNo", uint8_t),
-        ("status", bits_t(4)),
-        ("age", bits_t(4)),
+        ("status", enum_t(Status, uint4_t)),
+        ("age", uint4_t),
         ("listening", flag_t),
         ("zwaveProtocolSpecific", reserved_t(7)),
         ("optFunc", flag_t),
