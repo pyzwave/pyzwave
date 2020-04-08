@@ -145,6 +145,7 @@ class CommandClass(AttributesMixin, Listenable):
 
     @property
     def name(self):
+        """Return the name of the command class"""
         return self.NAME
 
     @property
