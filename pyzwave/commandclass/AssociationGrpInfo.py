@@ -198,5 +198,6 @@ class AssociationGrpInfo(CommandClass):
         await self.send(
             GroupInfoGet(refreshCache=False, listMode=True, groupingIdentifier=0)
         )
-        # We do not know when we have received everything so we mark the command class as interviewed...
+        # We do not know when we have received everything so we mark the command class
+        # as interviewed...
         return True

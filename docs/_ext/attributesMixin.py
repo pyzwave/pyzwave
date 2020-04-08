@@ -16,9 +16,9 @@ def resolveAttributes(
 ) -> None:
     """Rewrite the object constructor to include the attributes"""
     if objtype != "class":
-        return
+        return None
     if not issubclass(obj, AttributesMixin):
-        return
+        return None
 
     attrs = []
     for attr in obj.attributes:
