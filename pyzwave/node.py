@@ -155,14 +155,17 @@ class Node(Listenable, MessageWaiter):
     @supervision
     async def handleMessage(self, message: Message) -> bool:
         """Handle and incomming message. Route it to the correct handler"""
+        handled = False
         if self.messageReceived(message) is True:
             # Message has already been handled
-            return True
+            handled = True
         cmdClass: CommandClass = self.supported.get(message.cmdClass())
         if cmdClass:
             retval = await cmdClass.handleMessage(message)
             if retval:
                 return retval
+        if handled:
+            return True
         for retval in await self.ask("onMessage", message):
             if retval:
                 return retval
