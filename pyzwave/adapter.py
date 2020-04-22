@@ -190,7 +190,16 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     async def send(
         self, cmd: Message, sourceEP: int = 0, destEP: int = 0, timeout: int = 3
     ) -> bool:
-        """Send message to Z-Wave chip. Must be implemented in subclass"""
+        """
+        Send message to Z-Wave chip. Must be implemented in subclass.
+
+        .. warning::
+          This command will block until the message has been ACKed by the node.
+
+          When talking to battery operated (sleeping) nodes this command will
+          block until the nodes wakes up or is considered dead. This can be a
+          long time (week or even months). Please make sure the code can handle this.
+        """
         raise NotImplementedError()
 
     async def sendToNode(self, nodeId: int, cmd: Message, **kwargs) -> bool:
