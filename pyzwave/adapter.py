@@ -21,6 +21,47 @@ class TxOptions(enum.IntFlag):
     TRANSMIT_OPTION_EXPLORE = 0x20
 
 
+class Ack:
+    """Class for holding session informaion"""
+
+    class Status(enum.Enum):
+        """Ack status"""
+
+        PENDING = enum.auto()
+        QUEUED = enum.auto()
+        RECEIVED = enum.auto()
+
+    def __init__(self):
+        self._event = asyncio.Event()
+        self._status = Ack.Status.PENDING
+        self._expectedDelay = 0
+
+    def received(self):
+        """Call this function when this ack has been received"""
+        self._status = Ack.Status.RECEIVED
+        self._event.set()
+
+    def queued(self, expectedDelay: int):
+        """Call this function when the message cannot be delivered right now"""
+        if expectedDelay < 0:
+            # Node should have been awake by now. Wait 2 minutes to allow
+            # the node to be manually woken
+            expectedDelay = 120
+        # Add some "wiggle room" for the wakeup
+        self._expectedDelay = expectedDelay + 60
+        self._status = Ack.Status.QUEUED
+        self._event.set()
+
+    async def wait(self, timeout):
+        """Wait until the node ack the message"""
+        await asyncio.wait_for(self._event.wait(), timeout)
+        # Message was queued for a sleeping node.
+        # Wait longer!
+        while self._status == Ack.Status.QUEUED:
+            self._event.clear()
+            await asyncio.wait_for(self._event.wait(), self._expectedDelay)
+
+
 class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     """Abstract class for implementing communication with a Z-Wave chip"""
 
@@ -32,11 +73,18 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
     def ackReceived(self, zipPkt: Zip.ZipPacket):
         """Call this method when an ack message has been received"""
         ackId = zipPkt.seqNo
-        event = self._ackQueue.pop(ackId, None)
-        if not event:
-            _LOGGER.warning("Received ack for command not waiting for")
+        if zipPkt.nackResponse and zipPkt.nackWaiting:
+            # Message was queued, signal this and keep ack in queue
+            ack = self._ackQueue.get(ackId, None)
+            if not ack:
+                return False
+            ack.queued(zipPkt.headerExtension.expectedDelay)
+            return True
+        ack = self._ackQueue.pop(ackId, None)
+        if not ack:
+            _LOGGER.warning("Received ack %d for command not waiting for", ackId)
             return False
-        event.set()
+        ack.received()
         return True
 
     @abc.abstractmethod
@@ -170,11 +218,11 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
         """Async method for waiting for the adapter to receive a specific ack id"""
         if ackId in self._ackQueue:
             raise Exception("Duplicate ackid used!")
-        event = asyncio.Event()
-        self._ackQueue[ackId] = event
+        ack = Ack()
+        self._ackQueue[ackId] = ack
         try:
-            await asyncio.wait_for(event.wait(), timeout)
+            await ack.wait(timeout)
         except asyncio.TimeoutError:
-            _LOGGER.warning("Timeout waiting for response")
+            _LOGGER.warning("Timeout waiting for response for ack %s", ackId)
             del self._ackQueue[ackId]
             raise

@@ -245,7 +245,10 @@ class Node(Listenable, MessageWaiter):
     ) -> Message:
         """Send a message and wait for the response"""
         self.addWaitingSession(waitFor)
-        await self.send(cmd, **kwargs)
+        retval = await self.send(cmd, **kwargs)
+        if not retval:
+            # Node did not wakeup in time!
+            raise asyncio.TimeoutError()
         return await self.waitForMessage(waitFor, timeout=timeout)
 
     @contextmanager

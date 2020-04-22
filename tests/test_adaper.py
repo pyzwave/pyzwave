@@ -178,6 +178,47 @@ async def test_getNodeList(adapter: Adapter):
         await adapter.getNodeList()
 
 
+@pytest.mark.asyncio
+async def test_nack_negative_expected_delay(adapter: Adapter):
+    async def sendAck():
+        await asyncio.sleep(0)
+        # pylint: disable=line-too-long
+        pkt = b"#\x020\x90\x01\x00\x00\x16\x01\x03\xff\xf9\xc3\x03\x0e\x00\x01\x00\x01\x02\x00\x1a\x02\x05\x00\x00\x00\x00\x02"
+        msg = Message.decode(pkt)
+        adapter.ackReceived(msg)
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+        adapter.ackReceived(Zip.ZipPacket(ackResponse=True, seqNo=1))
+
+    await asyncio.gather(adapter.waitForAck(1), sendAck())
+
+
+def test_nack_not_existing(adapter: Adapter):
+    assert (
+        adapter.ackReceived(
+            Zip.ZipPacket(nackResponse=True, nackWaiting=True, seqNo=43)
+        )
+        is False
+    )
+
+
+@pytest.mark.asyncio
+async def test_nack_waiting(adapter: Adapter):
+    async def sendAck():
+        await asyncio.sleep(0)
+        # pylint: disable=line-too-long
+        pkt = b"#\x020\x90\x01\x00\x00\x16\x01\x03\x00\x06=\x03\x0e\x00\x01\x00\x01\x02\x00\x1a\x02\x05\x00\x00\x00\x00\x02"
+        msg = Message.decode(pkt)
+        adapter.ackReceived(msg)
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+        await asyncio.sleep(0)
+        adapter.ackReceived(Zip.ZipPacket(ackResponse=True, seqNo=1))
+
+    await asyncio.gather(adapter.waitForAck(1), sendAck())
+
+
 def test_nodeId(adapter: Adapter):
     assert adapter.nodeId == 1
     adapter.nodeId = 2

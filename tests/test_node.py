@@ -235,6 +235,16 @@ async def test_sendAndReceive(node: Node):
     assert isinstance(values[0], Basic.Report)
 
 
+@pytest.mark.asyncio
+async def test_sendAndReceive_no_wakeup(node: Node):
+    async def noop(_):
+        return False
+
+    node.send = noop
+    with pytest.raises(asyncio.TimeoutError):
+        await node.sendAndReceive(Basic.Get(), Basic.Report)
+
+
 def test_specificdeviceclass(node: Node):
     assert node.specificDeviceClass == 0
     node.specificDeviceClass = 2
