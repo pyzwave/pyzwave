@@ -91,7 +91,9 @@ async def runDelayed(func, *args):
 
 @pytest.mark.asyncio
 async def test_ack(adapter: Adapter):
-    await asyncio.gather(adapter.waitForAck(1), runDelayed(adapter.ackReceived, 1))
+    await asyncio.gather(
+        adapter.waitForAck(1), runDelayed(adapter.ackReceived, Zip.ZipPacket(seqNo=1))
+    )
 
 
 @pytest.mark.asyncio
@@ -107,7 +109,7 @@ async def test_ack_timeout(adapter: Adapter):
 
 
 def test_ack_not_existing(adapter: Adapter):
-    assert adapter.ackReceived(43) is False
+    assert adapter.ackReceived(Zip.ZipPacket(seqNo=43)) is False
 
 
 @pytest.mark.asyncio

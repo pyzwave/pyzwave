@@ -279,7 +279,8 @@ async def test_send(connection: ZIPConnection):
     connection._conn.send = MagicMock()
     basicGet = Basic.Get()
     [res, _] = await asyncio.gather(
-        connection.send(basicGet), runDelayed(connection.ackReceived, 1)
+        connection.send(basicGet),
+        runDelayed(connection.ackReceived, Zip.ZipPacket(seqNo=1)),
     )
     assert res is True
     connection._conn.send.assert_called_once_with(b"#\x02\x80\x50\x01\x00\x00 \x02")

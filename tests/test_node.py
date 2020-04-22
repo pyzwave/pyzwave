@@ -224,7 +224,7 @@ async def test_send(node: Node):
 @pytest.mark.asyncio
 async def test_sendAndReceive(node: Node):
     async def noop(_):
-        pass
+        return True
 
     node.send = noop
     values = await asyncio.gather(

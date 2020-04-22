@@ -29,8 +29,9 @@ class Adapter(Listenable, MessageWaiter, metaclass=abc.ABCMeta):
         self._ackQueue = {}
         self._nodeId = 0
 
-    def ackReceived(self, ackId: int):
+    def ackReceived(self, zipPkt: Zip.ZipPacket):
         """Call this method when an ack message has been received"""
+        ackId = zipPkt.seqNo
         event = self._ackQueue.pop(ackId, None)
         if not event:
             _LOGGER.warning("Received ack for command not waiting for")

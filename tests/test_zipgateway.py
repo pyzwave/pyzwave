@@ -395,7 +395,8 @@ async def test_removeNodeTimeout(gateway: ZIPGateway):
 async def test_sendToNode(gateway: ZIPGateway):
     connection = await gateway.connectToNode(6)
     [res, _] = await asyncio.gather(
-        gateway.sendToNode(6, Basic.Get()), runDelayed(connection.ackReceived, 1)
+        gateway.sendToNode(6, Basic.Get()),
+        runDelayed(connection.ackReceived, Zip.ZipPacket(seqNo=1)),
     )
     assert res == True
 
