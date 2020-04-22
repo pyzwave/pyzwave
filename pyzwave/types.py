@@ -110,6 +110,11 @@ class int_t(int):  # pylint: disable=invalid-name
     def __getstate__(self):
         return int(self)
 
+    @classmethod
+    def deserialize(cls, stream: BitStreamReader):
+        """Deserialize unsigned value from stream"""
+        return cls.from_bytes(stream.value(cls.size), cls.endian, signed=cls.signed)
+
     def serialize(self, stream: BitStreamWriter):
         """Serialize into stream"""
         stream.addBytes(self, self.size, self.signed, self.endian)
@@ -124,10 +129,11 @@ class uint_t(int_t):  # pylint: disable=invalid-name
     def __repr__(self):
         return "0x{0:0{1}X} ({0})".format(self, self.size)
 
-    @classmethod
-    def deserialize(cls, stream: BitStreamReader):
-        """Deserialize unsigned value from stream"""
-        return cls.from_bytes(stream.value(cls.size), cls.endian, signed=cls.signed)
+
+class int24_t(int_t):  # pylint: disable=invalid-name
+    """Signed 24 bits value"""
+
+    size = 3
 
 
 class uint3_t(int):  # pylint: disable=invalid-name
