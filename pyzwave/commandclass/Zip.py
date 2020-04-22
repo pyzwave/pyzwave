@@ -12,6 +12,7 @@ from pyzwave.types import (
     bytes_t,
     enum_t,
     flag_t,
+    int24_t,
     reserved_t,
     uint7_t,
     uint8_t,
@@ -133,6 +134,10 @@ class ZIPPacketOptionEncapsulationFormatInfo(ZIPPacketOptionData, AttributesMixi
     )
 
 
+class ZIPPacketOptionExpectedDelay(ZIPPacketOptionData, int24_t):
+    """Zip Packet option expexted delay"""
+
+
 class ZIPPacketOptionType(IntEnum):
     """ZIP Packet option type"""
 
@@ -161,12 +166,17 @@ class ZIPPacketOption(AttributesMixin):
             clsType = ZIPPacketOptionMaintenanceReport
         elif self.optionType == ZIPPacketOptionType.ENCAPSULATION_FORMAT_INFORMATION:
             clsType = ZIPPacketOptionEncapsulationFormatInfo
+        elif self.optionType == ZIPPacketOptionType.EXPECTED_DELAY:
+            clsType = ZIPPacketOptionExpectedDelay
         cls = clsType()
         if hasattr(cls, "parseAttributes"):
             cls.parseAttributes(BitStreamReader(data))
         elif hasattr(cls, "__setstate__"):
             data = clsType.deserialize(BitStreamReader(data))
             cls.__setstate__(data)
+        else:
+            value = clsType.deserialize(BitStreamReader(data))
+            return clsType(value)
         return cls
 
 
@@ -176,6 +186,11 @@ class HeaderExtension(VarDictAttribute(ZIPPacketOptionType, ZIPPacketOptionData)
     """
 
     default = {}
+
+    @property
+    def expectedDelay(self) -> int:
+        """Returns the expected delay for sleeping nodes"""
+        return self.get(ZIPPacketOptionType.EXPECTED_DELAY, 0)
 
     def serialize(self, stream: BitStreamWriter):
         """Serialize header extension into stream"""
