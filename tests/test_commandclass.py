@@ -62,7 +62,7 @@ class MockNode(Node):
         self._sent.append(cmd)
         for msg, reply in self._replies:
             if msg.hid() == cmd.hid():
-                await self.handleMessage(reply)
+                await self.handleMessage(reply, 0)
                 break
 
     async def sendAndReceive(
@@ -123,7 +123,7 @@ async def test_handleMessage(version: Version.Version):
     listener = MagicMock()
     listener.onVersionCommandClassReport.return_value = True
     version.addListener(listener)
-    assert await version.handleMessage(Version.VersionCommandClassReport()) is True
+    assert await version.handleMessage(Version.VersionCommandClassReport(), 0) is True
     listener.onVersionCommandClassReport.assert_called_once()
 
 
@@ -131,7 +131,7 @@ async def test_handleMessage(version: Version.Version):
 async def test_handleMessage_unknown(version: Version.Version):
     listener = MagicMock()
     version.addListener(listener)
-    assert await version.handleMessage(UnknownMessage(0x0000)) is False
+    assert await version.handleMessage(UnknownMessage(0x0000), 0) is False
     assert listener.mock_calls == []
 
 

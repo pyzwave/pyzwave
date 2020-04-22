@@ -101,7 +101,7 @@ class CommandClass(AttributesMixin, Listenable):
         self._interviewed = False
         self._version = 0
 
-    async def handleMessage(self, message: Message) -> bool:
+    async def handleMessage(self, message: Message, flags) -> bool:
         """Handle and incomming message specific to this command class"""
         # Find internal handlers
         if not message.NAME:
@@ -111,13 +111,13 @@ class CommandClass(AttributesMixin, Listenable):
         hid = message.hid()
         if self.__messageHandlers__:
             handler = self.__messageHandlers__.get(hid)
-            if handler and await handler(self, message):
+            if handler and await handler(self, message, flags):
                 # Message was handled, stop further processing
                 return True
 
         components = message.NAME.lower().split("_")
         name = "".join(["on", *map(str.title, components)])
-        for retval in await self.ask(name, message):
+        for retval in await self.ask(name, message, flags):
             if retval:
                 return True
 

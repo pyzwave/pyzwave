@@ -42,7 +42,7 @@ async def test_Configuration_get_non_cached(configuration: Configuration.Configu
 @pytest.mark.asyncio
 async def test_Configuration_report(configuration: Configuration.Configuration):
     await configuration.node.handleMessage(
-        Configuration.Report(parameterNumber=2, size=2, value=1234)
+        Configuration.Report(parameterNumber=2, size=2, value=1234), 0
     )
     assert configuration.parameters[2].size == 2
     assert configuration.parameters[2].value == 1234

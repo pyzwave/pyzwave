@@ -158,7 +158,7 @@ class SensorMultilevel(CommandClass):
     attributes = (("supportedTypes", VarDictAttribute(int, uint8_t)),)
 
     @ZWaveMessageHandler(Report)
-    async def __report__(self, report: Report):
+    async def __report__(self, report: Report, _flags):
         # Match report against supported types and filter out if we get any non supported
         if self.version < 5:
             # We do not know whats supported

@@ -49,7 +49,7 @@ async def test_report_v4(multilevelSensor: SensorMultilevel.SensorMultilevel):
     multilevelSensor.addListener(listener)
     assert (
         await multilevelSensor.handleMessage(
-            SensorMultilevel.Report(sensorType=1, sensorValue=float_t(10, 1, 0))
+            SensorMultilevel.Report(sensorType=1, sensorValue=float_t(10, 1, 0)), 0
         )
         is False
     )
@@ -77,7 +77,8 @@ async def test_report(
         await multilevelSensor.handleMessage(
             SensorMultilevel.Report(
                 sensorType=value[0], sensorValue=float_t(*value[1:])
-            )
+            ),
+            0,
         )
         is not result  # The output from handleMessage is inverted from __report__
     )

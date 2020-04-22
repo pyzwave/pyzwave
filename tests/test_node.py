@@ -113,15 +113,16 @@ def test_genericdeviceclass(node: Node):
 async def test_handleMessage(node: Node):
     # Skip handlers, when there is a session wating for the message
     node.addWaitingSession(Basic.Get)
-    assert await node.handleMessage(Basic.Get()) is True
+    assert await node.handleMessage(Basic.Get(), 0) is True
 
     # Try again without any sessions
-    assert await node.handleMessage(Basic.Get()) is False
+    assert await node.handleMessage(Basic.Get(), 0) is False
 
     # Send message with handler
     assert (
         await node.handleMessage(
-            AssociationGrpInfo.GroupNameReport(groupingsIdentifier=1, name="Lifeline")
+            AssociationGrpInfo.GroupNameReport(groupingsIdentifier=1, name="Lifeline"),
+            0,
         )
         is True
     )
@@ -134,10 +135,10 @@ async def test_handleMessage_onMessage(node: Node):
     node.addListener(listener)
 
     listener.onMessage.return_value = True
-    assert await node.handleMessage(Basic.Report(value=0)) is True
+    assert await node.handleMessage(Basic.Report(value=0), 0) is True
 
     listener.onMessage.return_value = False
-    assert await node.handleMessage(Basic.Report(value=0)) is False
+    assert await node.handleMessage(Basic.Report(value=0), 0) is False
 
 
 @pytest.mark.asyncio
@@ -260,7 +261,7 @@ async def test_supervision_handled(node: Node):
         statusUpdates=False, sessionID=42, command=Basic.Report(value=1)
     )
     node.addWaitingSession(Basic.Report)
-    assert await node.handleMessage(supervision) is True
+    assert await node.handleMessage(supervision, 0) is True
     node._adapter.sendToNode.assert_called_with(
         node.rootNodeId,
         Supervision.Report(
@@ -281,7 +282,7 @@ async def test_supervision_not_handled(node: Node):
     supervision = Supervision.Get(
         statusUpdates=False, sessionID=42, command=Basic.Report(value=1)
     )
-    assert await node.handleMessage(supervision) is False
+    assert await node.handleMessage(supervision, 0) is False
     node._adapter.sendToNode.assert_called_with(
         node.rootNodeId,
         Supervision.Report(

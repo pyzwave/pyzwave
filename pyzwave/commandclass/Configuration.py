@@ -123,7 +123,7 @@ class Configuration(CommandClass):
     attributes = (("parameters", VarDictAttribute(int, ConfigurationValue)),)
 
     @ZWaveMessageHandler(Report)
-    async def __report__(self, report: Report):
+    async def __report__(self, report: Report, _flags):
         number = int(report.parameterNumber)
         parameter = self.parameters.setdefault(number, ConfigurationValue())
         parameter.value = report.value

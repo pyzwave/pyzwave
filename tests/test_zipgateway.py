@@ -327,8 +327,13 @@ def test_onUnsolicitedMessage(gateway: ZIPGateway):
     gateway._nodes = {7: {"ip": ip}}
     pkt = b"#\x02\x80\xc0\xf9\x00\x00\x05\x84\x02\x00\x00%\x03\x00"
     assert gateway.onUnsolicitedMessage(pkt, (ip, 4123)) is True
+
+    # Extract the flags from the call
+    call = gateway.listener.messageReceived.mock_calls[1]
+    args = call[1]
+    flags = args[4]
     gateway.listener.messageReceived.assert_called_once_with(
-        gateway, 7, 0, SwitchBinary.Report(value=0), 0
+        gateway, 7, 0, SwitchBinary.Report(value=0), flags
     )
     gateway._unsolicitedConnection.sendTo.assert_called_once_with(
         b"#\x02@\x00\xf9\x00\x00", (ip, 4123)

@@ -79,7 +79,8 @@ async def test_interview(associationgrpinfo: AssociationGrpInfo.AssociationGrpIn
         AssociationGrpInfo.GroupInfoReport(
             groupCount=1,
             groups=[AssociationGrpInfo.GroupInfoGroupType(groupingIdentifier=1)],
-        )
+        ),
+        0,
     )
     assert associationgrpinfo.__getstate__() == {
         "groupings": {

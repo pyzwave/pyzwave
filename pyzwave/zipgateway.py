@@ -279,8 +279,13 @@ class ZIPGateway(ZIPConnection):
                 ackReponse = zipPkt.response(success=True)
                 self._unsolicitedConnection.sendTo(ackReponse.compose(), address)
 
-            flags = 0  # Set flags such as encapsulation type
-            self.speak("messageReceived", nodeId, sourceEP, zipPkt.command, flags)
+            self.speak(
+                "messageReceived",
+                nodeId,
+                sourceEP,
+                zipPkt.command,
+                zipPkt.headerExtension,
+            )
             return True
         _LOGGER.warning(
             "Got message from unknown sender %s: %s", sourceIp, zipPkt.command

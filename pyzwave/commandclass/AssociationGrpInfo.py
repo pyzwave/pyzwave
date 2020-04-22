@@ -169,12 +169,12 @@ class AssociationGrpInfo(CommandClass):
     attributes = (("groupings", Groupings),)
 
     @ZWaveMessageHandler(GroupCommandListReport)
-    async def __groupCommandListReport__(self, report: GroupCommandListReport):
+    async def __groupCommandListReport__(self, report: GroupCommandListReport, _flags):
         self.groupings[report.groupingIdentifier].commands = list(report.commandClass)
         return True
 
     @ZWaveMessageHandler(GroupInfoReport)
-    async def __groupInfoReport__(self, report: GroupInfoReport):
+    async def __groupInfoReport__(self, report: GroupInfoReport, _flags):
         for group in report.groups:
             self.groupings[group.groupingIdentifier] = Group(profile=group.profile)
             await self.send(GroupNameGet(groupingIdentifier=group.groupingIdentifier),)
@@ -186,7 +186,7 @@ class AssociationGrpInfo(CommandClass):
         return True
 
     @ZWaveMessageHandler(GroupNameReport)
-    async def __groupNameReport__(self, report: GroupNameReport):
+    async def __groupNameReport__(self, report: GroupNameReport, _flags):
         if report.groupingIdentifier not in self.groupings:
             return True
         self.groupings[report.groupingIdentifier].name = report.name

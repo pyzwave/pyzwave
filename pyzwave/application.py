@@ -68,13 +68,18 @@ class Application(Listenable):
         return nodes
 
     async def messageReceived(
-        self, _sender, rootNodeId: int, endPoint: int, message: Message, _flags: int
+        self,
+        _sender,
+        rootNodeId: int,
+        endPoint: int,
+        message: Message,
+        flags: Zip.HeaderExtension,
     ):
         """Called when a message is received from a node"""
         nodeId = "{}:{}".format(rootNodeId, endPoint)
         node = self._nodes.get(nodeId)
         if node:
-            reply = await node.handleMessage(message)
+            reply = await node.handleMessage(message, flags)
             if reply:
                 # Message was handled
                 return True
