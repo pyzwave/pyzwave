@@ -83,6 +83,7 @@ from . import (
     Battery,
     Configuration,
     Indicator,
+    Mailbox,
     ManufacturerSpecific,
     Meter,
     MultiChannelAssociation,
