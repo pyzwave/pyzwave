@@ -1,2 +1,3 @@
+crcmod
 python3-dtls
 pyyaml
