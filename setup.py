@@ -16,7 +16,7 @@ setup(
     author="Micke Prag",
     author_email="micke.prag@telldus.se",
     license="GPL-3.0",
-    packages=["pyzwave"],
+    packages=["pyzwave", "pyzwave.commandclass", "pyzwave.const"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
